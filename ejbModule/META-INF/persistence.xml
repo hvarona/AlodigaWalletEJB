@@ -76,7 +76,7 @@
     <class>com.alodiga.wallet.common.model.UserHasCard</class>
     <class>com.alodiga.wallet.common.model.ValidationCollection</class>
     
-    <exclude-unlisted-classes>false</exclude-unlisted-classes>
+    <exclude-unlisted-classes>true</exclude-unlisted-classes>
     <properties>
       <property name="eclipselink.logging.timestamp" value="true"/>
       <property name="toplink.cache.type.default" value="Full"/>

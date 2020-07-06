@@ -66,7 +66,7 @@ public class UserEJBImp extends AbstractWalletEJB implements UserEJB, UserEJBLoc
         }
 
         try {
-            users = (List<User>) getNamedQueryResult(User.class, QueryConstants.LOAD_USER_BY_EMAIL, request, getMethodName(), logger, "User");
+            users = (List<User>) getNamedQueryResult(User.class, "User.loadUserByEmail", request, getMethodName(), logger, "User");
         } catch (EmptyListException e) {
             throw new RegisterNotFoundException(logger, sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName(), "user"), null);
         }
@@ -82,7 +82,7 @@ public class UserEJBImp extends AbstractWalletEJB implements UserEJB, UserEJBLoc
             throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), QueryConstants.PARAM_LOGIN), null);
         }
         try {
-            users = (List<User>) getNamedQueryResult(User.class, QueryConstants.LOAD_USER_BY_LOGIN, request, getMethodName(), logger, "User");
+            users = (List<User>) getNamedQueryResult(User.class, "User.loadUserByLogin", request, getMethodName(), logger, "User");
         } catch (EmptyListException e) {
             throw new RegisterNotFoundException(logger, sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName(), "user"), null);
         }
