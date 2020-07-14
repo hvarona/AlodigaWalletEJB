@@ -3,16 +3,13 @@ package com.alodiga.wallet.ejb;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import javax.ejb.Stateless;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
 import javax.interceptor.Interceptors;
 import javax.persistence.EntityTransaction;
 import javax.persistence.Query;
-
 import org.apache.log4j.Logger;
-
 import com.alodiga.wallet.common.ejb.ProductEJB;
 import com.alodiga.wallet.common.ejb.ProductEJBLocal;
 import com.alodiga.wallet.common.exception.EmptyListException;
@@ -38,59 +35,30 @@ public class ProductEJBImp extends AbstractWalletEJB implements ProductEJB, Prod
 
     private static final Logger logger = Logger.getLogger(ProductEJBImp.class);
 
+    //Category
+    public List<Category> getCategories(EJBRequest request) throws GeneralException, EmptyListException, NullParameterException {
+        return (List<Category>) listEntities(Category.class, request, logger, getMethodName());
+    }
+    
     public Category deleteCategory(EJBRequest request) throws GeneralException, NullParameterException {
         return null;
     }
+    
+    public Category loadCategory(EJBRequest request) throws GeneralException, RegisterNotFoundException, NullParameterException {
 
-    public Product deleteProduct(EJBRequest request) throws GeneralException, NullParameterException {
-        return null;
+        return (Category) loadEntity(Category.class, request, logger, getMethodName());
+    }
+    
+    public Category saveCategory(EJBRequest request) throws GeneralException, NullParameterException {
+        return (Category) saveEntity(request, logger, getMethodName());
     }
 
-   
-    public void deleteProductHasProvider(Long productId) throws NullParameterException, GeneralException {
-        if (productId == null) {
-            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "productId or providerId"), null);
-        }
-        try {
-            EntityTransaction transaction = entityManager.getTransaction();
-            transaction.begin();
-            //String sql = "DELETE FROM ProductHasProvider php WHERE php.product.id=" + productId;
-            StringBuilder sqlBuilder = new StringBuilder("DELETE FROM ProductHasProvider php WHERE php.product.id=?1");
-            Query query = createQuery(sqlBuilder.toString());
-            query.setParameter("1", productId);
-            query.executeUpdate();
-            transaction.commit();
-        } catch (Exception e) {
-            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), e.getMessage()), null);
-        }
-    }
 
-    public void deletePromotionTypeHasPromotion(EJBRequest request) throws NullParameterException, GeneralException {
-        Object param = request.getParam();
-        if (param == null || !(param instanceof Long)) {
-            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "promotionId"), null);
-        }
-        Map<String, Object> map = new HashMap<String, Object>();
-        map.put("promotionId", (Long) param);
-        try {
-            //executeNameQuery(PromotionTypeHasPromotion.class, QueryConstants.DELETE_PROMOTION_TYPE_HAS_PROMOTION, map, getMethodName(), logger, "PromotionTypeHasPromotion", null, null);
-        } catch (Exception e) {
-            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), e.getMessage()), null);
-        }
+    //Product
+    public List<Product> getProducts(EJBRequest request) throws GeneralException, EmptyListException, NullParameterException {
+        return (List<Product>) listEntities(Product.class, request, logger, getMethodName());
     }
-
-    public Provider deleteProvider(EJBRequest request) throws GeneralException, NullParameterException {
-        return null;
-    }
-
-    public Boolean deletePinFree(EJBRequest request) throws GeneralException, NullParameterException {
-        return (Boolean) removeEntity(request, logger, getMethodName());
-    }
-
-    public Product enableProduct(EJBRequest request) throws GeneralException, NullParameterException, RegisterNotFoundException {
-        return (Product) saveEntity(request, logger, getMethodName());
-    }
-
+    
     public List<Product> filterProducts(EJBRequest request) throws GeneralException, EmptyListException, NullParameterException {
         if (request == null) {
             throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "request"), null);
@@ -105,14 +73,7 @@ public class ProductEJBImp extends AbstractWalletEJB implements ProductEJB, Prod
         orderField.put(Product.NAME, QueryConstants.ORDER_DESC);
         return (List<Product>) createSearchQuery(Product.class, request, orderField, logger, getMethodName(), "customers", isFilter);
     }
-
- 
-    public List<Category> getCategories(EJBRequest request) throws GeneralException, EmptyListException, NullParameterException {
-
-        return (List<Category>) listEntities(Category.class, request, logger, getMethodName());
-    }
-
-
+    
     public List<Product> getProductsByEnterprise(Long enterpriseId) throws GeneralException, EmptyListException, NullParameterException {
         List<Product> products = null;
 
@@ -133,12 +94,84 @@ public class ProductEJBImp extends AbstractWalletEJB implements ProductEJB, Prod
         }
         return products;
     }
+    
+    public Product loadProduct(EJBRequest request) throws GeneralException, RegisterNotFoundException, NullParameterException {
+        return (Product) loadEntity(Product.class, request, logger, getMethodName());
+    }
 
+    public Product loadProductById(Long productId) throws GeneralException, RegisterNotFoundException, NullParameterException {
+        if (productId == null) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "productId"), null);
+        }
+        Product product = new Product();
+        try {
+            Query query = createQuery("SELECT p FROM Product p WHERE p.id = ?1");
+            query.setParameter("1", productId);
+            product = (Product) query.getSingleResult();
+        } catch (Exception ex) {
+            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), ex.getMessage()), null);
+        }
+        if (product == null) {
+            throw new RegisterNotFoundException(logger, sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName()), null);
+        }
+        return product;
+    }
+    
+    public Product enableProduct(EJBRequest request) throws GeneralException, NullParameterException, RegisterNotFoundException {
+        return (Product) saveEntity(request, logger, getMethodName());
+    }
+    
+    public Product deleteProduct(EJBRequest request) throws GeneralException, NullParameterException {
+        return null;
+    }
+   
+    public void deleteProductHasProvider(Long productId) throws NullParameterException, GeneralException {
+        if (productId == null) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "productId or providerId"), null);
+        }
+        try {
+            EntityTransaction transaction = entityManager.getTransaction();
+            transaction.begin();
+            //String sql = "DELETE FROM ProductHasProvider php WHERE php.product.id=" + productId;
+            StringBuilder sqlBuilder = new StringBuilder("DELETE FROM ProductHasProvider php WHERE php.product.id=?1");
+            Query query = createQuery(sqlBuilder.toString());
+            query.setParameter("1", productId);
+            query.executeUpdate();
+            transaction.commit();
+        } catch (Exception e) {
+            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), e.getMessage()), null);
+        }
+    }
+
+    public Product saveProduct(EJBRequest request) throws GeneralException, NullParameterException {
+        return (Product) saveEntity(request, logger, getMethodName());
+    }
+    
+    //promotion
+    public void deletePromotionTypeHasPromotion(EJBRequest request) throws NullParameterException, GeneralException {
+        Object param = request.getParam();
+        if (param == null || !(param instanceof Long)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "promotionId"), null);
+        }
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("promotionId", (Long) param);
+        try {
+            //executeNameQuery(PromotionTypeHasPromotion.class, QueryConstants.DELETE_PROMOTION_TYPE_HAS_PROMOTION, map, getMethodName(), logger, "PromotionTypeHasPromotion", null, null);
+        } catch (Exception e) {
+            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), e.getMessage()), null);
+        }
+    }
+
+    //provider
+    public Provider deleteProvider(EJBRequest request) throws GeneralException, NullParameterException {
+        return null;
+    }
+    
     public List<Provider> getProviders(EJBRequest request) throws GeneralException, EmptyListException, NullParameterException {
 
         return (List<Provider>) listEntities(Provider.class, request, logger, getMethodName());
     }
-
+    
     public List<Provider> getSMSProviders(EJBRequest request) throws GeneralException, EmptyListException, NullParameterException {
 
         List<Provider> providers = null;
@@ -163,7 +196,23 @@ public class ProductEJBImp extends AbstractWalletEJB implements ProductEJB, Prod
         }
         return providers;
     }
+    
+    public Provider loadProvider(EJBRequest request) throws GeneralException, RegisterNotFoundException, NullParameterException {
 
+        return (Provider) loadEntity(Provider.class, request, logger, getMethodName());
+    }
+    
+     public Provider saveProvider(EJBRequest request) throws GeneralException, NullParameterException {
+
+        return (Provider) saveEntity(request, logger, getMethodName());
+    }
+
+    //PinFree
+    public Boolean deletePinFree(EJBRequest request) throws GeneralException, NullParameterException {
+        return (Boolean) removeEntity(request, logger, getMethodName());
+    }
+
+    //
     public Float getPercentDiscount(Long levelId, Long productId) throws GeneralException, NullParameterException {
         if (levelId == null) {
             throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "levelId"), null);
@@ -183,72 +232,14 @@ public class ProductEJBImp extends AbstractWalletEJB implements ProductEJB, Prod
         }
         return discount;
     }
-
-    public Category loadCategory(EJBRequest request) throws GeneralException, RegisterNotFoundException, NullParameterException {
-
-        return (Category) loadEntity(Category.class, request, logger, getMethodName());
-    }
-
-   
-    public Product loadProduct(EJBRequest request) throws GeneralException, RegisterNotFoundException, NullParameterException {
-        return (Product) loadEntity(Product.class, request, logger, getMethodName());
-    }
-
-    public Product loadProductById(Long productId) throws GeneralException, RegisterNotFoundException, NullParameterException {
-        if (productId == null) {
-            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "productId"), null);
-        }
-        Product product = new Product();
-        try {
-            Query query = createQuery("SELECT p FROM Product p WHERE p.id = ?1");
-            query.setParameter("1", productId);
-            product = (Product) query.getSingleResult();
-        } catch (Exception ex) {
-            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), ex.getMessage()), null);
-        }
-        if (product == null) {
-            throw new RegisterNotFoundException(logger, sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName()), null);
-        }
-        return product;
-    }
-
     
-    public Provider loadProvider(EJBRequest request) throws GeneralException, RegisterNotFoundException, NullParameterException {
-
-        return (Provider) loadEntity(Provider.class, request, logger, getMethodName());
-    }
-
-    public Category saveCategory(EJBRequest request) throws GeneralException, NullParameterException {
-        return (Category) saveEntity(request, logger, getMethodName());
-    }
-
-    public Product saveProduct(EJBRequest request) throws GeneralException, NullParameterException {
-
-        return (Product) saveEntity(request, logger, getMethodName());
-    }
-
+    //ProductData
     public ProductData saveProductData(EJBRequest request) throws GeneralException, NullParameterException {
         return (ProductData) saveEntity(request, logger, getMethodName());
     }
-
-
-    public Provider saveProvider(EJBRequest request) throws GeneralException, NullParameterException {
-
-        return (Provider) saveEntity(request, logger, getMethodName());
-    }
-
+   
+    //Period
     public List<Period> getPeriods(EJBRequest request) throws GeneralException, EmptyListException, NullParameterException {
-
         return (List<Period>) listEntities(Period.class, request, logger, getMethodName());
-
     }
-
-   
-   
-    public List<Product> getProducts(EJBRequest request) throws GeneralException, EmptyListException, NullParameterException {
-
-        return (List<Product>) listEntities(Product.class, request, logger, getMethodName());
-    }
-
-
   }

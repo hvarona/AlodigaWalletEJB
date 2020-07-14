@@ -27,6 +27,7 @@ import com.alodiga.wallet.common.model.Country;
 import com.alodiga.wallet.common.model.County;
 import com.alodiga.wallet.common.model.Currency;
 import com.alodiga.wallet.common.model.Enterprise;
+import com.alodiga.wallet.common.model.ExchangeRate;
 import com.alodiga.wallet.common.model.Language;
 import com.alodiga.wallet.common.model.Period;
 import com.alodiga.wallet.common.model.Sms;
@@ -361,5 +362,21 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         }
         return (Bank) saveEntity(bank);
     }
+    
+    //ExchangeRate
+    public List<ExchangeRate> getExchangeRate(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException{
+        return (List<ExchangeRate>) listEntities(ExchangeRate.class, request, logger, getMethodName());
+    }
 
+    public ExchangeRate loadExchangeRate(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException{
+        ExchangeRate exchangeRate = (ExchangeRate) loadEntity(ExchangeRate.class, request, logger, getMethodName());
+        return exchangeRate;
+    }
+    
+    public ExchangeRate saveExchangeRate(ExchangeRate exchangeRate) throws RegisterNotFoundException, NullParameterException, GeneralException{
+        if (exchangeRate == null) {
+            throw new NullParameterException("exchangeRate", null);
+        }
+        return (ExchangeRate) saveEntity(exchangeRate);
+    }
 }
