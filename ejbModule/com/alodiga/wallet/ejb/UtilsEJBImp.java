@@ -184,9 +184,9 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         return country;
     }
 
-    public Country saveCountry(Country country) throws NullParameterException, GeneralException {
+    public Country saveCountry(Country country) throws RegisterNotFoundException, NullParameterException, GeneralException{
         if (country == null) {
-            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "country"), null);
+            throw new NullParameterException("country", null);
         }
         return (Country) saveEntity(country);
     }
