@@ -23,6 +23,7 @@ import com.alodiga.wallet.common.genericEJB.WalletContextInterceptor;
 import com.alodiga.wallet.common.genericEJB.WalletLoggerInterceptor;
 import com.alodiga.wallet.common.model.Bank;
 import com.alodiga.wallet.common.model.City;
+import com.alodiga.wallet.common.model.Close;
 import com.alodiga.wallet.common.model.Country;
 import com.alodiga.wallet.common.model.County;
 import com.alodiga.wallet.common.model.Currency;
@@ -32,8 +33,12 @@ import com.alodiga.wallet.common.model.Language;
 import com.alodiga.wallet.common.model.Period;
 import com.alodiga.wallet.common.model.Sms;
 import com.alodiga.wallet.common.model.State;
+import com.alodiga.wallet.common.model.Transaction;
 import com.alodiga.wallet.common.utils.EjbConstants;
+import com.alodiga.wallet.common.utils.GeneralUtils;
 import com.alodiga.wallet.common.utils.QueryConstants;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 @Interceptors({WalletLoggerInterceptor.class, WalletContextInterceptor.class})
 @Stateless(name = EjbConstants.UTILS_EJB, mappedName = EjbConstants.UTILS_EJB)
@@ -184,7 +189,7 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         return country;
     }
 
-    public Country saveCountry(Country country) throws RegisterNotFoundException, NullParameterException, GeneralException{
+    public Country saveCountry(Country country) throws RegisterNotFoundException, NullParameterException, GeneralException {
         if (country == null) {
             throw new NullParameterException("country", null);
         }
@@ -305,7 +310,7 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
 
         return currencies;
     }
-    
+
     @Override
     public List<Currency> getSearchCurrency(String name) throws EmptyListException, GeneralException, NullParameterException {
         List<Currency> currencyList = null;
@@ -315,7 +320,7 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         try {
             StringBuilder sqlBuilder = new StringBuilder("SELECT * FROM currency c ");
             sqlBuilder.append("WHERE c.name LIKE '%").append(name).append("%'");
-            Query query = entityManager.createNativeQuery(sqlBuilder.toString(),Currency.class);
+            Query query = entityManager.createNativeQuery(sqlBuilder.toString(), Currency.class);
             currencyList = query.setHint("toplink.refresh", "true").getResultList();
 
         } catch (NoResultException ex) {
@@ -326,11 +331,13 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         return currencyList;
     }
 
+    @Override
     public Currency loadCurrency(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
         Currency currency = (Currency) loadEntity(Currency.class, request, logger, getMethodName());
         return currency;
     }
 
+    @Override
     public Currency saveCurrency(Currency currency) throws RegisterNotFoundException, NullParameterException, GeneralException {
         if (currency == null) {
             throw new NullParameterException("currency", null);
@@ -362,21 +369,119 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         }
         return (Bank) saveEntity(bank);
     }
-    
+
     //ExchangeRate
-    public List<ExchangeRate> getExchangeRate(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException{
+    public List<ExchangeRate> getExchangeRate(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
         return (List<ExchangeRate>) listEntities(ExchangeRate.class, request, logger, getMethodName());
     }
 
-    public ExchangeRate loadExchangeRate(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException{
+    @Override
+    public ExchangeRate loadExchangeRate(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
         ExchangeRate exchangeRate = (ExchangeRate) loadEntity(ExchangeRate.class, request, logger, getMethodName());
         return exchangeRate;
     }
-    
-    public ExchangeRate saveExchangeRate(ExchangeRate exchangeRate) throws RegisterNotFoundException, NullParameterException, GeneralException{
+
+    @Override
+    public ExchangeRate saveExchangeRate(ExchangeRate exchangeRate) throws RegisterNotFoundException, NullParameterException, GeneralException {
         if (exchangeRate == null) {
             throw new NullParameterException("exchangeRate", null);
         }
         return (ExchangeRate) saveEntity(exchangeRate);
+    }
+
+    //Transaction
+    @Override
+    public List<Transaction> getTransaction(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        List<Transaction> transactions = (List<Transaction>) listEntities(Transaction.class, request, logger, getMethodName());
+        return transactions;
+    }
+    
+    public List<Transaction> getTransactionByDates(Date beginningDate, Date endingDate) throws RegisterNotFoundException, NullParameterException, GeneralException, EmptyListException {
+        List<Transaction> transactionsList = new ArrayList<Transaction>();
+        
+        try {
+            String pattern = "yyyy-MM-dd";
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
+            
+            if (beginningDate == null || endingDate == null) {
+                throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "beginningDate & endingDate"), null);
+            }
+            
+            String strDate1 = (simpleDateFormat.format(beginningDate));
+            String strDate2 = (simpleDateFormat.format(endingDate));
+            
+            StringBuilder sqlBuilder = new StringBuilder("select * from transaction t where t.creationDate BETWEEN '");
+            sqlBuilder.append(strDate1);
+            sqlBuilder.append("' AND '");
+            sqlBuilder.append(strDate2);
+            sqlBuilder.append("'");
+            Query query = entityManager.createNativeQuery(sqlBuilder.toString(), Transaction.class);
+            transactionsList = (List<Transaction>) query.setHint("toplink.refresh", "true").getResultList();
+
+        } catch (Exception e) {
+            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), e.getMessage()), null);
+        }
+        if (transactionsList.isEmpty()) {
+            throw new EmptyListException(logger, sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName()), null);
+        }
+        return transactionsList;
+    }
+ 
+    public List<Transaction> getTransactionByBeginningDate(Date beginningDate) throws EmptyListException, GeneralException, NullParameterException {
+        List<Transaction> transactionsList = new ArrayList<Transaction>();
+        try {
+            String pattern = "yyyy-MM-dd";
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
+            
+            if (beginningDate == null) {
+                throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "beginningDate & endingDate"), null);
+            }
+            
+            String strDate = (simpleDateFormat.format(beginningDate));
+            
+            StringBuilder sqlBuilder = new StringBuilder("select * from transaction t where t.creationDate like '");
+            sqlBuilder.append(strDate);
+            sqlBuilder.append("%'");
+            Query query = entityManager.createNativeQuery(sqlBuilder.toString(), Transaction.class);
+            transactionsList = (List<Transaction>) query.setHint("toplink.refresh", "true").getResultList();
+
+        } catch (Exception e) {
+            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), e.getMessage()), null);
+        }
+        if (transactionsList.isEmpty()) {
+            throw new EmptyListException(logger, sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName()), null);
+        }
+        return transactionsList;
+    }
+    
+    @Override
+    public Transaction loadTransaction(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
+        Transaction transaction = (Transaction) loadEntity(Transaction.class, request, logger, getMethodName());
+        return transaction;
+    }
+
+    @Override
+    public Transaction saveTransaction(Transaction transaction) throws RegisterNotFoundException, NullParameterException, GeneralException {
+        if (transaction == null) {
+            throw new NullParameterException("transaction", null);
+        }
+        return (Transaction) saveEntity(transaction);
+    }
+
+    //Close
+    public List<Close> getClose(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        return (List<Close>) listEntities(Close.class, request, logger, getMethodName());
+    }
+
+    public Close loadClose(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
+        Close close = (Close) loadEntity(Close.class, request, logger, getMethodName());
+        return close;
+    }
+
+    public Close saveClose(Close close) throws RegisterNotFoundException, NullParameterException, GeneralException {
+        if (close == null) {
+            throw new NullParameterException("close", null);
+        }
+        return (Close) saveEntity(close);
     }
 }
