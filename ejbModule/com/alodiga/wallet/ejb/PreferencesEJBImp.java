@@ -1,8 +1,6 @@
 package com.alodiga.wallet.ejb;
 
-import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,6 +9,7 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
 import javax.interceptor.Interceptors;
+import javax.persistence.EntityTransaction;
 import javax.persistence.Query;
 
 import org.apache.log4j.Logger;
@@ -30,6 +29,7 @@ import com.alodiga.wallet.common.model.PreferenceControl;
 import com.alodiga.wallet.common.model.PreferenceField;
 import com.alodiga.wallet.common.model.PreferenceType;
 import com.alodiga.wallet.common.model.PreferenceValue;
+import com.alodiga.wallet.common.model.TransactionType;
 import com.alodiga.wallet.common.utils.EjbConstants;
 
 @Interceptors({WalletLoggerInterceptor.class, WalletContextInterceptor.class})
@@ -126,7 +126,7 @@ public class PreferencesEJBImp extends AbstractWalletEJB implements PreferencesE
         try {
             Query query = null;
 
-            query = createQuery("SELECT p FROM PreferenceValue p WHERE p.preferenceFieldId.id=?1 and p.preferenceClassficationId.id= ?2 and p.productId is null and p.transactionTypeId is null and p.preferenceValueParentId is null");
+            query = createQuery("SELECT p FROM PreferenceValue p WHERE p.preferenceFieldId.id=?1 and p.preferenceClassficationId.id= ?2 and p.productId is null and p.transactionTypeId is null and p.preferenceValueParentId is null and p.bussinessId is null");
             query.setParameter("1", fieldId);
             query.setParameter("2", classificationId);
             preferenceValue = (PreferenceValue) query.setHint("toplink.refresh", "true").getSingleResult();
@@ -185,5 +185,91 @@ public class PreferencesEJBImp extends AbstractWalletEJB implements PreferencesE
     
     public List<PreferenceClassification> getPreferenceClassifications(EJBRequest request) throws GeneralException, RegisterNotFoundException, NullParameterException, EmptyListException{
         return (List<PreferenceClassification>) listEntities(PreferenceClassification.class, request, logger, getMethodName());
+    }
+    
+    public List<PreferenceValue> getPreferenceValuesGroupByBussinessId(EJBRequest request) throws GeneralException, NullParameterException, EmptyListException{
+    	 List<PreferenceValue> preferenceValues = new ArrayList<PreferenceValue>();
+         Query query = null;
+         try {
+             query = createQuery("SELECT p FROM PreferenceValue p WHERE p.bussinessId is not null GROUP BY p.productId.id,p.transactionTypeId.id, p.preferenceClassficationId.id,p.bussinessId");
+             if (request.getLimit() != null && request.getLimit() > 0) {
+                 query.setMaxResults(request.getLimit());
+             }
+             preferenceValues = query.setHint("toplink.refresh", "true").getResultList();
+
+         } catch (Exception e) {
+             throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), e.getMessage()), null);
+         }
+         if (preferenceValues.isEmpty()) {
+             throw new EmptyListException(logger, sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName()), null);
+         }
+         return preferenceValues;
+    }
+    
+
+    public List<TransactionType> getTransactionTypes(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        return (List<TransactionType>) listEntities(TransactionType.class, request, logger, getMethodName());
+    }
+    
+    public List<PreferenceValue> getPreferenceValuesByParam(Long classificationId, Long productId, Long transactionTypeId, Long bussinessId) throws GeneralException, NullParameterException, EmptyListException {
+        List<PreferenceValue> preferenceValues = new ArrayList<PreferenceValue>();
+
+        Query query = null;
+        try {
+            query = createQuery("SELECT p FROM PreferenceValue p WHERE p.preferenceClassficationId.id= ?1 AND p.productId.id= ?2 AND p.transactionTypeId.id= ?3 AND p.bussinessId= ?4");
+            query.setParameter("1", classificationId);
+            query.setParameter("2", productId);
+            query.setParameter("3", transactionTypeId);
+            query.setParameter("4", bussinessId);
+            preferenceValues = query.setHint("toplink.refresh", "true").getResultList();
+
+        } catch (Exception e) {
+            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), e.getMessage()), null);
+        }
+        if (preferenceValues.isEmpty()) {
+            throw new EmptyListException(logger, sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName()), null);
+        }
+        return preferenceValues;
+    }
+    
+    public List<PreferenceValue> getPreferenceValuesByClassificationIdAndBussinessId(Long classificationId, Long bussinessId) throws GeneralException, RegisterNotFoundException, NullParameterException, EmptyListException {
+        List<PreferenceValue> preferenceValues = new ArrayList<PreferenceValue>();
+        Query query = null;
+        try {
+            query = createQuery("SELECT p FROM PreferenceValue p WHERE p.preferenceClassficationId.id=?1 AND p.bussinessId=?2");
+            query.setParameter("1", classificationId);
+            query.setParameter("2", bussinessId);
+            preferenceValues = query.setHint("toplink.refresh", "true").getResultList();
+
+        } catch (Exception e) {
+            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), e.getMessage()), null);
+        }
+        if (preferenceValues.isEmpty()) {
+            throw new EmptyListException(logger, sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName()), null);
+        }
+        return preferenceValues;
+    }
+    
+    public boolean validatePreferencesValues(Long classificationId,Long productId,Long transactionTypeId, Long bussinessId)throws GeneralException, NullParameterException, EmptyListException {
+    	if (bussinessId == null) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "bussinessId"), null);
+        }
+		boolean valid = false;
+		List<PreferenceValue> preferenceValues = new ArrayList<PreferenceValue>();
+		Query query = null;
+		try {
+			query = createQuery("SELECT p FROM PreferenceValue p WHERE p.preferenceClassficationId.id=?1 AND p.productId.id=?2 AND p.transactionTypeId.id=?3 AND p.bussinessId=?4");
+			query.setParameter("1", classificationId);
+			query.setParameter("2", productId);
+			query.setParameter("3", transactionTypeId);
+			query.setParameter("4", bussinessId);
+			preferenceValues = query.setHint("toplink.refresh", "true").getResultList();
+		} catch (Exception e) {
+			throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(),	getMethodName(), e.getMessage()), null);
+		}
+		if (preferenceValues.isEmpty()) {
+			valid = true;
+		}
+		return valid;
     }
 }
