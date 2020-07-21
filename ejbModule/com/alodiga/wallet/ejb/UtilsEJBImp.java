@@ -24,6 +24,7 @@ import com.alodiga.wallet.common.genericEJB.WalletLoggerInterceptor;
 import com.alodiga.wallet.common.model.Bank;
 import com.alodiga.wallet.common.model.City;
 import com.alodiga.wallet.common.model.Close;
+import com.alodiga.wallet.common.model.Commission;
 import com.alodiga.wallet.common.model.Country;
 import com.alodiga.wallet.common.model.County;
 import com.alodiga.wallet.common.model.Currency;
@@ -34,6 +35,7 @@ import com.alodiga.wallet.common.model.Period;
 import com.alodiga.wallet.common.model.Sms;
 import com.alodiga.wallet.common.model.State;
 import com.alodiga.wallet.common.model.Transaction;
+import com.alodiga.wallet.common.model.TransactionType;
 import com.alodiga.wallet.common.utils.EjbConstants;
 import com.alodiga.wallet.common.utils.GeneralUtils;
 import com.alodiga.wallet.common.utils.QueryConstants;
@@ -395,21 +397,21 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         List<Transaction> transactions = (List<Transaction>) listEntities(Transaction.class, request, logger, getMethodName());
         return transactions;
     }
-    
+
     public List<Transaction> getTransactionByDates(Date beginningDate, Date endingDate) throws RegisterNotFoundException, NullParameterException, GeneralException, EmptyListException {
         List<Transaction> transactionsList = new ArrayList<Transaction>();
-        
+
         try {
             String pattern = "yyyy-MM-dd";
             SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
-            
+
             if (beginningDate == null || endingDate == null) {
                 throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "beginningDate & endingDate"), null);
             }
-            
+
             String strDate1 = (simpleDateFormat.format(beginningDate));
             String strDate2 = (simpleDateFormat.format(endingDate));
-            
+
             StringBuilder sqlBuilder = new StringBuilder("select * from transaction t where t.creationDate BETWEEN '");
             sqlBuilder.append(strDate1);
             sqlBuilder.append("' AND '");
@@ -426,19 +428,19 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         }
         return transactionsList;
     }
- 
+
     public List<Transaction> getTransactionByBeginningDate(Date beginningDate) throws EmptyListException, GeneralException, NullParameterException {
         List<Transaction> transactionsList = new ArrayList<Transaction>();
         try {
             String pattern = "yyyy-MM-dd";
             SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
-            
+
             if (beginningDate == null) {
                 throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "beginningDate & endingDate"), null);
             }
-            
+
             String strDate = (simpleDateFormat.format(beginningDate));
-            
+
             StringBuilder sqlBuilder = new StringBuilder("select * from transaction t where t.creationDate like '");
             sqlBuilder.append(strDate);
             sqlBuilder.append("%'");
@@ -453,7 +455,7 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         }
         return transactionsList;
     }
-    
+
     @Override
     public Transaction loadTransaction(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
         Transaction transaction = (Transaction) loadEntity(Transaction.class, request, logger, getMethodName());
@@ -483,5 +485,39 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
             throw new NullParameterException("close", null);
         }
         return (Close) saveEntity(close);
+    }
+
+    //Commission
+    public List<Commission> getCommission(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        return (List<Commission>) listEntities(Commission.class, request, logger, getMethodName());
+    }
+
+    public Commission loadCommission(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
+        Commission commission = (Commission) loadEntity(Commission.class, request, logger, getMethodName());
+        return commission;
+    }
+
+    public Commission saveCommission(Commission commission) throws RegisterNotFoundException, NullParameterException, GeneralException {
+        if (commission == null) {
+            throw new NullParameterException("commission", null);
+        }
+        return (Commission) saveEntity(commission);
+    }
+
+    //TransactionType
+    public List<TransactionType> getTransactionType(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        return (List<TransactionType>) listEntities(TransactionType.class, request, logger, getMethodName());
+    }
+
+    public TransactionType loadTransactionType(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
+        TransactionType transactionType = (TransactionType) loadEntity(TransactionType.class, request, logger, getMethodName());
+        return transactionType;
+    }
+
+    public TransactionType saveTransactionType(TransactionType transactionType) throws RegisterNotFoundException, NullParameterException, GeneralException {
+        if (transactionType == null) {
+            throw new NullParameterException("transactionType", null);
+        }
+        return (TransactionType) saveEntity(transactionType);
     }
 }
