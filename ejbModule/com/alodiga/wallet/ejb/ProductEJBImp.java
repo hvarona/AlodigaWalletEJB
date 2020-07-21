@@ -20,6 +20,7 @@ import com.alodiga.wallet.common.genericEJB.AbstractWalletEJB;
 import com.alodiga.wallet.common.genericEJB.EJBRequest;
 import com.alodiga.wallet.common.genericEJB.WalletContextInterceptor;
 import com.alodiga.wallet.common.genericEJB.WalletLoggerInterceptor;
+import com.alodiga.wallet.common.model.BankHasProduct;
 import com.alodiga.wallet.common.model.Category;
 import com.alodiga.wallet.common.model.Period;
 import com.alodiga.wallet.common.model.Product;
@@ -28,6 +29,8 @@ import com.alodiga.wallet.common.model.ProductIntegrationType;
 import com.alodiga.wallet.common.model.Provider;
 import com.alodiga.wallet.common.utils.EjbConstants;
 import com.alodiga.wallet.common.utils.QueryConstants;
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
 
 @Interceptors({WalletLoggerInterceptor.class, WalletContextInterceptor.class})
 @Stateless(name = EjbConstants.PRODUCT_EJB, mappedName = EjbConstants.PRODUCT_EJB)
@@ -248,4 +251,53 @@ public class ProductEJBImp extends AbstractWalletEJB implements ProductEJB, Prod
     public List<ProductIntegrationType> getProductIntegrationType(EJBRequest request) throws GeneralException, EmptyListException, NullParameterException {
         return (List<ProductIntegrationType>) listEntities(ProductIntegrationType.class, request, logger, getMethodName());
     }
-  }
+
+    //BankHasProduct
+    @Override
+    public List<BankHasProduct> getBankHasProduct(EJBRequest request) throws GeneralException, EmptyListException, NullParameterException {
+        return (List<BankHasProduct>) listEntities(BankHasProduct.class, request, logger, getMethodName());
+    }
+
+    @Override
+    public BankHasProduct saveBankHasProduct(BankHasProduct bankHasProduct) throws GeneralException, NullParameterException {
+        BankHasProduct _bankHasProduct = null;
+        if (bankHasProduct == null) {
+            throw new NullParameterException("bankHasProduct", null);
+        }
+        try {
+          _bankHasProduct  = (BankHasProduct) saveEntity(bankHasProduct, logger, getMethodName());
+        } catch(ConstraintViolationException ex){
+        for (ConstraintViolation actual : ex.getConstraintViolations()) {
+            System.out.println(actual.toString());
+        }
+        
+        }catch(Exception e){
+        e.getCause();
+        e.getLocalizedMessage();
+        e.getMessage();
+        }
+        return _bankHasProduct;
+    }
+
+    @Override
+    public List<BankHasProduct> getBankHasProductByID(BankHasProduct bankHasProduct) throws GeneralException, EmptyListException, NullParameterException {
+        List<BankHasProduct> bankHasProductList= null; 
+        try {
+            if (bankHasProduct == null) {
+                throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "bankHasProduct"), null);
+            }      //To change body of generated methods, choose Tools | Templates.
+            
+            StringBuilder sqlBuilder = new StringBuilder("SELECT * FROM bank_has_product where productId=");
+            sqlBuilder.append(bankHasProduct.getProductId().getId());
+            sqlBuilder.append(" and bankId=");
+            sqlBuilder.append(bankHasProduct.getBankId().getId());
+            Query query = entityManager.createNativeQuery(sqlBuilder.toString(), Product.class);
+            bankHasProductList = (List<BankHasProduct>) query.setHint("toplink.refresh", "true").getResultList();
+            
+        } catch (Exception ex) {
+            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), ex.getMessage()), ex);
+        }
+        return bankHasProductList;
+    }
+
+}
