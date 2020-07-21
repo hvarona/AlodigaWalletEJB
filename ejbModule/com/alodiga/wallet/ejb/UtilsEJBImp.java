@@ -491,6 +491,16 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
     public List<Commission> getCommission(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
         return (List<Commission>) listEntities(Commission.class, request, logger, getMethodName());
     }
+    
+    public List<Commission> getCommissionByProduct(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        List<Commission> commissionByProductList = null;
+        Map<String, Object> params = request.getParams();
+        if (!params.containsKey(EjbConstants.PARAM_PRODUCT_ID)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_PRODUCT_ID), null);
+        }
+        commissionByProductList = (List<Commission>) getNamedQueryResult(Commission.class, QueryConstants.COMMISSION_BY_PRODUCT, request, getMethodName(), logger, "commissionByProductList");
+        return commissionByProductList;
+    }
 
     public Commission loadCommission(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
         Commission commission = (Commission) loadEntity(Commission.class, request, logger, getMethodName());
