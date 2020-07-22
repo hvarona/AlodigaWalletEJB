@@ -77,7 +77,10 @@
     <class>com.alodiga.wallet.common.model.ValidationCollection</class>
     <class>com.alodiga.wallet.common.model.PreferenceFieldData</class>
     <class>com.alodiga.wallet.common.model.PreferenceClassification</class>
-    
+    <class>com.alodiga.wallet.common.model.CollectionsRequest</class>
+    <class>com.alodiga.wallet.common.model.PersonType</class>
+    <class>com.alodiga.wallet.common.model.CollectionType</class>
+    <class>com.alodiga.wallet.common.model.DocumentsPersonType</class>
     <exclude-unlisted-classes>true</exclude-unlisted-classes>
     <properties>
       <property name="eclipselink.logging.timestamp" value="true"/>
