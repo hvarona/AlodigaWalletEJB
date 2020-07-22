@@ -255,27 +255,34 @@ public class ProductEJBImp extends AbstractWalletEJB implements ProductEJB, Prod
     //BankHasProduct
     @Override
     public List<BankHasProduct> getBankHasProduct(EJBRequest request) throws GeneralException, EmptyListException, NullParameterException {
-        return (List<BankHasProduct>) listEntities(BankHasProduct.class, request, logger, getMethodName());
-    }
+        List<BankHasProduct> bankHasProductList= null;
+        Product product = (Product)request.getParam();
+        try {
+            if (product == null) {
+                throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "product"), null);
+            }      //To change body of generated methods, choose Tools | Templates.
+            
+            StringBuilder sqlBuilder = new StringBuilder("SELECT * FROM bank_has_product where productId=");
+            sqlBuilder.append(product.getId());
+            Query query = entityManager.createNativeQuery(sqlBuilder.toString(), BankHasProduct.class);
+            bankHasProductList = (List<BankHasProduct>) query.setHint("toplink.refresh", "true").getResultList();
+            
+        } catch (Exception ex) {
+            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), ex.getMessage()), ex);
+        }
+        return bankHasProductList;    }
 
     @Override
-    public BankHasProduct saveBankHasProduct(BankHasProduct bankHasProduct) throws GeneralException, NullParameterException {
+    public BankHasProduct saveBankHasProduct(BankHasProduct bankHasProduct) throws RegisterNotFoundException, NullParameterException, GeneralException {
         BankHasProduct _bankHasProduct = null;
         if (bankHasProduct == null) {
             throw new NullParameterException("bankHasProduct", null);
         }
-        try {
-          _bankHasProduct  = (BankHasProduct) saveEntity(bankHasProduct, logger, getMethodName());
-        } catch(ConstraintViolationException ex){
-        for (ConstraintViolation actual : ex.getConstraintViolations()) {
-            System.out.println(actual.toString());
-        }
         
-        }catch(Exception e){
-        e.getCause();
-        e.getLocalizedMessage();
-        e.getMessage();
-        }
+          _bankHasProduct  = (BankHasProduct) saveEntity(bankHasProduct, logger, getMethodName());
+       
+        
+       
         return _bankHasProduct;
     }
 
@@ -291,7 +298,7 @@ public class ProductEJBImp extends AbstractWalletEJB implements ProductEJB, Prod
             sqlBuilder.append(bankHasProduct.getProductId().getId());
             sqlBuilder.append(" and bankId=");
             sqlBuilder.append(bankHasProduct.getBankId().getId());
-            Query query = entityManager.createNativeQuery(sqlBuilder.toString(), Product.class);
+            Query query = entityManager.createNativeQuery(sqlBuilder.toString(), BankHasProduct.class);
             bankHasProductList = (List<BankHasProduct>) query.setHint("toplink.refresh", "true").getResultList();
             
         } catch (Exception ex) {
