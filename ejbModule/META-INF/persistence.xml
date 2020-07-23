@@ -81,6 +81,8 @@
     <class>com.alodiga.wallet.common.model.PersonType</class>
     <class>com.alodiga.wallet.common.model.CollectionType</class>
     <class>com.alodiga.wallet.common.model.DocumentsPersonType</class>
+    <class>com.alodiga.wallet.common.model.BusinessCategory</class>
+    <class>com.alodiga.wallet.common.model.BusinessSubCategory</class>
     <exclude-unlisted-classes>true</exclude-unlisted-classes>
     <properties>
       <property name="eclipselink.logging.timestamp" value="true"/>
