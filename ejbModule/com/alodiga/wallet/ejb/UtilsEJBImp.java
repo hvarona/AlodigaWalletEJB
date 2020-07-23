@@ -27,6 +27,7 @@ import com.alodiga.wallet.common.model.BankOperationMode;
 import com.alodiga.wallet.common.model.BankOperationType;
 import com.alodiga.wallet.common.model.City;
 import com.alodiga.wallet.common.model.Close;
+import com.alodiga.wallet.common.model.CollectionType;
 import com.alodiga.wallet.common.model.Commission;
 import com.alodiga.wallet.common.model.CommissionItem;
 import com.alodiga.wallet.common.model.Country;
@@ -609,4 +610,70 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         }
         return commissionItems;
     }
+
+ //CollectionType
+    public List<CollectionType> getCollectionType(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        //List<CollectionType> collectionType = (List<CollectionType>) listEntities(CollectionType.class, request, logger, getMethodName());
+        //return collectionType;
+        
+        return (List<CollectionType>) listEntities(CollectionType.class, request, logger, getMethodName());
+
+    }
+
+    public List<CollectionType> getCollectionTypeByCountry(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        List<CollectionType> collectionTypeByCountry = null;
+        collectionTypeByCountry = (List<CollectionType>) getNamedQueryResult(UtilsEJB.class, QueryConstants.COLLECTION_TYPE_BY_COUNTRY, request, getMethodName(), logger, "collectionTypeByCountry");
+        return collectionTypeByCountry;
+    }
+
+    public CollectionType loadCollectionType(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
+        CollectionType collectionType = (CollectionType) loadEntity(CollectionType.class, request, logger, getMethodName());
+        return collectionType;
+    }
+
+    public CollectionType saveCollectionType(CollectionType collectionType) throws NullParameterException, GeneralException {
+        if (collectionType == null) {
+            throw new NullParameterException("collectionType", null);
+        }
+        return (CollectionType) saveEntity(collectionType);
+    }
+    
+    
+    public CollectionType searchCollectionType(String description) throws RegisterNotFoundException, NullParameterException, GeneralException {
+        CollectionType collectionType = new CollectionType();
+        try {
+            if (description == null) {
+                throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "description"), null);
+            }
+            StringBuilder sqlBuilder = new StringBuilder("SELECT DISTINCT c FROM CollectionType c ");
+            sqlBuilder.append("WHERE c.description LIKE '").append(description).append("'");
+            collectionType = (CollectionType) createQuery(sqlBuilder.toString()).setHint("toplink.refresh", "true").getSingleResult();
+
+        } catch (NoResultException ex) {
+            throw new RegisterNotFoundException(logger, sysError.format(EjbConstants.ERR_REGISTER_NOT_FOUND_EXCEPTION, CollectionType.class.getSimpleName(), "loadCollectionTypeByDescription", CollectionType.class.getSimpleName(), null), ex);
+        } catch (Exception ex) {
+            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), ex.getMessage()), ex);
+        }
+        return collectionType;
+    }
+
+    public List<CollectionType> getSearchCollectionType(String name) throws EmptyListException, GeneralException, NullParameterException {
+        List<CollectionType> collectionTypeList = null;
+        if (name == null) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "name"), null);
+        }
+        try {
+            StringBuilder sqlBuilder = new StringBuilder("SELECT * FROM collectionType c ");
+            sqlBuilder.append("WHERE c.description LIKE '%").append(name).append("%'");
+            Query query = entityManager.createNativeQuery(sqlBuilder.toString(), CollectionType.class);
+            collectionTypeList = query.setHint("toplink.refresh", "true").getResultList();
+
+        } catch (NoResultException ex) {
+            throw new EmptyListException("No distributions found");
+        } catch (Exception e) {
+            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), e.getMessage()), null);
+        }
+        return collectionTypeList;
+    }
+
 }
