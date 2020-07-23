@@ -22,6 +22,9 @@ import com.alodiga.wallet.common.genericEJB.EJBRequest;
 import com.alodiga.wallet.common.genericEJB.WalletContextInterceptor;
 import com.alodiga.wallet.common.genericEJB.WalletLoggerInterceptor;
 import com.alodiga.wallet.common.model.Bank;
+import com.alodiga.wallet.common.model.BankOperation;
+import com.alodiga.wallet.common.model.BankOperationMode;
+import com.alodiga.wallet.common.model.BankOperationType;
 import com.alodiga.wallet.common.model.City;
 import com.alodiga.wallet.common.model.Close;
 import com.alodiga.wallet.common.model.Country;
@@ -35,6 +38,7 @@ import com.alodiga.wallet.common.model.Sms;
 import com.alodiga.wallet.common.model.State;
 import com.alodiga.wallet.common.model.Transaction;
 import com.alodiga.wallet.common.utils.EjbConstants;
+import com.alodiga.wallet.common.utils.EjbUtils;
 import com.alodiga.wallet.common.utils.GeneralUtils;
 import com.alodiga.wallet.common.utils.QueryConstants;
 import java.text.SimpleDateFormat;
@@ -483,5 +487,63 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
             throw new NullParameterException("close", null);
         }
         return (Close) saveEntity(close);
+    }
+    
+    public List<BankOperation> getBankOperationsByParams(EJBRequest request) throws NullParameterException, GeneralException, EmptyListException {
+        List<BankOperation> operations = new ArrayList<BankOperation>();
+        
+        Map<String, Object> params = request.getParams();
+
+        StringBuilder sqlBuilder = new StringBuilder("SELECT o FROM BankOperation o WHERE o.transactionId.creationDate BETWEEN ?1 AND ?2");
+        if (!params.containsKey(QueryConstants.PARAM_BEGINNING_DATE) || !params.containsKey(QueryConstants.PARAM_ENDING_DATE)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "beginningDate & endingDate"), null);
+        }
+        if (params.containsKey(QueryConstants.PARAM_BANK_OPERATION_TYPE_ID)) {
+            sqlBuilder.append(" AND o.bankOperationTypeId.id=").append(params.get(QueryConstants.PARAM_BANK_OPERATION_TYPE_ID));
+        }
+        if (params.containsKey(QueryConstants.PARAM_BANK_OPERATION_MODE_ID)) {
+            sqlBuilder.append(" AND o.bankOperationTypeId.id=").append(params.get(QueryConstants.PARAM_BANK_OPERATION_MODE_ID));
+        }
+        if (params.containsKey(QueryConstants.PARAM_PRODUCT_ID)) {
+            sqlBuilder.append(" AND o.productId.id=").append(params.get(QueryConstants.PARAM_PRODUCT_ID));
+        }
+        if (params.containsKey(QueryConstants.PARAM_BANK_ID)) {
+            sqlBuilder.append(" AND o.bankId.id=").append(params.get(QueryConstants.PARAM_BANK_ID));
+        }
+        Query query = null;
+        try {
+            System.out.println("query:********"+sqlBuilder.toString());
+            query = createQuery(sqlBuilder.toString());
+            query.setParameter("1", EjbUtils.getBeginningDate((Date) params.get(QueryConstants.PARAM_BEGINNING_DATE)));
+            query.setParameter("2", EjbUtils.getEndingDate((Date) params.get(QueryConstants.PARAM_ENDING_DATE)));
+            if (request.getLimit() != null && request.getLimit() > 0) {
+                query.setMaxResults(request.getLimit());
+            }
+            operations = query.setHint("toplink.refresh", "true").getResultList();
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), e.getMessage()), null);
+        }
+        if (operations.isEmpty()) {
+            throw new EmptyListException(logger, sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName()), null);
+        }
+        return operations;
+    }
+
+	@Override
+	public List<BankOperationType> getBankOperationTypes(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+	 List<BankOperationType> operationTypes = (List<BankOperationType>) listEntities(BankOperationType.class, request, logger, getMethodName());
+    return operationTypes;
+	}
+
+	@Override
+	public List<BankOperationMode> getBankOperationModes(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+	 List<BankOperationMode> operationModes = (List<BankOperationMode>) listEntities(BankOperationMode.class, request, logger, getMethodName());
+    return operationModes;
+	}
+	
+	public List<BankOperation> getBankOperations(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException{
+        List<BankOperation> bankOperations = (List<BankOperation>) listEntities(BankOperation.class, request, logger, getMethodName());
+        return bankOperations;
     }
 }
