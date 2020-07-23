@@ -28,6 +28,7 @@ import com.alodiga.wallet.common.model.BankOperationType;
 import com.alodiga.wallet.common.model.City;
 import com.alodiga.wallet.common.model.Close;
 import com.alodiga.wallet.common.model.Commission;
+import com.alodiga.wallet.common.model.CommissionItem;
 import com.alodiga.wallet.common.model.Country;
 import com.alodiga.wallet.common.model.County;
 import com.alodiga.wallet.common.model.Currency;
@@ -591,5 +592,21 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
             throw new NullParameterException("transactionType", null);
         }
         return (TransactionType) saveEntity(transactionType);
+    }
+    
+    public List<CommissionItem> getCommissionItems(Long transactionId) throws EmptyListException, GeneralException, NullParameterException {
+        List<CommissionItem> commissionItems = null;
+        if (transactionId == null) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "transactionId"), null);
+        }
+        try {
+        	commissionItems = entityManager.createQuery("SELECT c FROM CommissionItem c WHERE c.transactionId.id='" + transactionId + "'").setHint("toplink.refresh", "true").getResultList();
+        } catch (Exception e) {
+            throw new GeneralException("Exception in method loadEnterprise: Exception text: " + e.getMessage(), e.getStackTrace());
+        }
+        if (commissionItems.isEmpty()) {
+        	  throw new EmptyListException(logger, sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName()), null);
+        }
+        return commissionItems;
     }
 }
