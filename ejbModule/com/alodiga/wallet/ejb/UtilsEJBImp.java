@@ -615,7 +615,7 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
     }
 
     public CollectionType saveCollectionType(CollectionType collectionType) throws NullParameterException, GeneralException {
-        if (collectionType == null) {
+           if (collectionType == null) {
             throw new NullParameterException("collectionType", null);
         }
         return (CollectionType) saveEntity(collectionType);
