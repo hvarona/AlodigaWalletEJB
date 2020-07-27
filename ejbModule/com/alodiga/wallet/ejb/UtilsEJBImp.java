@@ -25,10 +25,13 @@ import com.alodiga.wallet.common.model.Bank;
 import com.alodiga.wallet.common.model.BankOperation;
 import com.alodiga.wallet.common.model.BankOperationMode;
 import com.alodiga.wallet.common.model.BankOperationType;
+import com.alodiga.wallet.common.model.BusinessCategory;
+import com.alodiga.wallet.common.model.BusinessSubCategory;
 import com.alodiga.wallet.common.model.City;
 import com.alodiga.wallet.common.model.Close;
 import com.alodiga.wallet.common.model.CollectionType;
 import com.alodiga.wallet.common.model.Commission;
+import com.alodiga.wallet.common.model.CommissionItem;
 import com.alodiga.wallet.common.model.Country;
 import com.alodiga.wallet.common.model.County;
 import com.alodiga.wallet.common.model.Currency;
@@ -593,6 +596,22 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         }
         return (TransactionType) saveEntity(transactionType);
     }
+    
+    public List<CommissionItem> getCommissionItems(Long transactionId) throws EmptyListException, GeneralException, NullParameterException {
+        List<CommissionItem> commissionItems = null;
+        if (transactionId == null) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "transactionId"), null);
+        }
+        try {
+        	commissionItems = entityManager.createQuery("SELECT c FROM CommissionItem c WHERE c.transactionId.id='" + transactionId + "'").setHint("toplink.refresh", "true").getResultList();
+        } catch (Exception e) {
+            throw new GeneralException("Exception in method loadEnterprise: Exception text: " + e.getMessage(), e.getStackTrace());
+        }
+        if (commissionItems.isEmpty()) {
+        	  throw new EmptyListException(logger, sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName()), null);
+        }
+        return commissionItems;
+    }
 
  //CollectionType
     public List<CollectionType> getCollectionType(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
@@ -659,4 +678,48 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         return collectionTypeList;
     }
 
+    
+    //BusinessCategory
+    public List<BusinessCategory> getBusinessCategory(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException{
+        return (List<BusinessCategory>) listEntities(BusinessCategory.class, request, logger, getMethodName());
+    }
+
+    public BusinessCategory loadBusinessCategory(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException{
+        BusinessCategory businessCategory = (BusinessCategory) loadEntity(BusinessCategory.class, request, logger, getMethodName());
+        return businessCategory;
+    }
+    
+    public BusinessCategory saveBusinessCategory(BusinessCategory businessCategory) throws RegisterNotFoundException, NullParameterException, GeneralException{
+        if (businessCategory == null) {
+            throw new NullParameterException("businessCategory", null);
+        }
+        return (BusinessCategory) saveEntity(businessCategory);
+    }
+    
+    //BusinessCategory
+    public List<BusinessSubCategory> getBusinessSubCategory(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException{
+        return (List<BusinessSubCategory>) listEntities(BusinessSubCategory.class, request, logger, getMethodName());
+    }
+    
+    public List<BusinessSubCategory> getBusinessSubCategoryByCategory(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        List<BusinessSubCategory> businessSubCategoryList = null;
+        Map<String, Object> params = request.getParams();
+        if (!params.containsKey(EjbConstants.PARAM_BUSINESS_CATEGORY_ID)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_BUSINESS_CATEGORY_ID), null);
+        }
+        businessSubCategoryList = (List<BusinessSubCategory>) getNamedQueryResult(BusinessSubCategory.class, QueryConstants.BUSINESS_SUB_CATEGORY_BY_CATEGORY, request, getMethodName(), logger, "businessSubCategoryList");
+        return businessSubCategoryList;
+    }
+
+    public BusinessSubCategory loadBusinessSubCategory(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException{
+        BusinessSubCategory businessSubCategory = (BusinessSubCategory) loadEntity(BusinessSubCategory.class, request, logger, getMethodName());
+        return businessSubCategory;
+    }
+    
+    public BusinessSubCategory saveBusinessSubCategory(BusinessSubCategory businessSubCategory) throws RegisterNotFoundException, NullParameterException, GeneralException{
+        if (businessSubCategory == null) {
+            throw new NullParameterException("businessSubCategory", null);
+        }
+        return (BusinessSubCategory) saveEntity(businessSubCategory);
+    }
 }
