@@ -83,6 +83,11 @@
     <class>com.alodiga.wallet.common.model.DocumentsPersonType</class>
     <class>com.alodiga.wallet.common.model.BusinessCategory</class>
     <class>com.alodiga.wallet.common.model.BusinessSubCategory</class>
+    <class>com.alodiga.wallet.common.model.AccountTypeBank</class>
+    <class>com.alodiga.wallet.common.model.TransactionApproveRequest</class>
+    <class>com.alodiga.wallet.common.model.StatusTransactionApproveRequest</class>
+    <class>com.alodiga.wallet.common.model.AccountBank</class>
+    <class>com.alodiga.wallet.common.model.StatusAccountBank</class>
     <exclude-unlisted-classes>true</exclude-unlisted-classes>
     <properties>
       <property name="eclipselink.logging.timestamp" value="true"/>
