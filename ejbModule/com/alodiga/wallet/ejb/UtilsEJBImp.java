@@ -41,7 +41,9 @@ import com.alodiga.wallet.common.model.Language;
 import com.alodiga.wallet.common.model.Period;
 import com.alodiga.wallet.common.model.Sms;
 import com.alodiga.wallet.common.model.State;
+import com.alodiga.wallet.common.model.StatusTransactionApproveRequest;
 import com.alodiga.wallet.common.model.Transaction;
+import com.alodiga.wallet.common.model.TransactionApproveRequest;
 import com.alodiga.wallet.common.model.TransactionType;
 import com.alodiga.wallet.common.utils.EjbConstants;
 import com.alodiga.wallet.common.utils.EjbUtils;
@@ -721,5 +723,59 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
             throw new NullParameterException("businessSubCategory", null);
         }
         return (BusinessSubCategory) saveEntity(businessSubCategory);
+    }
+    
+    //TransactionApproveRequest
+    public List<TransactionApproveRequest> getTransactionApproveRequest(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException{
+        return (List<TransactionApproveRequest>) listEntities(TransactionApproveRequest.class, request, logger, getMethodName());
+    }
+    
+    public List<TransactionApproveRequest> getTransactionApproveRequestByStatus(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        List<TransactionApproveRequest> transactionApproveRequestByStatusList = null;
+        Map<String, Object> params = request.getParams();
+        if (!params.containsKey(EjbConstants.PARAM_STATUS_TRANSACTION_APPROVE_REQUEST_ID)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_STATUS_TRANSACTION_APPROVE_REQUEST_ID), null);
+        }
+        transactionApproveRequestByStatusList = (List<TransactionApproveRequest>) getNamedQueryResult(TransactionApproveRequest.class, QueryConstants.TRANSACTION_APPROVE_REQUEST_BY_STATUS, request, getMethodName(), logger, "transactionApproveRequestByStatusList");
+        return transactionApproveRequestByStatusList;
+    }
+
+    public TransactionApproveRequest loadTransactionApproveRequest(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException{
+        TransactionApproveRequest transactionApproveRequest = (TransactionApproveRequest) loadEntity(TransactionApproveRequest.class, request, logger, getMethodName());
+        return transactionApproveRequest;
+    }
+
+    public TransactionApproveRequest saveTransactionApproveRequest(TransactionApproveRequest transactionApproveRequest) throws RegisterNotFoundException, NullParameterException, GeneralException{
+        if (transactionApproveRequest == null) {
+            throw new NullParameterException("transactionApproveRequest", null);
+        }
+        return (TransactionApproveRequest) saveEntity(transactionApproveRequest);
+    }
+    
+    //StatusTransactionApproveRequest
+    public List<StatusTransactionApproveRequest> getStatusTransactionApproveRequest(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException{
+        return (List<StatusTransactionApproveRequest>) listEntities(StatusTransactionApproveRequest.class, request, logger, getMethodName());
+    }
+    
+    public List<StatusTransactionApproveRequest> getStatusTransactionApproveRequestPending(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        List<StatusTransactionApproveRequest> statusTransactionApproveRequestPendingList = null;
+        Map<String, Object> params = request.getParams();
+        if (!params.containsKey(EjbConstants.PARAM_CODE)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_CODE), null);
+        }
+        statusTransactionApproveRequestPendingList = (List<StatusTransactionApproveRequest>) getNamedQueryResult(StatusTransactionApproveRequest.class, QueryConstants.CODE_BY_STATUS, request, getMethodName(), logger, "statusTransactionApproveRequestPendingList");
+        return statusTransactionApproveRequestPendingList;
+    }
+
+    public StatusTransactionApproveRequest loadStatusTransactionApproveRequest(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException{
+        StatusTransactionApproveRequest statusTransactionApproveRequest = (StatusTransactionApproveRequest) loadEntity(StatusTransactionApproveRequest.class, request, logger, getMethodName());
+        return statusTransactionApproveRequest;
+    }
+
+    public StatusTransactionApproveRequest saveStatusTransactionApproveRequest(StatusTransactionApproveRequest statusTransactionApproveRequest) throws RegisterNotFoundException, NullParameterException, GeneralException{
+        if (statusTransactionApproveRequest == null) {
+            throw new NullParameterException("statusTransactionApproveRequest", null);
+        }
+        return (StatusTransactionApproveRequest) saveEntity(statusTransactionApproveRequest);
     }
 }
