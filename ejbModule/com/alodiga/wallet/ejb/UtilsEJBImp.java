@@ -38,16 +38,22 @@ import com.alodiga.wallet.common.model.Currency;
 import com.alodiga.wallet.common.model.Enterprise;
 import com.alodiga.wallet.common.model.ExchangeRate;
 import com.alodiga.wallet.common.model.Language;
+import com.alodiga.wallet.common.model.OriginApplication;
 import com.alodiga.wallet.common.model.Period;
+import com.alodiga.wallet.common.model.Sequences;
 import com.alodiga.wallet.common.model.Sms;
 import com.alodiga.wallet.common.model.State;
+import com.alodiga.wallet.common.model.StatusTransactionApproveRequest;
 import com.alodiga.wallet.common.model.Transaction;
+import com.alodiga.wallet.common.model.TransactionApproveRequest;
 import com.alodiga.wallet.common.model.TransactionType;
+import com.alodiga.wallet.common.utils.Constants;
 import com.alodiga.wallet.common.utils.EjbConstants;
 import com.alodiga.wallet.common.utils.EjbUtils;
 import com.alodiga.wallet.common.utils.GeneralUtils;
 import com.alodiga.wallet.common.utils.QueryConstants;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 
 @Interceptors({WalletLoggerInterceptor.class, WalletContextInterceptor.class})
@@ -721,5 +727,163 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
             throw new NullParameterException("businessSubCategory", null);
         }
         return (BusinessSubCategory) saveEntity(businessSubCategory);
+    }
+    
+    //TransactionApproveRequest
+    public List<TransactionApproveRequest> getTransactionApproveRequest(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException{
+        return (List<TransactionApproveRequest>) listEntities(TransactionApproveRequest.class, request, logger, getMethodName());
+    }
+    
+    public List<TransactionApproveRequest> getTransactionApproveRequestByStatus(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        List<TransactionApproveRequest> transactionApproveRequestByStatusList = null;
+        Map<String, Object> params = request.getParams();
+        if (!params.containsKey(EjbConstants.PARAM_STATUS_TRANSACTION_APPROVE_REQUEST_ID)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_STATUS_TRANSACTION_APPROVE_REQUEST_ID), null);
+        }
+        transactionApproveRequestByStatusList = (List<TransactionApproveRequest>) getNamedQueryResult(TransactionApproveRequest.class, QueryConstants.TRANSACTION_APPROVE_REQUEST_BY_STATUS, request, getMethodName(), logger, "transactionApproveRequestByStatusList");
+        return transactionApproveRequestByStatusList;
+    }
+
+    public TransactionApproveRequest loadTransactionApproveRequest(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException{
+        TransactionApproveRequest transactionApproveRequest = (TransactionApproveRequest) loadEntity(TransactionApproveRequest.class, request, logger, getMethodName());
+        return transactionApproveRequest;
+    }
+
+    public TransactionApproveRequest saveTransactionApproveRequest(TransactionApproveRequest transactionApproveRequest) throws RegisterNotFoundException, NullParameterException, GeneralException{
+        if (transactionApproveRequest == null) {
+            throw new NullParameterException("transactionApproveRequest", null);
+        }
+        return (TransactionApproveRequest) saveEntity(transactionApproveRequest);
+    }
+    
+    //StatusTransactionApproveRequest
+    public List<StatusTransactionApproveRequest> getStatusTransactionApproveRequest(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException{
+        return (List<StatusTransactionApproveRequest>) listEntities(StatusTransactionApproveRequest.class, request, logger, getMethodName());
+    }
+    
+    public List<StatusTransactionApproveRequest> getStatusTransactionApproveRequestPending(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        List<StatusTransactionApproveRequest> statusTransactionApproveRequestPendingList = null;
+        Map<String, Object> params = request.getParams();
+        if (!params.containsKey(EjbConstants.PARAM_CODE)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_CODE), null);
+        }
+        statusTransactionApproveRequestPendingList = (List<StatusTransactionApproveRequest>) getNamedQueryResult(StatusTransactionApproveRequest.class, QueryConstants.CODE_BY_STATUS, request, getMethodName(), logger, "statusTransactionApproveRequestPendingList");
+        return statusTransactionApproveRequestPendingList;
+    }
+
+    public StatusTransactionApproveRequest loadStatusTransactionApproveRequest(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException{
+        StatusTransactionApproveRequest statusTransactionApproveRequest = (StatusTransactionApproveRequest) loadEntity(StatusTransactionApproveRequest.class, request, logger, getMethodName());
+        return statusTransactionApproveRequest;
+    }
+
+    public StatusTransactionApproveRequest saveStatusTransactionApproveRequest(StatusTransactionApproveRequest statusTransactionApproveRequest) throws RegisterNotFoundException, NullParameterException, GeneralException{
+        if (statusTransactionApproveRequest == null) {
+            throw new NullParameterException("statusTransactionApproveRequest", null);
+        }
+        return (StatusTransactionApproveRequest) saveEntity(statusTransactionApproveRequest);
+    }
+    
+    //BankOperation
+    public List<BankOperation> getBankOperation(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException{
+      return (List<BankOperation>) listEntities(BankOperation.class, request, logger, getMethodName());  
+    }
+
+    public BankOperation loadBankOperation(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException{
+        BankOperation bankOperation = (BankOperation) loadEntity(BankOperation.class, request, logger, getMethodName());
+        return bankOperation;
+    }
+
+    public BankOperation saveBankOperation(BankOperation bankOperation) throws RegisterNotFoundException, NullParameterException, GeneralException{
+        if (bankOperation == null) {
+            throw new NullParameterException("bankOperation", null);
+        }
+        return (BankOperation) saveEntity(bankOperation);
+    }
+    
+    
+    //Sequences
+    @Override
+    public List<Sequences> getSequences(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        return (List<Sequences>) listEntities(Sequences.class, request, logger, getMethodName());
+    }
+
+    @Override
+    public Sequences loadSequences(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
+        Sequences sequence = (Sequences) loadEntity(Sequences.class, request, logger, getMethodName());
+        return sequence;
+    }
+
+    @Override
+    public Sequences saveSequences(Sequences sequence) throws RegisterNotFoundException, NullParameterException, GeneralException {
+        if (sequence == null) {
+            throw new NullParameterException("sequence", null);
+        }
+        return (Sequences) saveEntity(sequence);
+    }
+
+    @Override
+    public List<Sequences> getSequencesByDocumentType(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        List<Sequences> sequence = null;
+        Map<String, Object> params = request.getParams();
+        if (!params.containsKey(EjbConstants.PARAM_DOCUMENT_TYPE_ID)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_DOCUMENT_TYPE_ID), null);
+        }
+        sequence = (List<Sequences>) getNamedQueryResult(UtilsEJB.class, QueryConstants.SEQUENCES_BY_DOCUMENT_TYPE, request, getMethodName(), logger, "sequence");
+        return sequence;
+    }
+
+    @Override
+    public String generateNumberSequence(List<Sequences> sequence, int originApplication) throws GeneralException, RegisterNotFoundException, NullParameterException {
+        int numberSequence = 0;
+        String prefixNumberSequence = "";
+        String acronym = "";
+        for (Sequences s : sequence) {
+            if (s.getOriginApplicationId().getId() == originApplication) {
+                if (s.getCurrentValue() > 1) {
+                    numberSequence = s.getCurrentValue();
+                } else {
+                    numberSequence = s.getInitialValue();
+                }
+                acronym = s.getDocumentTypeId().getAcronym();
+                s.setCurrentValue(s.getCurrentValue() + 1);
+                saveSequences(s);
+            }
+        }
+        Calendar cal = Calendar.getInstance();
+        int year = cal.get(Calendar.YEAR);
+        switch (originApplication) {
+            case Constants.ORIGIN_APPLICATION_ADMIN_ID:
+                prefixNumberSequence = "AWA-";
+                break;
+            case Constants.ORIGIN_APPLICATION_WALLET_ID:
+                prefixNumberSequence = "APP-";
+                break;
+            default:
+                break;
+        }
+        prefixNumberSequence = prefixNumberSequence.concat(acronym);
+        String suffixNumberSequence = "-";
+        suffixNumberSequence = suffixNumberSequence.concat(String.valueOf(year));
+        String numberSequenceDoc = prefixNumberSequence;
+        numberSequenceDoc = numberSequenceDoc.concat("-");
+        numberSequenceDoc = numberSequenceDoc.concat(String.valueOf(numberSequence));
+        numberSequenceDoc = numberSequenceDoc.concat(suffixNumberSequence);
+        return numberSequenceDoc;
+    }
+
+    //OriginApplication
+    @Override
+    public List<OriginApplication> getOriginApplication(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        return (List<OriginApplication>) listEntities(OriginApplication.class, request, logger, getMethodName());
+    }
+
+    @Override
+    public OriginApplication loadOriginApplication(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public OriginApplication saveOriginApplication(OriginApplication originApplication) throws RegisterNotFoundException, NullParameterException, GeneralException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }
