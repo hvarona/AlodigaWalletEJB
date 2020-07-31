@@ -1,5 +1,8 @@
 package com.alodiga.wallet.ejb;
 
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -8,29 +11,35 @@ import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
 import javax.interceptor.Interceptors;
 import javax.persistence.EntityTransaction;
+import javax.persistence.NoResultException;
 import javax.persistence.Query;
 import org.apache.log4j.Logger;
 import com.alodiga.wallet.common.ejb.ProductEJB;
 import com.alodiga.wallet.common.ejb.ProductEJBLocal;
 import com.alodiga.wallet.common.exception.EmptyListException;
 import com.alodiga.wallet.common.exception.GeneralException;
+import com.alodiga.wallet.common.exception.NegativeBalanceException;
 import com.alodiga.wallet.common.exception.NullParameterException;
 import com.alodiga.wallet.common.exception.RegisterNotFoundException;
 import com.alodiga.wallet.common.genericEJB.AbstractWalletEJB;
 import com.alodiga.wallet.common.genericEJB.EJBRequest;
 import com.alodiga.wallet.common.genericEJB.WalletContextInterceptor;
 import com.alodiga.wallet.common.genericEJB.WalletLoggerInterceptor;
+import com.alodiga.wallet.common.model.BalanceHistory;
 import com.alodiga.wallet.common.model.BankHasProduct;
 import com.alodiga.wallet.common.model.Category;
+import com.alodiga.wallet.common.model.DocumentTypeEnum;
 import com.alodiga.wallet.common.model.Period;
 import com.alodiga.wallet.common.model.Product;
 import com.alodiga.wallet.common.model.ProductData;
 import com.alodiga.wallet.common.model.ProductIntegrationType;
 import com.alodiga.wallet.common.model.Provider;
+import com.alodiga.wallet.common.model.StatusTransactionApproveRequest;
+import com.alodiga.wallet.common.model.StatusTransactionApproveRequestEnum;
+import com.alodiga.wallet.common.model.TransactionApproveRequest;
 import com.alodiga.wallet.common.utils.EjbConstants;
+import com.alodiga.wallet.common.utils.EjbUtils;
 import com.alodiga.wallet.common.utils.QueryConstants;
-import javax.validation.ConstraintViolation;
-import javax.validation.ConstraintViolationException;
 
 @Interceptors({WalletLoggerInterceptor.class, WalletContextInterceptor.class})
 @Stateless(name = EjbConstants.PRODUCT_EJB, mappedName = EjbConstants.PRODUCT_EJB)
@@ -306,5 +315,158 @@ public class ProductEJBImp extends AbstractWalletEJB implements ProductEJB, Prod
         }
         return bankHasProductList;
     }
+
+
+	@Override
+	public List<TransactionApproveRequest> getTransactionApproveRequestByParams(EJBRequest request)throws GeneralException, NullParameterException, EmptyListException {
+		  List<TransactionApproveRequest> operations = new ArrayList<TransactionApproveRequest>();
+	        
+	        Map<String, Object> params = request.getParams();
+
+	        StringBuilder sqlBuilder = new StringBuilder("SELECT t FROM TransactionApproveRequest t WHERE t.createDate BETWEEN ?1 AND ?2 and t.requestNumber like '%"+DocumentTypeEnum.MRAR.getDocumentType()+"%'");
+	        if (!params.containsKey(QueryConstants.PARAM_BEGINNING_DATE) || !params.containsKey(QueryConstants.PARAM_ENDING_DATE)) {
+	            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "beginningDate & endingDate"), null);
+	        }
+	        if (params.containsKey(QueryConstants.PARAM_STATUS_TRANSACTION_APPOVED_REQUEST)) {
+	            sqlBuilder.append(" AND t.statusTransactionApproveRequestId.id=").append(params.get(QueryConstants.PARAM_STATUS_TRANSACTION_APPOVED_REQUEST));
+	        }
+	        if (params.containsKey(QueryConstants.PARAM_PRODUCT_ID)) {
+	            sqlBuilder.append(" AND t.productId.id=").append(params.get(QueryConstants.PARAM_PRODUCT_ID));
+	        }
+	        if (params.containsKey(QueryConstants.PARAM_REQUEST_NUMBER)) {
+	            sqlBuilder.append(" AND t.requestNumber='").append(params.get(QueryConstants.PARAM_REQUEST_NUMBER)).append("'");
+	        }
+	        Query query = null;
+	        try {
+	            System.out.println("query:********"+sqlBuilder.toString());
+	            query = createQuery(sqlBuilder.toString());
+	            query.setParameter("1", EjbUtils.getBeginningDate((Date) params.get(QueryConstants.PARAM_BEGINNING_DATE)));
+	            query.setParameter("2", EjbUtils.getEndingDate((Date) params.get(QueryConstants.PARAM_ENDING_DATE)));
+	            if (request.getLimit() != null && request.getLimit() > 0) {
+	                query.setMaxResults(request.getLimit());
+	            }
+	            operations = query.setHint("toplink.refresh", "true").getResultList();
+	        } catch (Exception e) {
+	            e.printStackTrace();
+	            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), e.getMessage()), null);
+	        }
+	        if (operations.isEmpty()) {
+	            throw new EmptyListException(logger, sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName()), null);
+	        }
+	        return operations;
+	}
+
+	@Override
+	public TransactionApproveRequest loadTransactionApproveRequest(EJBRequest request)throws RegisterNotFoundException, NullParameterException, GeneralException {
+		TransactionApproveRequest transactionApproveRequest = (TransactionApproveRequest) loadEntity(TransactionApproveRequest.class, request, logger, getMethodName());
+	        return transactionApproveRequest;
+	}
+
+	@Override
+	public TransactionApproveRequest saveTransactionApproveRequest(TransactionApproveRequest transactionApproveRequest)throws RegisterNotFoundException, NullParameterException, GeneralException {
+		  if (transactionApproveRequest == null) {
+	            throw new NullParameterException("transactionApproveRequest", null);
+	      }
+	      return (TransactionApproveRequest) saveEntity(transactionApproveRequest);
+	}
+	
+	@Override
+	public List<StatusTransactionApproveRequest> getStatusTransactionApproveRequests(EJBRequest request) throws GeneralException, EmptyListException, NullParameterException {
+		 List<StatusTransactionApproveRequest> statusTransactionApproveRequests = (List<StatusTransactionApproveRequest>) listEntities(StatusTransactionApproveRequest.class, request, logger, getMethodName());
+	     return statusTransactionApproveRequests;
+	}
+	
+	@Override
+	public StatusTransactionApproveRequest loadStatusTransactionApproveRequestbyCode(EJBRequest request)throws RegisterNotFoundException, NullParameterException, GeneralException {
+		 List<StatusTransactionApproveRequest> statuses = null;
+	        Map<String, Object> params = request.getParams();
+
+	        if (!params.containsKey(QueryConstants.PARAM_CODE)) {
+	            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), QueryConstants.PARAM_CODE), null);
+	        }
+
+	        try {
+	        	statuses = (List<StatusTransactionApproveRequest>) getNamedQueryResult(StatusTransactionApproveRequest.class, "StatusTransactionApproveRequest.loadStatusTransactionApproveRequestByCode", request, getMethodName(), logger, "User");
+	        } catch (EmptyListException e) {
+	            throw new RegisterNotFoundException(logger, sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName(), "user"), null);
+	        }
+
+	        return statuses.get(0);
+	}
+	
+	@Override
+	public TransactionApproveRequest updateTransactionApproveRequest(TransactionApproveRequest transactionApproveRequest)throws RegisterNotFoundException, NullParameterException, GeneralException {
+		  if (transactionApproveRequest == null) {
+	            throw new NullParameterException("transactionApproveRequest", null);
+	      }
+		  EJBRequest request = new EJBRequest();
+		  StatusTransactionApproveRequest statusTransactionApproveRequestId = null;
+		  Map params = new HashMap<String, Object>();
+		  if(transactionApproveRequest.getIndApproveRequest()) {
+			  transactionApproveRequest.setApprovedRequestDate(new Date());
+              params.put(QueryConstants.PARAM_CODE, StatusTransactionApproveRequestEnum.APPR.getStatusTransactionApproveRequest());
+              request.setParams(params);
+              statusTransactionApproveRequestId = loadStatusTransactionApproveRequestbyCode(request);
+		      transactionApproveRequest.setStatusTransactionApproveRequestId(statusTransactionApproveRequestId);
+		      saveTransactionApproveRequest(transactionApproveRequest);
+		  } else {
+			  transactionApproveRequest.setApprovedRequestDate(new Date());
+              params.put(QueryConstants.PARAM_CODE, StatusTransactionApproveRequestEnum.REJE.getStatusTransactionApproveRequest());
+              request.setParams(params);
+              statusTransactionApproveRequestId = loadStatusTransactionApproveRequestbyCode(request);
+		      transactionApproveRequest.setStatusTransactionApproveRequestId(statusTransactionApproveRequestId);
+		      saveTransactionApproveRequest(transactionApproveRequest);
+		  }
+	      return transactionApproveRequest;
+	}
+
+	private BalanceHistory createBalanceHistory(Long userId, float transferAmount, int transferType, boolean isBalanceTranference) throws GeneralException, NullParameterException, NegativeBalanceException, RegisterNotFoundException {
+
+        BalanceHistory currentBalanceHistory = loadLastBalanceHistoryByUserId(userId);
+        float currentAmount = currentBalanceHistory != null ? currentBalanceHistory.getCurrentAmount() : 0f;
+        BalanceHistory balanceHistory = new BalanceHistory();
+        balanceHistory.setUserId(userId);
+        balanceHistory.setDate(new Timestamp(new Date().getTime()));
+        balanceHistory.setOldAmount(currentAmount);
+        float newCurrentAmount = 0.0f;
+        switch (transferType) {
+            case 1: //descontar el saldo
+                newCurrentAmount = currentAmount - transferAmount;
+                break;
+            case 2://incrementar el saldo
+                newCurrentAmount = currentAmount + transferAmount;//SUMO AL MONTO ACTUAL (EL DESTINO)
+                break;
+        }
+        if (newCurrentAmount < 0) {
+            throw new NegativeBalanceException("Current amount can not be negative");
+        }
+        balanceHistory.setCurrentAmount(newCurrentAmount);
+        return balanceHistory;
+    }
+	
+    public BalanceHistory loadLastBalanceHistoryByUserId(Long userId) throws GeneralException, RegisterNotFoundException, NullParameterException {
+        if (userId == null) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "accountId"), null);
+        }
+        BalanceHistory balanceHistory = null;
+        try {
+            Timestamp maxDate = (Timestamp) entityManager.createQuery("SELECT MAX(b.date) FROM BalanceHistory b WHERE b.userId = " + userId).getSingleResult();
+            Query query = entityManager.createQuery("SELECT b FROM BalanceHistory b WHERE b.date = :maxDate AND b.userId = " + userId);
+            query.setParameter("maxDate", maxDate);
+            
+            List result = (List) query.setHint("toplink.refresh", "true").getResultList();
+
+            if (!result.isEmpty()) {
+                balanceHistory = ((BalanceHistory) result.get(0));
+            }
+        } catch (NoResultException ex) {
+            throw new RegisterNotFoundException(logger, sysError.format(EjbConstants.ERR_REGISTER_NOT_FOUND_EXCEPTION, this.getClass(), getMethodName(), "BalanceHistory"), null);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), "BalanceHistory"), null);
+        }
+        return balanceHistory;
+    }
+  
 
 }
