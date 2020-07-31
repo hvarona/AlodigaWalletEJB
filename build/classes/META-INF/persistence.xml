@@ -66,7 +66,7 @@
     <class>com.alodiga.wallet.common.model.Profile</class>
     <class>com.alodiga.wallet.common.model.ProfileData</class>
     <class>com.alodiga.wallet.common.model.User</class>
-    <class>com.alodiga.wallet.common.model.UserHasProfileHasEnterprise</class>
+    <class>com.alodiga.wallet.common.model.UserHasProfile</class>
     <class>com.alodiga.wallet.common.model.Cumplimient</class>
     <class>com.alodiga.wallet.common.model.CumplimientStatus</class>
     <class>com.alodiga.wallet.common.model.Card</class>
@@ -75,8 +75,23 @@
     <class>com.alodiga.wallet.common.model.SmsProvider</class>
     <class>com.alodiga.wallet.common.model.UserHasCard</class>
     <class>com.alodiga.wallet.common.model.ValidationCollection</class>
-    
-    <exclude-unlisted-classes>false</exclude-unlisted-classes>
+    <class>com.alodiga.wallet.common.model.PreferenceFieldData</class>
+    <class>com.alodiga.wallet.common.model.PreferenceClassification</class>
+    <class>com.alodiga.wallet.common.model.CollectionsRequest</class>
+    <class>com.alodiga.wallet.common.model.PersonType</class>
+    <class>com.alodiga.wallet.common.model.CollectionType</class>
+    <class>com.alodiga.wallet.common.model.DocumentsPersonType</class>
+    <class>com.alodiga.wallet.common.model.BusinessCategory</class>
+    <class>com.alodiga.wallet.common.model.BusinessSubCategory</class>
+    <class>com.alodiga.wallet.common.model.AccountTypeBank</class>
+    <class>com.alodiga.wallet.common.model.TransactionApproveRequest</class>
+    <class>com.alodiga.wallet.common.model.StatusTransactionApproveRequest</class>
+    <class>com.alodiga.wallet.common.model.AccountBank</class>
+    <class>com.alodiga.wallet.common.model.StatusAccountBank</class>
+    <class>com.alodiga.wallet.common.model.DocumentType</class>
+    <class>com.alodiga.wallet.common.model.OriginApplication</class>
+    <class>com.alodiga.wallet.common.model.Sequences</class>
+    <exclude-unlisted-classes>true</exclude-unlisted-classes>
     <properties>
       <property name="eclipselink.logging.timestamp" value="true"/>
       <property name="toplink.cache.type.default" value="Full"/>
