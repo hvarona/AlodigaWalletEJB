@@ -327,8 +327,8 @@ public class ProductEJBImp extends AbstractWalletEJB implements ProductEJB, Prod
 	        if (!params.containsKey(QueryConstants.PARAM_BEGINNING_DATE) || !params.containsKey(QueryConstants.PARAM_ENDING_DATE)) {
 	            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "beginningDate & endingDate"), null);
 	        }
-	        if (params.containsKey(QueryConstants.PARAM_STATUS_TRANSACTION_APPOVED_REQUEST)) {
-	            sqlBuilder.append(" AND t.statusTransactionApproveRequestId.id=").append(params.get(QueryConstants.PARAM_STATUS_TRANSACTION_APPOVED_REQUEST));
+	        if (params.containsKey(QueryConstants.PARAM_STATUS_TRANSACTION_APPROVE_REQUEST_ID)) {
+	            sqlBuilder.append(" AND t.statusTransactionApproveRequestId.id=").append(params.get(QueryConstants.PARAM_STATUS_TRANSACTION_APPROVE_REQUEST_ID));
 	        }
 	        if (params.containsKey(QueryConstants.PARAM_PRODUCT_ID)) {
 	            sqlBuilder.append(" AND t.productId.id=").append(params.get(QueryConstants.PARAM_PRODUCT_ID));

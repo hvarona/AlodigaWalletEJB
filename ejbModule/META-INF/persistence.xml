@@ -88,6 +88,9 @@
     <class>com.alodiga.wallet.common.model.StatusTransactionApproveRequest</class>
     <class>com.alodiga.wallet.common.model.AccountBank</class>
     <class>com.alodiga.wallet.common.model.StatusAccountBank</class>
+    <class>com.alodiga.wallet.common.model.Sequences</class>
+    <class>com.alodiga.wallet.common.model.OriginApplication</class>
+    <class>com.alodiga.wallet.common.model.DocumentType</class>
     <exclude-unlisted-classes>true</exclude-unlisted-classes>
     <properties>
       <property name="eclipselink.logging.timestamp" value="true"/>
