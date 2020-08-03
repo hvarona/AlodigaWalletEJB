@@ -52,26 +52,25 @@ public class ProductEJBImp extends AbstractWalletEJB implements ProductEJB, Prod
     public List<Category> getCategories(EJBRequest request) throws GeneralException, EmptyListException, NullParameterException {
         return (List<Category>) listEntities(Category.class, request, logger, getMethodName());
     }
-    
+
     public Category deleteCategory(EJBRequest request) throws GeneralException, NullParameterException {
         return null;
     }
-    
+
     public Category loadCategory(EJBRequest request) throws GeneralException, RegisterNotFoundException, NullParameterException {
 
         return (Category) loadEntity(Category.class, request, logger, getMethodName());
     }
-    
+
     public Category saveCategory(EJBRequest request) throws GeneralException, NullParameterException {
         return (Category) saveEntity(request, logger, getMethodName());
     }
-
 
     //Product
     public List<Product> getProducts(EJBRequest request) throws GeneralException, EmptyListException, NullParameterException {
         return (List<Product>) listEntities(Product.class, request, logger, getMethodName());
     }
-    
+
     public List<Product> filterProducts(EJBRequest request) throws GeneralException, EmptyListException, NullParameterException {
         if (request == null) {
             throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "request"), null);
@@ -86,7 +85,7 @@ public class ProductEJBImp extends AbstractWalletEJB implements ProductEJB, Prod
         orderField.put(Product.NAME, QueryConstants.ORDER_DESC);
         return (List<Product>) createSearchQuery(Product.class, request, orderField, logger, getMethodName(), "customers", isFilter);
     }
-    
+
     public List<Product> getProductsByEnterprise(Long enterpriseId) throws GeneralException, EmptyListException, NullParameterException {
         List<Product> products = null;
 
@@ -107,7 +106,7 @@ public class ProductEJBImp extends AbstractWalletEJB implements ProductEJB, Prod
         }
         return products;
     }
-    
+
     public Product loadProduct(EJBRequest request) throws GeneralException, RegisterNotFoundException, NullParameterException {
         return (Product) loadEntity(Product.class, request, logger, getMethodName());
     }
@@ -129,15 +128,15 @@ public class ProductEJBImp extends AbstractWalletEJB implements ProductEJB, Prod
         }
         return product;
     }
-    
+
     public Product enableProduct(EJBRequest request) throws GeneralException, NullParameterException, RegisterNotFoundException {
         return (Product) saveEntity(request, logger, getMethodName());
     }
-    
+
     public Product deleteProduct(EJBRequest request) throws GeneralException, NullParameterException {
         return null;
     }
-   
+
     public void deleteProductHasProvider(Long productId) throws NullParameterException, GeneralException {
         if (productId == null) {
             throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "productId or providerId"), null);
@@ -159,7 +158,7 @@ public class ProductEJBImp extends AbstractWalletEJB implements ProductEJB, Prod
     public Product saveProduct(EJBRequest request) throws GeneralException, NullParameterException {
         return (Product) saveEntity(request, logger, getMethodName());
     }
-    
+
     //promotion
     public void deletePromotionTypeHasPromotion(EJBRequest request) throws NullParameterException, GeneralException {
         Object param = request.getParam();
@@ -179,12 +178,12 @@ public class ProductEJBImp extends AbstractWalletEJB implements ProductEJB, Prod
     public Provider deleteProvider(EJBRequest request) throws GeneralException, NullParameterException {
         return null;
     }
-    
+
     public List<Provider> getProviders(EJBRequest request) throws GeneralException, EmptyListException, NullParameterException {
 
         return (List<Provider>) listEntities(Provider.class, request, logger, getMethodName());
     }
-    
+
     public List<Provider> getSMSProviders(EJBRequest request) throws GeneralException, EmptyListException, NullParameterException {
 
         List<Provider> providers = null;
@@ -209,13 +208,13 @@ public class ProductEJBImp extends AbstractWalletEJB implements ProductEJB, Prod
         }
         return providers;
     }
-    
+
     public Provider loadProvider(EJBRequest request) throws GeneralException, RegisterNotFoundException, NullParameterException {
 
         return (Provider) loadEntity(Provider.class, request, logger, getMethodName());
     }
-    
-     public Provider saveProvider(EJBRequest request) throws GeneralException, NullParameterException {
+
+    public Provider saveProvider(EJBRequest request) throws GeneralException, NullParameterException {
 
         return (Provider) saveEntity(request, logger, getMethodName());
     }
@@ -245,12 +244,12 @@ public class ProductEJBImp extends AbstractWalletEJB implements ProductEJB, Prod
         }
         return discount;
     }
-    
+
     //ProductData
     public ProductData saveProductData(EJBRequest request) throws GeneralException, NullParameterException {
         return (ProductData) saveEntity(request, logger, getMethodName());
     }
-   
+
     //Period
     public List<Period> getPeriods(EJBRequest request) throws GeneralException, EmptyListException, NullParameterException {
         return (List<Period>) listEntities(Period.class, request, logger, getMethodName());
@@ -264,22 +263,23 @@ public class ProductEJBImp extends AbstractWalletEJB implements ProductEJB, Prod
     //BankHasProduct
     @Override
     public List<BankHasProduct> getBankHasProduct(EJBRequest request) throws GeneralException, EmptyListException, NullParameterException {
-        List<BankHasProduct> bankHasProductList= null;
-        Product product = (Product)request.getParam();
+        List<BankHasProduct> bankHasProductList = null;
+        Product product = (Product) request.getParam();
         try {
             if (product == null) {
                 throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "product"), null);
             }      //To change body of generated methods, choose Tools | Templates.
-            
+
             StringBuilder sqlBuilder = new StringBuilder("SELECT * FROM bank_has_product where productId=");
             sqlBuilder.append(product.getId());
             Query query = entityManager.createNativeQuery(sqlBuilder.toString(), BankHasProduct.class);
             bankHasProductList = (List<BankHasProduct>) query.setHint("toplink.refresh", "true").getResultList();
-            
+
         } catch (Exception ex) {
             throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), ex.getMessage()), ex);
         }
-        return bankHasProductList;    }
+        return bankHasProductList;
+    }
 
     @Override
     public BankHasProduct saveBankHasProduct(BankHasProduct bankHasProduct) throws RegisterNotFoundException, NullParameterException, GeneralException {
@@ -287,41 +287,38 @@ public class ProductEJBImp extends AbstractWalletEJB implements ProductEJB, Prod
         if (bankHasProduct == null) {
             throw new NullParameterException("bankHasProduct", null);
         }
-        
-          _bankHasProduct  = (BankHasProduct) saveEntity(bankHasProduct, logger, getMethodName());
-       
-        
-       
+
+        _bankHasProduct = (BankHasProduct) saveEntity(bankHasProduct, logger, getMethodName());
+
         return _bankHasProduct;
     }
 
     @Override
     public List<BankHasProduct> getBankHasProductByID(BankHasProduct bankHasProduct) throws GeneralException, EmptyListException, NullParameterException {
-        List<BankHasProduct> bankHasProductList= null; 
+        List<BankHasProduct> bankHasProductList = null;
         try {
             if (bankHasProduct == null) {
                 throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "bankHasProduct"), null);
             }      //To change body of generated methods, choose Tools | Templates.
-            
+
             StringBuilder sqlBuilder = new StringBuilder("SELECT * FROM bank_has_product where productId=");
             sqlBuilder.append(bankHasProduct.getProductId().getId());
             sqlBuilder.append(" and bankId=");
             sqlBuilder.append(bankHasProduct.getBankId().getId());
             Query query = entityManager.createNativeQuery(sqlBuilder.toString(), BankHasProduct.class);
             bankHasProductList = (List<BankHasProduct>) query.setHint("toplink.refresh", "true").getResultList();
-            
+
         } catch (Exception ex) {
             throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), ex.getMessage()), ex);
         }
         return bankHasProductList;
     }
 
+    @Override
+    public List<TransactionApproveRequest> getTransactionApproveRequestByParams(EJBRequest request) throws GeneralException, NullParameterException, EmptyListException {
+        List<TransactionApproveRequest> operations = new ArrayList<TransactionApproveRequest>();
 
-	@Override
-	public List<TransactionApproveRequest> getTransactionApproveRequestByParams(EJBRequest request)throws GeneralException, NullParameterException, EmptyListException {
-		  List<TransactionApproveRequest> operations = new ArrayList<TransactionApproveRequest>();
-	        
-	        Map<String, Object> params = request.getParams();
+        Map<String, Object> params = request.getParams();
 
 	        StringBuilder sqlBuilder = new StringBuilder("SELECT t FROM TransactionApproveRequest t WHERE t.createDate BETWEEN ?1 AND ?2 and t.requestNumber like '%"+DocumentTypeEnum.MRAR.getDocumentType()+"%'");
 	        if (!params.containsKey(QueryConstants.PARAM_BEGINNING_DATE) || !params.containsKey(QueryConstants.PARAM_ENDING_DATE)) {
@@ -356,71 +353,72 @@ public class ProductEJBImp extends AbstractWalletEJB implements ProductEJB, Prod
 	        return operations;
 	}
 
-	@Override
-	public TransactionApproveRequest loadTransactionApproveRequest(EJBRequest request)throws RegisterNotFoundException, NullParameterException, GeneralException {
-		TransactionApproveRequest transactionApproveRequest = (TransactionApproveRequest) loadEntity(TransactionApproveRequest.class, request, logger, getMethodName());
-	        return transactionApproveRequest;
-	}
 
-	@Override
-	public TransactionApproveRequest saveTransactionApproveRequest(TransactionApproveRequest transactionApproveRequest)throws RegisterNotFoundException, NullParameterException, GeneralException {
-		  if (transactionApproveRequest == null) {
-	            throw new NullParameterException("transactionApproveRequest", null);
-	      }
-	      return (TransactionApproveRequest) saveEntity(transactionApproveRequest);
-	}
-	
-	@Override
-	public List<StatusTransactionApproveRequest> getStatusTransactionApproveRequests(EJBRequest request) throws GeneralException, EmptyListException, NullParameterException {
-		 List<StatusTransactionApproveRequest> statusTransactionApproveRequests = (List<StatusTransactionApproveRequest>) listEntities(StatusTransactionApproveRequest.class, request, logger, getMethodName());
-	     return statusTransactionApproveRequests;
-	}
-	
-	@Override
-	public StatusTransactionApproveRequest loadStatusTransactionApproveRequestbyCode(EJBRequest request)throws RegisterNotFoundException, NullParameterException, GeneralException {
-		 List<StatusTransactionApproveRequest> statuses = null;
-	        Map<String, Object> params = request.getParams();
+    @Override
+    public TransactionApproveRequest loadTransactionApproveRequest(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
+        TransactionApproveRequest transactionApproveRequest = (TransactionApproveRequest) loadEntity(TransactionApproveRequest.class, request, logger, getMethodName());
+        return transactionApproveRequest;
+    }
 
-	        if (!params.containsKey(QueryConstants.PARAM_CODE)) {
-	            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), QueryConstants.PARAM_CODE), null);
-	        }
+    @Override
+    public TransactionApproveRequest saveTransactionApproveRequest(TransactionApproveRequest transactionApproveRequest) throws RegisterNotFoundException, NullParameterException, GeneralException {
+        if (transactionApproveRequest == null) {
+            throw new NullParameterException("transactionApproveRequest", null);
+        }
+        return (TransactionApproveRequest) saveEntity(transactionApproveRequest);
+    }
 
-	        try {
-	        	statuses = (List<StatusTransactionApproveRequest>) getNamedQueryResult(StatusTransactionApproveRequest.class, "StatusTransactionApproveRequest.loadStatusTransactionApproveRequestByCode", request, getMethodName(), logger, "User");
-	        } catch (EmptyListException e) {
-	            throw new RegisterNotFoundException(logger, sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName(), "user"), null);
-	        }
+    @Override
+    public List<StatusTransactionApproveRequest> getStatusTransactionApproveRequests(EJBRequest request) throws GeneralException, EmptyListException, NullParameterException {
+        List<StatusTransactionApproveRequest> statusTransactionApproveRequests = (List<StatusTransactionApproveRequest>) listEntities(StatusTransactionApproveRequest.class, request, logger, getMethodName());
+        return statusTransactionApproveRequests;
+    }
 
-	        return statuses.get(0);
-	}
-	
-	@Override
-	public TransactionApproveRequest updateTransactionApproveRequest(TransactionApproveRequest transactionApproveRequest)throws RegisterNotFoundException, NullParameterException, GeneralException {
-		  if (transactionApproveRequest == null) {
-	            throw new NullParameterException("transactionApproveRequest", null);
-	      }
-		  EJBRequest request = new EJBRequest();
-		  StatusTransactionApproveRequest statusTransactionApproveRequestId = null;
-		  Map params = new HashMap<String, Object>();
-		  if(transactionApproveRequest.getIndApproveRequest()) {
-			  transactionApproveRequest.setApprovedRequestDate(new Date());
-              params.put(QueryConstants.PARAM_CODE, StatusTransactionApproveRequestEnum.APPR.getStatusTransactionApproveRequest());
-              request.setParams(params);
-              statusTransactionApproveRequestId = loadStatusTransactionApproveRequestbyCode(request);
-		      transactionApproveRequest.setStatusTransactionApproveRequestId(statusTransactionApproveRequestId);
-		      saveTransactionApproveRequest(transactionApproveRequest);
-		  } else {
-			  transactionApproveRequest.setApprovedRequestDate(new Date());
-              params.put(QueryConstants.PARAM_CODE, StatusTransactionApproveRequestEnum.REJE.getStatusTransactionApproveRequest());
-              request.setParams(params);
-              statusTransactionApproveRequestId = loadStatusTransactionApproveRequestbyCode(request);
-		      transactionApproveRequest.setStatusTransactionApproveRequestId(statusTransactionApproveRequestId);
-		      saveTransactionApproveRequest(transactionApproveRequest);
-		  }
-	      return transactionApproveRequest;
-	}
+    @Override
+    public StatusTransactionApproveRequest loadStatusTransactionApproveRequestbyCode(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
+        List<StatusTransactionApproveRequest> statuses = null;
+        Map<String, Object> params = request.getParams();
 
-	private BalanceHistory createBalanceHistory(Long userId, float transferAmount, int transferType, boolean isBalanceTranference) throws GeneralException, NullParameterException, NegativeBalanceException, RegisterNotFoundException {
+        if (!params.containsKey(QueryConstants.PARAM_CODE)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), QueryConstants.PARAM_CODE), null);
+        }
+
+        try {
+            statuses = (List<StatusTransactionApproveRequest>) getNamedQueryResult(StatusTransactionApproveRequest.class, "StatusTransactionApproveRequest.loadStatusTransactionApproveRequestByCode", request, getMethodName(), logger, "User");
+        } catch (EmptyListException e) {
+            throw new RegisterNotFoundException(logger, sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName(), "user"), null);
+        }
+
+        return statuses.get(0);
+    }
+
+    @Override
+    public TransactionApproveRequest updateTransactionApproveRequest(TransactionApproveRequest transactionApproveRequest) throws RegisterNotFoundException, NullParameterException, GeneralException {
+        if (transactionApproveRequest == null) {
+            throw new NullParameterException("transactionApproveRequest", null);
+        }
+        EJBRequest request = new EJBRequest();
+        StatusTransactionApproveRequest statusTransactionApproveRequestId = null;
+        Map params = new HashMap<String, Object>();
+        if (transactionApproveRequest.getIndApproveRequest()) {
+            transactionApproveRequest.setApprovedRequestDate(new Date());
+            params.put(QueryConstants.PARAM_CODE, StatusTransactionApproveRequestEnum.APPR.getStatusTransactionApproveRequest());
+            request.setParams(params);
+            statusTransactionApproveRequestId = loadStatusTransactionApproveRequestbyCode(request);
+            transactionApproveRequest.setStatusTransactionApproveRequestId(statusTransactionApproveRequestId);
+            saveTransactionApproveRequest(transactionApproveRequest);
+        } else {
+            transactionApproveRequest.setApprovedRequestDate(new Date());
+            params.put(QueryConstants.PARAM_CODE, StatusTransactionApproveRequestEnum.REJE.getStatusTransactionApproveRequest());
+            request.setParams(params);
+            statusTransactionApproveRequestId = loadStatusTransactionApproveRequestbyCode(request);
+            transactionApproveRequest.setStatusTransactionApproveRequestId(statusTransactionApproveRequestId);
+            saveTransactionApproveRequest(transactionApproveRequest);
+        }
+        return transactionApproveRequest;
+    }
+
+    private BalanceHistory createBalanceHistory(Long userId, float transferAmount, int transferType, boolean isBalanceTranference) throws GeneralException, NullParameterException, NegativeBalanceException, RegisterNotFoundException {
 
         BalanceHistory currentBalanceHistory = loadLastBalanceHistoryByUserId(userId);
         float currentAmount = currentBalanceHistory != null ? currentBalanceHistory.getCurrentAmount() : 0f;
@@ -443,7 +441,7 @@ public class ProductEJBImp extends AbstractWalletEJB implements ProductEJB, Prod
         balanceHistory.setCurrentAmount(newCurrentAmount);
         return balanceHistory;
     }
-	
+
     public BalanceHistory loadLastBalanceHistoryByUserId(Long userId) throws GeneralException, RegisterNotFoundException, NullParameterException {
         if (userId == null) {
             throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "accountId"), null);
@@ -453,7 +451,7 @@ public class ProductEJBImp extends AbstractWalletEJB implements ProductEJB, Prod
             Timestamp maxDate = (Timestamp) entityManager.createQuery("SELECT MAX(b.date) FROM BalanceHistory b WHERE b.userId = " + userId).getSingleResult();
             Query query = entityManager.createQuery("SELECT b FROM BalanceHistory b WHERE b.date = :maxDate AND b.userId = " + userId);
             query.setParameter("maxDate", maxDate);
-            
+
             List result = (List) query.setHint("toplink.refresh", "true").getResultList();
 
             if (!result.isEmpty()) {
@@ -467,6 +465,5 @@ public class ProductEJBImp extends AbstractWalletEJB implements ProductEJB, Prod
         }
         return balanceHistory;
     }
-  
 
 }
