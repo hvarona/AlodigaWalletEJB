@@ -738,6 +738,9 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         if (!params.containsKey(EjbConstants.PARAM_STATUS_TRANSACTION_APPROVE_REQUEST_ID)) {
             throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_STATUS_TRANSACTION_APPROVE_REQUEST_ID), null);
         }
+        if (!params.containsKey(EjbConstants.PARAM_REQUEST_NUMBER)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_REQUEST_NUMBER), null);
+        }
         transactionApproveRequestByStatusList = (List<TransactionApproveRequest>) getNamedQueryResult(TransactionApproveRequest.class, QueryConstants.TRANSACTION_APPROVE_REQUEST_BY_STATUS, request, getMethodName(), logger, "transactionApproveRequestByStatusList");
         return transactionApproveRequestByStatusList;
     }
