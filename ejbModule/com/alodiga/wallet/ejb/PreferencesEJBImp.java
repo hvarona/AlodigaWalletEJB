@@ -196,7 +196,6 @@ public class PreferencesEJBImp extends AbstractWalletEJB implements PreferencesE
                  query.setMaxResults(request.getLimit());
              }
              preferenceValues = query.setHint("toplink.refresh", "true").getResultList();
-
          } catch (Exception e) {
              throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), e.getMessage()), null);
          }
