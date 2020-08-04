@@ -88,6 +88,26 @@
     <class>com.alodiga.wallet.common.model.StatusTransactionApproveRequest</class>
     <class>com.alodiga.wallet.common.model.AccountBank</class>
     <class>com.alodiga.wallet.common.model.StatusAccountBank</class>
+    <class>com.alodiga.wallet.common.model.Sequences</class>
+    <class>com.alodiga.wallet.common.model.OriginApplication</class>
+    <class>com.alodiga.wallet.common.model.DocumentType</class>
+    <class>com.alodiga.wallet.common.model.AddressType</class>
+    <class>com.alodiga.wallet.common.model.StreetType</class>
+    <class>com.alodiga.wallet.common.model.Profession</class>
+    <class>com.alodiga.wallet.common.model.ReviewBusinessAffiliationRequest</class>
+    <class>com.alodiga.wallet.common.model.ZipZone</class>
+    <class>com.alodiga.wallet.common.model.PhonePerson</class>
+    <class>com.alodiga.wallet.common.model.EdificationType</class>
+    <class>com.alodiga.wallet.common.model.ReviewType</class>
+    <class>com.alodiga.wallet.common.model.CivilStatus</class>
+    <class>com.alodiga.wallet.common.model.LegalPerson</class>
+    <class>com.alodiga.wallet.common.model.StatusBusinessAffiliationRequets</class>
+    <class>com.alodiga.wallet.common.model.RequestHasCollectionRequest</class>
+    <class>com.alodiga.wallet.common.model.NaturalPerson</class>
+    <class>com.alodiga.wallet.common.model.PhoneType</class>
+    <class>com.alodiga.wallet.common.model.Person</class>
+    <class>com.alodiga.wallet.common.model.BusinessAffiliationRequets</class>
+    <class>com.alodiga.wallet.common.model.PersonClassification</class>
     <exclude-unlisted-classes>true</exclude-unlisted-classes>
     <properties>
       <property name="eclipselink.logging.timestamp" value="true"/>
