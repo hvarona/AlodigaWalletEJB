@@ -24,6 +24,7 @@ import com.alodiga.wallet.common.genericEJB.AbstractWalletEJB;
 import com.alodiga.wallet.common.genericEJB.EJBRequest;
 import com.alodiga.wallet.common.genericEJB.WalletContextInterceptor;
 import com.alodiga.wallet.common.genericEJB.WalletLoggerInterceptor;
+import com.alodiga.wallet.common.model.DocumentTypeEnum;
 import com.alodiga.wallet.common.model.PreferenceClassification;
 import com.alodiga.wallet.common.model.PreferenceControl;
 import com.alodiga.wallet.common.model.PreferenceField;
@@ -31,6 +32,7 @@ import com.alodiga.wallet.common.model.PreferenceType;
 import com.alodiga.wallet.common.model.PreferenceValue;
 import com.alodiga.wallet.common.model.TransactionType;
 import com.alodiga.wallet.common.utils.EjbConstants;
+import com.alodiga.wallet.common.utils.QueryConstants;
 
 @Interceptors({WalletLoggerInterceptor.class, WalletContextInterceptor.class})
 @Stateless(name = EjbConstants.PREFERENCES_EJB, mappedName = EjbConstants.PREFERENCES_EJB)
@@ -189,13 +191,26 @@ public class PreferencesEJBImp extends AbstractWalletEJB implements PreferencesE
     
     public List<PreferenceValue> getPreferenceValuesGroupByBussinessId(EJBRequest request) throws GeneralException, NullParameterException, EmptyListException{
     	 List<PreferenceValue> preferenceValues = new ArrayList<PreferenceValue>();
+    	 Map<String, Object> params = request.getParams();
          Query query = null;
          try {
-             query = createQuery("SELECT p FROM PreferenceValue p WHERE p.bussinessId is not null GROUP BY p.productId.id,p.transactionTypeId.id, p.preferenceClassficationId.id,p.bussinessId");
-             if (request.getLimit() != null && request.getLimit() > 0) {
-                 query.setMaxResults(request.getLimit());
-             }
-             preferenceValues = query.setHint("toplink.refresh", "true").getResultList();
+//             query = createQuery("SELECT p FROM PreferenceValue p WHERE p.bussinessId is not null GROUP BY p.productId.id,p.transactionTypeId.id, p.preferenceClassficationId.id,p.bussinessId");
+            StringBuilder sqlBuilder = new StringBuilder("SELECT p FROM PreferenceValue p WHERE p.bussinessId is not null");
+            if (params.containsKey(QueryConstants.PARAM_BUSSINESS_ID)) {
+	            sqlBuilder.append(" AND p.bussinessId=").append(params.get(QueryConstants.PARAM_BUSSINESS_ID));
+	        }
+            if (params.containsKey(QueryConstants.PARAM_TRANSACTION_TYPE_ID)) {
+ 	            sqlBuilder.append(" AND p.transactionTypeId.id=").append(params.get(QueryConstants.PARAM_TRANSACTION_TYPE_ID));
+ 	        }
+ 	        if (params.containsKey(QueryConstants.PARAM_PRODUCT_ID)) {
+ 	            sqlBuilder.append(" AND p.productId.id=").append(params.get(QueryConstants.PARAM_PRODUCT_ID));
+ 	        }
+ 	        sqlBuilder.append(" GROUP BY p.productId.id,p.transactionTypeId.id, p.preferenceClassficationId.id,p.bussinessId");
+ 	        query = createQuery(sqlBuilder.toString());
+ 	        if (request.getLimit() != null && request.getLimit() > 0) {
+               query.setMaxResults(request.getLimit());
+            }
+            preferenceValues = query.setHint("toplink.refresh", "true").getResultList();
 
          } catch (Exception e) {
              throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), e.getMessage()), null);
