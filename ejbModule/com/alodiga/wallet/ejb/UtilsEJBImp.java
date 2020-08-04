@@ -30,6 +30,7 @@ import com.alodiga.wallet.common.model.BusinessSubCategory;
 import com.alodiga.wallet.common.model.City;
 import com.alodiga.wallet.common.model.Close;
 import com.alodiga.wallet.common.model.CollectionType;
+import com.alodiga.wallet.common.model.CollectionsRequest;
 import com.alodiga.wallet.common.model.Commission;
 import com.alodiga.wallet.common.model.CommissionItem;
 import com.alodiga.wallet.common.model.Country;
@@ -498,10 +499,10 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         }
         return (Close) saveEntity(close);
     }
-    
+
     public List<BankOperation> getBankOperationsByParams(EJBRequest request) throws NullParameterException, GeneralException, EmptyListException {
         List<BankOperation> operations = new ArrayList<BankOperation>();
-        
+
         Map<String, Object> params = request.getParams();
 
         StringBuilder sqlBuilder = new StringBuilder("SELECT o FROM BankOperation o WHERE o.transactionId.creationDate BETWEEN ?1 AND ?2");
@@ -522,7 +523,7 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         }
         Query query = null;
         try {
-            System.out.println("query:********"+sqlBuilder.toString());
+            System.out.println("query:********" + sqlBuilder.toString());
             query = createQuery(sqlBuilder.toString());
             query.setParameter("1", EjbUtils.getBeginningDate((Date) params.get(QueryConstants.PARAM_BEGINNING_DATE)));
             query.setParameter("2", EjbUtils.getEndingDate((Date) params.get(QueryConstants.PARAM_ENDING_DATE)));
@@ -540,19 +541,19 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         return operations;
     }
 
-	@Override
-	public List<BankOperationType> getBankOperationTypes(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
-	 List<BankOperationType> operationTypes = (List<BankOperationType>) listEntities(BankOperationType.class, request, logger, getMethodName());
-    return operationTypes;
-	}
+    @Override
+    public List<BankOperationType> getBankOperationTypes(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        List<BankOperationType> operationTypes = (List<BankOperationType>) listEntities(BankOperationType.class, request, logger, getMethodName());
+        return operationTypes;
+    }
 
-	@Override
-	public List<BankOperationMode> getBankOperationModes(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
-	 List<BankOperationMode> operationModes = (List<BankOperationMode>) listEntities(BankOperationMode.class, request, logger, getMethodName());
-    return operationModes;
-	}
-	
-	public List<BankOperation> getBankOperations(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException{
+    @Override
+    public List<BankOperationMode> getBankOperationModes(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        List<BankOperationMode> operationModes = (List<BankOperationMode>) listEntities(BankOperationMode.class, request, logger, getMethodName());
+        return operationModes;
+    }
+
+    public List<BankOperation> getBankOperations(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
         List<BankOperation> bankOperations = (List<BankOperation>) listEntities(BankOperation.class, request, logger, getMethodName());
         return bankOperations;
     }
@@ -561,7 +562,7 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
     public List<Commission> getCommission(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
         return (List<Commission>) listEntities(Commission.class, request, logger, getMethodName());
     }
-    
+
     public List<Commission> getCommissionByProduct(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
         List<Commission> commissionByProductList = null;
         Map<String, Object> params = request.getParams();
@@ -600,28 +601,28 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         }
         return (TransactionType) saveEntity(transactionType);
     }
-    
+
     public List<CommissionItem> getCommissionItems(Long transactionId) throws EmptyListException, GeneralException, NullParameterException {
         List<CommissionItem> commissionItems = null;
         if (transactionId == null) {
             throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "transactionId"), null);
         }
         try {
-        	commissionItems = entityManager.createQuery("SELECT c FROM CommissionItem c WHERE c.transactionId.id='" + transactionId + "'").setHint("toplink.refresh", "true").getResultList();
+            commissionItems = entityManager.createQuery("SELECT c FROM CommissionItem c WHERE c.transactionId.id='" + transactionId + "'").setHint("toplink.refresh", "true").getResultList();
         } catch (Exception e) {
             throw new GeneralException("Exception in method loadEnterprise: Exception text: " + e.getMessage(), e.getStackTrace());
         }
         if (commissionItems.isEmpty()) {
-        	  throw new EmptyListException(logger, sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName()), null);
+            throw new EmptyListException(logger, sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName()), null);
         }
         return commissionItems;
     }
 
- //CollectionType
+    //CollectionType
     public List<CollectionType> getCollectionType(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
         //List<CollectionType> collectionType = (List<CollectionType>) listEntities(CollectionType.class, request, logger, getMethodName());
         //return collectionType;
-        
+
         return (List<CollectionType>) listEntities(CollectionType.class, request, logger, getMethodName());
 
     }
@@ -638,13 +639,12 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
     }
 
     public CollectionType saveCollectionType(CollectionType collectionType) throws NullParameterException, GeneralException {
-           if (collectionType == null) {
+        if (collectionType == null) {
             throw new NullParameterException("collectionType", null);
         }
         return (CollectionType) saveEntity(collectionType);
     }
-    
-    
+
     public CollectionType searchCollectionType(String description) throws RegisterNotFoundException, NullParameterException, GeneralException {
         CollectionType collectionType = new CollectionType();
         try {
@@ -682,29 +682,28 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         return collectionTypeList;
     }
 
-    
     //BusinessCategory
-    public List<BusinessCategory> getBusinessCategory(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException{
+    public List<BusinessCategory> getBusinessCategory(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
         return (List<BusinessCategory>) listEntities(BusinessCategory.class, request, logger, getMethodName());
     }
 
-    public BusinessCategory loadBusinessCategory(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException{
+    public BusinessCategory loadBusinessCategory(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
         BusinessCategory businessCategory = (BusinessCategory) loadEntity(BusinessCategory.class, request, logger, getMethodName());
         return businessCategory;
     }
-    
-    public BusinessCategory saveBusinessCategory(BusinessCategory businessCategory) throws RegisterNotFoundException, NullParameterException, GeneralException{
+
+    public BusinessCategory saveBusinessCategory(BusinessCategory businessCategory) throws RegisterNotFoundException, NullParameterException, GeneralException {
         if (businessCategory == null) {
             throw new NullParameterException("businessCategory", null);
         }
         return (BusinessCategory) saveEntity(businessCategory);
     }
-    
-    //BusinessCategory
-    public List<BusinessSubCategory> getBusinessSubCategory(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException{
+
+    //BusinessSubCategory
+    public List<BusinessSubCategory> getBusinessSubCategory(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
         return (List<BusinessSubCategory>) listEntities(BusinessSubCategory.class, request, logger, getMethodName());
     }
-    
+
     public List<BusinessSubCategory> getBusinessSubCategoryByCategory(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
         List<BusinessSubCategory> businessSubCategoryList = null;
         Map<String, Object> params = request.getParams();
@@ -715,23 +714,23 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         return businessSubCategoryList;
     }
 
-    public BusinessSubCategory loadBusinessSubCategory(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException{
+    public BusinessSubCategory loadBusinessSubCategory(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
         BusinessSubCategory businessSubCategory = (BusinessSubCategory) loadEntity(BusinessSubCategory.class, request, logger, getMethodName());
         return businessSubCategory;
     }
-    
-    public BusinessSubCategory saveBusinessSubCategory(BusinessSubCategory businessSubCategory) throws RegisterNotFoundException, NullParameterException, GeneralException{
+
+    public BusinessSubCategory saveBusinessSubCategory(BusinessSubCategory businessSubCategory) throws RegisterNotFoundException, NullParameterException, GeneralException {
         if (businessSubCategory == null) {
             throw new NullParameterException("businessSubCategory", null);
         }
         return (BusinessSubCategory) saveEntity(businessSubCategory);
     }
-    
+
     //TransactionApproveRequest
-    public List<TransactionApproveRequest> getTransactionApproveRequest(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException{
+    public List<TransactionApproveRequest> getTransactionApproveRequest(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
         return (List<TransactionApproveRequest>) listEntities(TransactionApproveRequest.class, request, logger, getMethodName());
     }
-    
+
     public List<TransactionApproveRequest> getTransactionApproveRequestByStatus(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
         List<TransactionApproveRequest> transactionApproveRequestByStatusList = null;
         Map<String, Object> params = request.getParams();
@@ -745,23 +744,23 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         return transactionApproveRequestByStatusList;
     }
 
-    public TransactionApproveRequest loadTransactionApproveRequest(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException{
+    public TransactionApproveRequest loadTransactionApproveRequest(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
         TransactionApproveRequest transactionApproveRequest = (TransactionApproveRequest) loadEntity(TransactionApproveRequest.class, request, logger, getMethodName());
         return transactionApproveRequest;
     }
 
-    public TransactionApproveRequest saveTransactionApproveRequest(TransactionApproveRequest transactionApproveRequest) throws RegisterNotFoundException, NullParameterException, GeneralException{
+    public TransactionApproveRequest saveTransactionApproveRequest(TransactionApproveRequest transactionApproveRequest) throws RegisterNotFoundException, NullParameterException, GeneralException {
         if (transactionApproveRequest == null) {
             throw new NullParameterException("transactionApproveRequest", null);
         }
         return (TransactionApproveRequest) saveEntity(transactionApproveRequest);
     }
-    
+
     //StatusTransactionApproveRequest
-    public List<StatusTransactionApproveRequest> getStatusTransactionApproveRequest(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException{
+    public List<StatusTransactionApproveRequest> getStatusTransactionApproveRequest(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
         return (List<StatusTransactionApproveRequest>) listEntities(StatusTransactionApproveRequest.class, request, logger, getMethodName());
     }
-    
+
     public List<StatusTransactionApproveRequest> getStatusTransactionApproveRequestPending(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
         List<StatusTransactionApproveRequest> statusTransactionApproveRequestPendingList = null;
         Map<String, Object> params = request.getParams();
@@ -772,32 +771,70 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         return statusTransactionApproveRequestPendingList;
     }
 
-    public StatusTransactionApproveRequest loadStatusTransactionApproveRequest(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException{
+    public StatusTransactionApproveRequest loadStatusTransactionApproveRequest(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
         StatusTransactionApproveRequest statusTransactionApproveRequest = (StatusTransactionApproveRequest) loadEntity(StatusTransactionApproveRequest.class, request, logger, getMethodName());
         return statusTransactionApproveRequest;
     }
 
-    public StatusTransactionApproveRequest saveStatusTransactionApproveRequest(StatusTransactionApproveRequest statusTransactionApproveRequest) throws RegisterNotFoundException, NullParameterException, GeneralException{
+    public StatusTransactionApproveRequest saveStatusTransactionApproveRequest(StatusTransactionApproveRequest statusTransactionApproveRequest) throws RegisterNotFoundException, NullParameterException, GeneralException {
         if (statusTransactionApproveRequest == null) {
             throw new NullParameterException("statusTransactionApproveRequest", null);
         }
         return (StatusTransactionApproveRequest) saveEntity(statusTransactionApproveRequest);
     }
-    
+
     //BankOperation
-    public List<BankOperation> getBankOperation(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException{
-      return (List<BankOperation>) listEntities(BankOperation.class, request, logger, getMethodName());  
+    public List<BankOperation> getBankOperation(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        return (List<BankOperation>) listEntities(BankOperation.class, request, logger, getMethodName());
     }
 
-    public BankOperation loadBankOperation(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException{
+    public BankOperation loadBankOperation(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
         BankOperation bankOperation = (BankOperation) loadEntity(BankOperation.class, request, logger, getMethodName());
         return bankOperation;
     }
 
-    public BankOperation saveBankOperation(BankOperation bankOperation) throws RegisterNotFoundException, NullParameterException, GeneralException{
+    public BankOperation saveBankOperation(BankOperation bankOperation) throws RegisterNotFoundException, NullParameterException, GeneralException {
         if (bankOperation == null) {
             throw new NullParameterException("bankOperation", null);
         }
         return (BankOperation) saveEntity(bankOperation);
     }
+
+    //CollectionsRequest
+    public List<CollectionsRequest> getCollectionsRequest(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        return (List<CollectionsRequest>) listEntities(CollectionsRequest.class, request, logger, getMethodName());
+    }
+    
+    public List<CollectionsRequest> getCollectionsRequestByID(CollectionsRequest collectionsRequest) throws GeneralException, EmptyListException, NullParameterException {
+        List<CollectionsRequest> collectionsRequestList = null;
+        try {
+            if (collectionsRequest == null) {
+                throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "collectionsRequest"), null);
+            }      //To change body of generated methods, choose Tools | Templates.
+
+            StringBuilder sqlBuilder = new StringBuilder("SELECT * FROM collections_request where collectionTypeId=");
+            sqlBuilder.append(collectionsRequest.getCollectionTypeId().getId());
+            sqlBuilder.append(" and personTypeId=");
+            sqlBuilder.append(collectionsRequest.getPersonTypeId().getId());
+            Query query = entityManager.createNativeQuery(sqlBuilder.toString(), CollectionsRequest.class);
+            collectionsRequestList = (List<CollectionsRequest>) query.setHint("toplink.refresh", "true").getResultList();
+
+        } catch (Exception ex) {
+            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), ex.getMessage()), ex);
+        }
+        return collectionsRequestList;
+    }
+
+    public CollectionsRequest loadCollectionsRequest(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
+        CollectionsRequest collectionsRequest = (CollectionsRequest) loadEntity(CollectionsRequest.class, request, logger, getMethodName());
+        return collectionsRequest;
+    }
+
+    public CollectionsRequest saveCollectionsRequest(CollectionsRequest collectionsRequest) throws RegisterNotFoundException, NullParameterException, GeneralException {
+        if (collectionsRequest == null) {
+            throw new NullParameterException("collectionsRequest", null);
+        }
+        return (CollectionsRequest) saveEntity(collectionsRequest);
+    }
+
 }
