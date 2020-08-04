@@ -38,9 +38,7 @@ import com.alodiga.wallet.common.model.Currency;
 import com.alodiga.wallet.common.model.Enterprise;
 import com.alodiga.wallet.common.model.ExchangeRate;
 import com.alodiga.wallet.common.model.Language;
-import com.alodiga.wallet.common.model.OriginApplication;
 import com.alodiga.wallet.common.model.Period;
-import com.alodiga.wallet.common.model.Sequences;
 import com.alodiga.wallet.common.model.Sms;
 import com.alodiga.wallet.common.model.State;
 import com.alodiga.wallet.common.model.StatusTransactionApproveRequest;
@@ -740,6 +738,9 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         if (!params.containsKey(EjbConstants.PARAM_STATUS_TRANSACTION_APPROVE_REQUEST_ID)) {
             throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_STATUS_TRANSACTION_APPROVE_REQUEST_ID), null);
         }
+        if (!params.containsKey(EjbConstants.PARAM_REQUEST_NUMBER)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_REQUEST_NUMBER), null);
+        }
         transactionApproveRequestByStatusList = (List<TransactionApproveRequest>) getNamedQueryResult(TransactionApproveRequest.class, QueryConstants.TRANSACTION_APPROVE_REQUEST_BY_STATUS, request, getMethodName(), logger, "transactionApproveRequestByStatusList");
         return transactionApproveRequestByStatusList;
     }
@@ -798,92 +799,5 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
             throw new NullParameterException("bankOperation", null);
         }
         return (BankOperation) saveEntity(bankOperation);
-    }
-    
-    
-    //Sequences
-    @Override
-    public List<Sequences> getSequences(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
-        return (List<Sequences>) listEntities(Sequences.class, request, logger, getMethodName());
-    }
-
-    @Override
-    public Sequences loadSequences(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
-        Sequences sequence = (Sequences) loadEntity(Sequences.class, request, logger, getMethodName());
-        return sequence;
-    }
-
-    @Override
-    public Sequences saveSequences(Sequences sequence) throws RegisterNotFoundException, NullParameterException, GeneralException {
-        if (sequence == null) {
-            throw new NullParameterException("sequence", null);
-        }
-        return (Sequences) saveEntity(sequence);
-    }
-
-    @Override
-    public List<Sequences> getSequencesByDocumentType(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
-        List<Sequences> sequence = null;
-        Map<String, Object> params = request.getParams();
-        if (!params.containsKey(EjbConstants.PARAM_DOCUMENT_TYPE_ID)) {
-            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_DOCUMENT_TYPE_ID), null);
-        }
-        sequence = (List<Sequences>) getNamedQueryResult(UtilsEJB.class, QueryConstants.SEQUENCES_BY_DOCUMENT_TYPE, request, getMethodName(), logger, "sequence");
-        return sequence;
-    }
-
-    @Override
-    public String generateNumberSequence(List<Sequences> sequence, int originApplication) throws GeneralException, RegisterNotFoundException, NullParameterException {
-        int numberSequence = 0;
-        String prefixNumberSequence = "";
-        String acronym = "";
-        for (Sequences s : sequence) {
-            if (s.getOriginApplicationId().getId() == originApplication) {
-                if (s.getCurrentValue() > 1) {
-                    numberSequence = s.getCurrentValue();
-                } else {
-                    numberSequence = s.getInitialValue();
-                }
-                acronym = s.getDocumentTypeId().getAcronym();
-                s.setCurrentValue(s.getCurrentValue() + 1);
-                saveSequences(s);
-            }
-        }
-        Calendar cal = Calendar.getInstance();
-        int year = cal.get(Calendar.YEAR);
-        switch (originApplication) {
-            case Constants.ORIGIN_APPLICATION_ADMIN_ID:
-                prefixNumberSequence = "AWA-";
-                break;
-            case Constants.ORIGIN_APPLICATION_WALLET_ID:
-                prefixNumberSequence = "APP-";
-                break;
-            default:
-                break;
-        }
-        prefixNumberSequence = prefixNumberSequence.concat(acronym);
-        String suffixNumberSequence = "-";
-        suffixNumberSequence = suffixNumberSequence.concat(String.valueOf(year));
-        String numberSequenceDoc = prefixNumberSequence;
-        numberSequenceDoc = numberSequenceDoc.concat("-");
-        numberSequenceDoc = numberSequenceDoc.concat(String.valueOf(numberSequence));
-        numberSequenceDoc = numberSequenceDoc.concat(suffixNumberSequence);
-        return numberSequenceDoc;
-    }
-
-    //OriginApplication
-    @Override
-    public List<OriginApplication> getOriginApplication(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
-        return (List<OriginApplication>) listEntities(OriginApplication.class, request, logger, getMethodName());
-    }
-
-    @Override
-    public OriginApplication loadOriginApplication(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public OriginApplication saveOriginApplication(OriginApplication originApplication) throws RegisterNotFoundException, NullParameterException, GeneralException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }
