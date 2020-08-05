@@ -25,6 +25,7 @@ import com.alodiga.wallet.common.model.Bank;
 import com.alodiga.wallet.common.model.BankOperation;
 import com.alodiga.wallet.common.model.BankOperationMode;
 import com.alodiga.wallet.common.model.BankOperationType;
+import com.alodiga.wallet.common.model.BusinessAffiliationRequets;
 import com.alodiga.wallet.common.model.BusinessCategory;
 import com.alodiga.wallet.common.model.BusinessSubCategory;
 import com.alodiga.wallet.common.model.City;
@@ -835,6 +836,24 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
             throw new NullParameterException("collectionsRequest", null);
         }
         return (CollectionsRequest) saveEntity(collectionsRequest);
+    }
+
+    
+    //BusinessAffiliationRequets
+    public List<BusinessAffiliationRequets> getBusinessAffiliationRequets(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException{
+        return (List<BusinessAffiliationRequets>) listEntities(BusinessAffiliationRequets.class, request, logger, getMethodName());
+    }
+
+    public BusinessAffiliationRequets loadBusinessAffiliationRequets(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException{
+        BusinessAffiliationRequets businessAffiliationRequets = (BusinessAffiliationRequets) loadEntity(BusinessAffiliationRequets.class, request, logger, getMethodName());
+        return businessAffiliationRequets;
+    }
+
+    public BusinessAffiliationRequets saveBusinessAffiliationRequets(BusinessAffiliationRequets businessAffiliationRequets) throws RegisterNotFoundException, NullParameterException, GeneralException{
+        if (businessAffiliationRequets == null) {
+            throw new NullParameterException("businessAffiliationRequets", null);
+        }
+        return (BusinessAffiliationRequets) saveEntity(businessAffiliationRequets);
     }
 
 }
