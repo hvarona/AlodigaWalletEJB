@@ -417,10 +417,10 @@ public class ProductEJBImp extends AbstractWalletEJB implements ProductEJB, Prod
 					List<CommissionItem> commissionItems = utilsEJB.getCommissionItems(transactionApproveRequest.getTransactionId().getId());
 					if (!commissionItems.isEmpty()) {
 						rechargeAmount = calculateAmountRecharge(commissionItems.get(0),transactionApproveRequest.getTransactionId().getAmount());
-						BalanceHistory balancehistory = createBalanceHistory(transactionApproveRequest.getUnifiedRegistryUserId(),transactionApproveRequest.getProductId().getId(), rechargeAmount,2);
-						balancehistory.setTransactionId(transactionApproveRequest.getTransactionId());
-						saveBalanceHistory(balancehistory);
 						saveTransactionApproveRequest(transactionApproveRequest);	
+						BalanceHistory balancehistory = createBalanceHistory(transactionApproveRequest.getUnifiedRegistryUserId(),transactionApproveRequest.getProductId(), rechargeAmount,2);
+						balancehistory.setTransactionId(transactionApproveRequest.getTransactionId());
+//						saveBalanceHistory(balancehistory);
 					}
 			}  catch (RegisterNotFoundException e) {
 				e.printStackTrace();
@@ -452,13 +452,15 @@ public class ProductEJBImp extends AbstractWalletEJB implements ProductEJB, Prod
         return transactionApproveRequest;
     }
 
-    private BalanceHistory createBalanceHistory(Long userId, Long productId, float transferAmount, int transactionType) throws GeneralException, NullParameterException, NegativeBalanceException, RegisterNotFoundException {
-        BalanceHistory currentBalanceHistory = loadLastBalanceHistoryByUserId(userId, productId);
+    private BalanceHistory createBalanceHistory(Long userId, Product productId, float transferAmount, int transactionType) throws GeneralException, NullParameterException, NegativeBalanceException, RegisterNotFoundException {
+        BalanceHistory currentBalanceHistory = loadLastBalanceHistoryByUserId(userId, productId.getId());
         float currentAmount = currentBalanceHistory != null ? currentBalanceHistory.getCurrentAmount() : 0f;
         BalanceHistory balanceHistory = new BalanceHistory();
         balanceHistory.setUserId(userId);
-        balanceHistory.setDate(new Timestamp(new Date().getTime()));
+        balanceHistory.setDate(new Date());
         balanceHistory.setOldAmount(currentAmount);
+        balanceHistory.setVersion(currentBalanceHistory != null ? currentBalanceHistory.getVersion()+1L : 1L);
+        balanceHistory.setProductId(productId);
         float newCurrentAmount = 0.0f;
         switch (transactionType) {
             case 1: //descontar el saldo
