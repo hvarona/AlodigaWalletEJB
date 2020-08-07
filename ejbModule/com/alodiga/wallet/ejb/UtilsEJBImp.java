@@ -863,7 +863,7 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
 
 	@Override
 	public List<StatusBusinessAffiliationHasFinalState> getStatusBusinessAffiliationHasFinalState(EJBRequest request)throws EmptyListException, GeneralException, NullParameterException {
-		List<StatusBusinessAffiliationHasFinalState> hasFinalStates = (List<StatusBusinessAffiliationHasFinalState>) listEntities(StatusBusinessAffiliationRequest.class, request, logger, getMethodName());
+		List<StatusBusinessAffiliationHasFinalState> hasFinalStates = (List<StatusBusinessAffiliationHasFinalState>) listEntities(StatusBusinessAffiliationHasFinalState.class, request, logger, getMethodName());
 	    return hasFinalStates;
 	}
 
