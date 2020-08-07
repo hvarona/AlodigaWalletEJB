@@ -105,7 +105,7 @@
     <class>com.alodiga.wallet.common.model.NaturalPerson</class>
     <class>com.alodiga.wallet.common.model.PhoneType</class>
     <class>com.alodiga.wallet.common.model.Person</class>
-    <class>com.alodiga.wallet.common.model.BusinessAffiliationRequets</class>
+    <class>com.alodiga.wallet.common.model.BusinessAffiliationRequest</class>
     <class>com.alodiga.wallet.common.model.PersonClassification</class>
     <class>com.alodiga.wallet.common.model.StatusBusinessAffiliationHasFinalState</class>
     <class>com.alodiga.wallet.common.model.StatusBusinessAffiliationRequest</class>

@@ -25,7 +25,7 @@ import com.alodiga.wallet.common.model.Bank;
 import com.alodiga.wallet.common.model.BankOperation;
 import com.alodiga.wallet.common.model.BankOperationMode;
 import com.alodiga.wallet.common.model.BankOperationType;
-import com.alodiga.wallet.common.model.BusinessAffiliationRequets;
+import com.alodiga.wallet.common.model.BusinessAffiliationRequest;
 import com.alodiga.wallet.common.model.BusinessCategory;
 import com.alodiga.wallet.common.model.BusinessSubCategory;
 import com.alodiga.wallet.common.model.City;
@@ -882,20 +882,20 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
 	}
     
     //BusinessAffiliationRequets
-    public List<BusinessAffiliationRequets> getBusinessAffiliationRequets(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException{
-        return (List<BusinessAffiliationRequets>) listEntities(BusinessAffiliationRequets.class, request, logger, getMethodName());
+    public List<BusinessAffiliationRequest> getBusinessAffiliationRequest(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException{
+        return (List<BusinessAffiliationRequest>) listEntities(BusinessAffiliationRequest.class, request, logger, getMethodName());
     }
 
-    public BusinessAffiliationRequets loadBusinessAffiliationRequets(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException{
-        BusinessAffiliationRequets businessAffiliationRequets = (BusinessAffiliationRequets) loadEntity(BusinessAffiliationRequets.class, request, logger, getMethodName());
-        return businessAffiliationRequets;
+    public BusinessAffiliationRequest loadBusinessAffiliationRequest(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException{
+        BusinessAffiliationRequest businessAffiliationRequest = (BusinessAffiliationRequest) loadEntity(BusinessAffiliationRequest.class, request, logger, getMethodName());
+        return businessAffiliationRequest;
     }
 
-    public BusinessAffiliationRequets saveBusinessAffiliationRequets(BusinessAffiliationRequets businessAffiliationRequets) throws RegisterNotFoundException, NullParameterException, GeneralException{
-        if (businessAffiliationRequets == null) {
-            throw new NullParameterException("businessAffiliationRequets", null);
+    public BusinessAffiliationRequest saveBusinessAffiliationRequest(BusinessAffiliationRequest businessAffiliationRequest) throws RegisterNotFoundException, NullParameterException, GeneralException{
+        if (businessAffiliationRequest == null) {
+            throw new NullParameterException("businessAffiliationRequest", null);
         }
-        return (BusinessAffiliationRequets) saveEntity(businessAffiliationRequets);
+        return (BusinessAffiliationRequest) saveEntity(businessAffiliationRequest);
     }
 
 }
