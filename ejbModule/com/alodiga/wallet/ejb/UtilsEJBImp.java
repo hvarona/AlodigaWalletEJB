@@ -42,6 +42,8 @@ import com.alodiga.wallet.common.model.Language;
 import com.alodiga.wallet.common.model.Period;
 import com.alodiga.wallet.common.model.Sms;
 import com.alodiga.wallet.common.model.State;
+import com.alodiga.wallet.common.model.StatusBusinessAffiliationHasFinalState;
+import com.alodiga.wallet.common.model.StatusBusinessAffiliationRequest;
 import com.alodiga.wallet.common.model.StatusTransactionApproveRequest;
 import com.alodiga.wallet.common.model.Transaction;
 import com.alodiga.wallet.common.model.TransactionApproveRequest;
@@ -836,5 +838,45 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         }
         return (CollectionsRequest) saveEntity(collectionsRequest);
     }
+
+	@Override
+	public List<StatusBusinessAffiliationRequest> getStatusBusinessAffiliationRequest(EJBRequest request)throws EmptyListException, GeneralException, NullParameterException {
+		  List<StatusBusinessAffiliationRequest> statusBusinessAffiliationRequests = (List<StatusBusinessAffiliationRequest>) listEntities(StatusBusinessAffiliationRequest.class, request, logger, getMethodName());
+	      return statusBusinessAffiliationRequests;
+	}
+
+	@Override
+	public StatusBusinessAffiliationRequest loadStatusBusinessAffiliationRequest(EJBRequest request)throws RegisterNotFoundException, NullParameterException, GeneralException {
+		StatusBusinessAffiliationRequest statusBusinessAffiliationRequest = (StatusBusinessAffiliationRequest) loadEntity(StatusBusinessAffiliationRequest.class, request, logger, getMethodName());
+        return statusBusinessAffiliationRequest;
+	}
+
+	@Override
+	public StatusBusinessAffiliationRequest saveStatusBusinessAffiliationRequest(StatusTransactionApproveRequest statusTransactionApproveRequest)throws RegisterNotFoundException, NullParameterException, GeneralException {
+		if (statusTransactionApproveRequest == null) {
+            throw new NullParameterException("statusTransactionApproveRequest", null);
+        }
+        return (StatusBusinessAffiliationRequest) saveEntity(statusTransactionApproveRequest);
+	}
+
+	@Override
+	public List<StatusBusinessAffiliationHasFinalState> getStatusBusinessAffiliationHasFinalState(EJBRequest request)throws EmptyListException, GeneralException, NullParameterException {
+		List<StatusBusinessAffiliationHasFinalState> hasFinalStates = (List<StatusBusinessAffiliationHasFinalState>) listEntities(StatusBusinessAffiliationRequest.class, request, logger, getMethodName());
+	    return hasFinalStates;
+	}
+
+	@Override
+	public StatusBusinessAffiliationHasFinalState loadStatusBusinessAffiliationHasFinalState(EJBRequest request)throws RegisterNotFoundException, NullParameterException, GeneralException {
+		StatusBusinessAffiliationHasFinalState hasFinalState = (StatusBusinessAffiliationHasFinalState) loadEntity(StatusBusinessAffiliationHasFinalState.class, request, logger, getMethodName());
+        return hasFinalState;
+	}
+
+	@Override
+	public StatusBusinessAffiliationHasFinalState saveStatusBusinessAffiliationHasFinalState(StatusBusinessAffiliationHasFinalState statusBusinessAffiliationHasFinalState)throws RegisterNotFoundException, NullParameterException, GeneralException {
+		if (statusBusinessAffiliationHasFinalState == null) {
+            throw new NullParameterException("statusBusinessAffiliationHasFinalState", null);
+        }
+        return (StatusBusinessAffiliationHasFinalState) saveEntity(statusBusinessAffiliationHasFinalState);
+	}
 
 }
