@@ -1,8 +1,11 @@
 package com.alodiga.wallet.ejb;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
+
 import javax.ejb.Stateless;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
@@ -10,7 +13,9 @@ import javax.interceptor.Interceptors;
 import javax.persistence.EntityTransaction;
 import javax.persistence.NoResultException;
 import javax.persistence.Query;
+
 import org.apache.log4j.Logger;
+
 import com.alodiga.wallet.common.ejb.UtilsEJB;
 import com.alodiga.wallet.common.ejb.UtilsEJBLocal;
 import com.alodiga.wallet.common.exception.EmptyListException;
@@ -25,7 +30,7 @@ import com.alodiga.wallet.common.model.Bank;
 import com.alodiga.wallet.common.model.BankOperation;
 import com.alodiga.wallet.common.model.BankOperationMode;
 import com.alodiga.wallet.common.model.BankOperationType;
-import com.alodiga.wallet.common.model.BusinessAffiliationRequets;
+import com.alodiga.wallet.common.model.BusinessAffiliationRequest;
 import com.alodiga.wallet.common.model.BusinessCategory;
 import com.alodiga.wallet.common.model.BusinessSubCategory;
 import com.alodiga.wallet.common.model.City;
@@ -41,20 +46,18 @@ import com.alodiga.wallet.common.model.Enterprise;
 import com.alodiga.wallet.common.model.ExchangeRate;
 import com.alodiga.wallet.common.model.Language;
 import com.alodiga.wallet.common.model.Period;
+import com.alodiga.wallet.common.model.PreferenceValue;
 import com.alodiga.wallet.common.model.Sms;
 import com.alodiga.wallet.common.model.State;
+import com.alodiga.wallet.common.model.StatusBusinessAffiliationHasFinalState;
+import com.alodiga.wallet.common.model.StatusBusinessAffiliationRequest;
 import com.alodiga.wallet.common.model.StatusTransactionApproveRequest;
 import com.alodiga.wallet.common.model.Transaction;
 import com.alodiga.wallet.common.model.TransactionApproveRequest;
 import com.alodiga.wallet.common.model.TransactionType;
-import com.alodiga.wallet.common.utils.Constants;
 import com.alodiga.wallet.common.utils.EjbConstants;
 import com.alodiga.wallet.common.utils.EjbUtils;
-import com.alodiga.wallet.common.utils.GeneralUtils;
 import com.alodiga.wallet.common.utils.QueryConstants;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
 
 @Interceptors({WalletLoggerInterceptor.class, WalletContextInterceptor.class})
 @Stateless(name = EjbConstants.UTILS_EJB, mappedName = EjbConstants.UTILS_EJB)
@@ -838,22 +841,87 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         return (CollectionsRequest) saveEntity(collectionsRequest);
     }
 
+
+	@Override
+	public List<StatusBusinessAffiliationRequest> getStatusBusinessAffiliationRequest(EJBRequest request)throws EmptyListException, GeneralException, NullParameterException {
+		  List<StatusBusinessAffiliationRequest> statusBusinessAffiliationRequests = (List<StatusBusinessAffiliationRequest>) listEntities(StatusBusinessAffiliationRequest.class, request, logger, getMethodName());
+	      return statusBusinessAffiliationRequests;
+	}
+
+	@Override
+	public StatusBusinessAffiliationRequest loadStatusBusinessAffiliationRequest(EJBRequest request)throws RegisterNotFoundException, NullParameterException, GeneralException {
+		StatusBusinessAffiliationRequest statusBusinessAffiliationRequest = (StatusBusinessAffiliationRequest) loadEntity(StatusBusinessAffiliationRequest.class, request, logger, getMethodName());
+        return statusBusinessAffiliationRequest;
+	}
+
+	@Override
+	public StatusBusinessAffiliationRequest saveStatusBusinessAffiliationRequest(StatusTransactionApproveRequest statusTransactionApproveRequest)throws RegisterNotFoundException, NullParameterException, GeneralException {
+		if (statusTransactionApproveRequest == null) {
+            throw new NullParameterException("statusTransactionApproveRequest", null);
+        }
+        return (StatusBusinessAffiliationRequest) saveEntity(statusTransactionApproveRequest);
+	}
+
+	@Override
+	public List<StatusBusinessAffiliationHasFinalState> getStatusBusinessAffiliationHasFinalState(EJBRequest request)throws EmptyListException, GeneralException, NullParameterException {
+		List<StatusBusinessAffiliationHasFinalState> hasFinalStates = (List<StatusBusinessAffiliationHasFinalState>) listEntities(StatusBusinessAffiliationHasFinalState.class, request, logger, getMethodName());
+	    return hasFinalStates;
+	}
+
+	@Override
+	public StatusBusinessAffiliationHasFinalState loadStatusBusinessAffiliationHasFinalState(EJBRequest request)throws RegisterNotFoundException, NullParameterException, GeneralException {
+		StatusBusinessAffiliationHasFinalState hasFinalState = (StatusBusinessAffiliationHasFinalState) loadEntity(StatusBusinessAffiliationHasFinalState.class, request, logger, getMethodName());
+        return hasFinalState;
+	}
+
+	@Override
+	public StatusBusinessAffiliationHasFinalState saveStatusBusinessAffiliationHasFinalState(StatusBusinessAffiliationHasFinalState statusBusinessAffiliationHasFinalState)throws RegisterNotFoundException, NullParameterException, GeneralException {
+		if (statusBusinessAffiliationHasFinalState == null) {
+            throw new NullParameterException("statusBusinessAffiliationHasFinalState", null);
+        }
+        return (StatusBusinessAffiliationHasFinalState) saveEntity(statusBusinessAffiliationHasFinalState);
+	}
     
     //BusinessAffiliationRequets
-    public List<BusinessAffiliationRequets> getBusinessAffiliationRequets(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException{
-        return (List<BusinessAffiliationRequets>) listEntities(BusinessAffiliationRequets.class, request, logger, getMethodName());
+	@Override
+    public List<BusinessAffiliationRequest> getBusinessAffiliationRequest(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException{
+        return (List<BusinessAffiliationRequest>) listEntities(BusinessAffiliationRequest.class, request, logger, getMethodName());
     }
 
-    public BusinessAffiliationRequets loadBusinessAffiliationRequets(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException{
-        BusinessAffiliationRequets businessAffiliationRequets = (BusinessAffiliationRequets) loadEntity(BusinessAffiliationRequets.class, request, logger, getMethodName());
-        return businessAffiliationRequets;
+	@Override
+    public BusinessAffiliationRequest loadBusinessAffiliationRequest(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException{
+        BusinessAffiliationRequest businessAffiliationRequest = (BusinessAffiliationRequest) loadEntity(BusinessAffiliationRequest.class, request, logger, getMethodName());
+        return businessAffiliationRequest;
     }
 
-    public BusinessAffiliationRequets saveBusinessAffiliationRequets(BusinessAffiliationRequets businessAffiliationRequets) throws RegisterNotFoundException, NullParameterException, GeneralException{
-        if (businessAffiliationRequets == null) {
-            throw new NullParameterException("businessAffiliationRequets", null);
+	@Override
+    public BusinessAffiliationRequest saveBusinessAffiliationRequest(BusinessAffiliationRequest businessAffiliationRequest) throws RegisterNotFoundException, NullParameterException, GeneralException{
+        if (businessAffiliationRequest == null) {
+            throw new NullParameterException("businessAffiliationRequest", null);
         }
-        return (BusinessAffiliationRequets) saveEntity(businessAffiliationRequets);
+        return (BusinessAffiliationRequest) saveEntity(businessAffiliationRequest);
+    }
+    
+	@Override
+    public boolean validateStatusBusinessAffiliationHasFinalState(Integer statusId,Integer finalId)throws GeneralException, NullParameterException {
+    	if (statusId == null || finalId == null) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "statusId or finalId"), null);
+        }
+		boolean valid = false;
+		List<PreferenceValue> preferenceValues = new ArrayList<PreferenceValue>();
+		Query query = null;
+		try {
+			query = createQuery("SELECT s FROM StatusBusinessAffiliationHasFinalState s WHERE s.statusBusinessAffiliationRequetsId.id=?1 AND s.finalStateId.id=?2");
+			query.setParameter("1", statusId);
+			query.setParameter("2", finalId);
+			preferenceValues = query.setHint("toplink.refresh", "true").getResultList();
+		} catch (Exception e) {
+			throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(),	getMethodName(), e.getMessage()), null);
+		}
+		if (preferenceValues.isEmpty()) {
+			valid = true;
+		}
+		return valid;
     }
 
 }
