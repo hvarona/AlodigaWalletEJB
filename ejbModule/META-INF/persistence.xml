@@ -109,6 +109,7 @@
     <class>com.alodiga.wallet.common.model.PersonClassification</class>
     <class>com.alodiga.wallet.common.model.StatusBusinessAffiliationHasFinalState</class>
     <class>com.alodiga.wallet.common.model.StatusBusinessAffiliationRequest</class>
+    <class>com.alodiga.wallet.common.model.LegalRepresentative</class>
     <class>com.alodiga.wallet.common.model.PersonHasAddress</class>
     <exclude-unlisted-classes>true</exclude-unlisted-classes>
     <properties>
