@@ -111,6 +111,8 @@
     <class>com.alodiga.wallet.common.model.StatusBusinessAffiliationRequest</class>
     <class>com.alodiga.wallet.common.model.LegalRepresentative</class>
     <class>com.alodiga.wallet.common.model.PersonHasAddress</class>
+    <class>com.alodiga.wallet.common.model.BusinessType</class>
+    <class>com.alodiga.wallet.common.model.BusinessServiceType</class>
     <exclude-unlisted-classes>true</exclude-unlisted-classes>
     <properties>
       <property name="eclipselink.logging.timestamp" value="true"/>
