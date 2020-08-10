@@ -17,8 +17,12 @@ import javax.persistence.NoResultException;
 import javax.persistence.Query;
 import org.apache.log4j.Logger;
 
+import com.alodiga.businessportal.ws.BPBusinessWSProxy;
+import com.alodiga.businessportal.ws.BpBusiness;
+import com.alodiga.businessportal.ws.BusinessSearchType;
 import com.alodiga.wallet.common.ejb.ProductEJB;
 import com.alodiga.wallet.common.ejb.ProductEJBLocal;
+import com.alodiga.wallet.common.ejb.UtilsEJB;
 import com.alodiga.wallet.common.ejb.UtilsEJBLocal;
 import com.alodiga.wallet.common.exception.EmptyListException;
 import com.alodiga.wallet.common.exception.GeneralException;
@@ -42,9 +46,13 @@ import com.alodiga.wallet.common.model.Provider;
 import com.alodiga.wallet.common.model.StatusTransactionApproveRequest;
 import com.alodiga.wallet.common.model.StatusTransactionApproveRequestEnum;
 import com.alodiga.wallet.common.model.TransactionApproveRequest;
+import com.alodiga.wallet.common.utils.Constants;
+import com.alodiga.wallet.common.utils.EJBServiceLocator;
 import com.alodiga.wallet.common.utils.EjbConstants;
 import com.alodiga.wallet.common.utils.EjbUtils;
 import com.alodiga.wallet.common.utils.QueryConstants;
+import com.alodiga.wallet.common.utils.SendMailTherad;
+import com.alodiga.wallet.common.utils.SendSmsThread;
 
 @Interceptors({WalletLoggerInterceptor.class, WalletContextInterceptor.class})
 @Stateless(name = EjbConstants.PRODUCT_EJB, mappedName = EjbConstants.PRODUCT_EJB)
@@ -421,6 +429,16 @@ public class ProductEJBImp extends AbstractWalletEJB implements ProductEJB, Prod
 						BalanceHistory balancehistory = createBalanceHistory(transactionApproveRequest.getUnifiedRegistryUserId(),transactionApproveRequest.getProductId(), rechargeAmount,2);
 						balancehistory.setTransactionId(transactionApproveRequest.getTransactionId());
 //						saveBalanceHistory(balancehistory);
+			            try {
+//			            	BPBusinessWSProxy proxy = new BPBusinessWSProxy();
+//			            	BpBusiness bpBussiness = proxy.getBusiness(BusinessSearchType.ID, String.valueOf(transactionApproveRequest.getUnifiedRegistryUserId()));
+//			            	bpBussiness.getPhoneNumber();
+							SendSmsThread sendMailTherad = new SendSmsThread("584160136793",transactionApproveRequest.getTransactionId().getTotalAmount(), 
+							transactionApproveRequest.getRequestNumber(), Constants.SEND_TYPE_SMS_RECHARGE,transactionApproveRequest.getUnifiedRegistryUserId(),entityManager);
+				            sendMailTherad.run();
+				        } catch (Exception ex) {
+				            ex.printStackTrace();
+				        }
 					}
 			}  catch (RegisterNotFoundException e) {
 				e.printStackTrace();
@@ -457,9 +475,9 @@ public class ProductEJBImp extends AbstractWalletEJB implements ProductEJB, Prod
         float currentAmount = currentBalanceHistory != null ? currentBalanceHistory.getCurrentAmount() : 0f;
         BalanceHistory balanceHistory = new BalanceHistory();
         balanceHistory.setUserId(userId);
-        balanceHistory.setDate(new Date());
+        balanceHistory.setDate(new Timestamp(new java.util.Date().getTime()));
         balanceHistory.setOldAmount(currentAmount);
-        balanceHistory.setVersion(currentBalanceHistory != null ? currentBalanceHistory.getVersion()+1L : 1L);
+        balanceHistory.setVersion(currentBalanceHistory!=null?currentBalanceHistory.getId():null);
         balanceHistory.setProductId(productId);
         float newCurrentAmount = 0.0f;
         switch (transactionType) {
