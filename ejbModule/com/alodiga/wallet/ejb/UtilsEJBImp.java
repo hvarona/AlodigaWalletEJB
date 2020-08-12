@@ -33,6 +33,8 @@ import com.alodiga.wallet.common.model.BankOperationType;
 import com.alodiga.wallet.common.model.BusinessAffiliationRequest;
 import com.alodiga.wallet.common.model.BusinessCategory;
 import com.alodiga.wallet.common.model.BusinessSubCategory;
+import com.alodiga.wallet.common.model.BusinessType;
+import com.alodiga.wallet.common.model.BusinessServiceType;
 import com.alodiga.wallet.common.model.City;
 import com.alodiga.wallet.common.model.Close;
 import com.alodiga.wallet.common.model.CollectionType;
@@ -730,6 +732,30 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         return (BusinessSubCategory) saveEntity(businessSubCategory);
     }
 
+    //BusinessType
+    public List<BusinessType> getBusinessType(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        return (List<BusinessType>) listEntities(BusinessType.class, request, logger, getMethodName());
+    }
+    
+    public BusinessType saveBusinessType(BusinessType businessType) throws RegisterNotFoundException, NullParameterException, GeneralException {
+        if (businessType == null) {
+            throw new NullParameterException("businessType", null);
+        }
+        return (BusinessType) saveEntity(businessType);
+    }
+    
+    //BusinessServiceType
+     public List<BusinessServiceType> getBusinessServiceType(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        return (List<BusinessServiceType>) listEntities(BusinessServiceType.class, request, logger, getMethodName());
+    }
+     
+     public BusinessServiceType saveBusinessServiceType(BusinessServiceType businessServiceType) throws RegisterNotFoundException, NullParameterException, GeneralException {
+        if (businessServiceType == null) {
+            throw new NullParameterException("businessServiceType", null);
+        }
+        return (BusinessServiceType) saveEntity(businessServiceType);
+    }
+    
     //TransactionApproveRequest
     public List<TransactionApproveRequest> getTransactionApproveRequest(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
         return (List<TransactionApproveRequest>) listEntities(TransactionApproveRequest.class, request, logger, getMethodName());
