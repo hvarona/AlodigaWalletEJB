@@ -47,6 +47,7 @@ import com.alodiga.wallet.common.model.ExchangeRate;
 import com.alodiga.wallet.common.model.Language;
 import com.alodiga.wallet.common.model.Period;
 import com.alodiga.wallet.common.model.PreferenceValue;
+import com.alodiga.wallet.common.model.RequestHasCollectionRequest;
 import com.alodiga.wallet.common.model.Sms;
 import com.alodiga.wallet.common.model.State;
 import com.alodiga.wallet.common.model.StatusBusinessAffiliationHasFinalState;
@@ -923,5 +924,50 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
 		}
 		return valid;
     }
+
+	@Override
+	public List<RequestHasCollectionRequest> getRequestsHasCollectionsRequest(EJBRequest request)throws EmptyListException, GeneralException, NullParameterException {
+		 List<RequestHasCollectionRequest> requestHasCollectionsRequest = (List<RequestHasCollectionRequest>) listEntities(RequestHasCollectionRequest.class, request, logger, getMethodName());
+	      return requestHasCollectionsRequest;
+	}
+
+	@Override
+	public RequestHasCollectionRequest loadRequestHasCollectionsRequest(EJBRequest request)throws RegisterNotFoundException, NullParameterException, GeneralException {
+		RequestHasCollectionRequest requestHasCollectionsRequest = (RequestHasCollectionRequest) loadEntity(RequestHasCollectionRequest.class, request, logger, getMethodName());
+	      return requestHasCollectionsRequest;
+	}
+
+	@Override
+	public RequestHasCollectionRequest saveRequestHasCollectionsRequest(RequestHasCollectionRequest requestHasCollectionsRequest) throws NullParameterException, GeneralException {
+		   if (requestHasCollectionsRequest == null) {
+	            throw new NullParameterException("requestHasCollectionsRequest", null);
+	        }
+	        return (RequestHasCollectionRequest) saveEntity(requestHasCollectionsRequest);
+	}
+
+	@Override
+	public List<RequestHasCollectionRequest> getRequestsHasCollectionsRequestByRequestByCollectionRequest(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+		 List<RequestHasCollectionRequest> requestHasCollectionsRequestList = null;
+	        Map<String, Object> params = request.getParams();
+	        if (!params.containsKey(EjbConstants.PARAM_REQUEST_ID)) {
+	            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_REQUEST_ID), null);
+	        }
+	        if (!params.containsKey(EjbConstants.PARAM_COLLECTION_REQUEST_ID)) {
+	            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_COLLECTION_REQUEST_ID), null);
+	        }
+	        requestHasCollectionsRequestList = (List<RequestHasCollectionRequest>) getNamedQueryResult(RequestHasCollectionRequest.class, QueryConstants.REQUEST_HAS_COLLECTION_REQUEST_BY_REQUEST_BY_COLLECTION_REQUEST, request, getMethodName(), logger, "requestHasCollectionsRequestList");
+	        return requestHasCollectionsRequestList;
+	}
+
+	@Override
+	public List<RequestHasCollectionRequest> getRequestsHasCollectionsRequestByRequest(EJBRequest request)throws EmptyListException, GeneralException, NullParameterException {
+		   List<RequestHasCollectionRequest> requestHasCollectionsRequestList = null;
+	        Map<String, Object> params = request.getParams();
+	        if (!params.containsKey(EjbConstants.PARAM_REQUEST_ID)) {
+	            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_REQUEST_ID), null);
+	        }
+	        requestHasCollectionsRequestList = (List<RequestHasCollectionRequest>) getNamedQueryResult(RequestHasCollectionRequest.class, QueryConstants.REQUEST_HAS_COLLECTION_REQUEST_BY_REQUEST, request, getMethodName(), logger, "requestHasCollectionsRequestList");
+	        return requestHasCollectionsRequestList;
+	}
 
 }
