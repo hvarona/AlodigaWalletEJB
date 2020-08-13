@@ -113,6 +113,10 @@
     <class>com.alodiga.wallet.common.model.PersonHasAddress</class>
     <class>com.alodiga.wallet.common.model.BusinessType</class>
     <class>com.alodiga.wallet.common.model.BusinessServiceType</class>
+    <class>com.alodiga.wallet.common.model.ReviewOfac</class>
+    <class>com.alodiga.wallet.common.model.StatusApplicant</class>
+    <class>com.alodiga.wallet.common.model.StatusCard</class>
+    <class>com.alodiga.wallet.common.model.StatusCardHasFinalState</class>
     <exclude-unlisted-classes>true</exclude-unlisted-classes>
     <properties>
       <property name="eclipselink.logging.timestamp" value="true"/>
