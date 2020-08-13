@@ -18,8 +18,10 @@ import com.alodiga.wallet.common.genericEJB.EJBRequest;
 import com.alodiga.wallet.common.genericEJB.WalletContextInterceptor;
 import com.alodiga.wallet.common.genericEJB.WalletLoggerInterceptor;
 import com.alodiga.wallet.common.model.DocumentsPersonType;
+import com.alodiga.wallet.common.model.LegalPerson;
 import com.alodiga.wallet.common.model.LegalRepresentative;
 import com.alodiga.wallet.common.model.NaturalPerson;
+import com.alodiga.wallet.common.model.Person;
 import com.alodiga.wallet.common.model.PersonHasAddress;
 import com.alodiga.wallet.common.model.PersonType;
 import com.alodiga.wallet.common.model.PhonePerson;
@@ -86,12 +88,11 @@ public class PersonEJBImp extends AbstractWalletEJB implements PersonEJB, Person
         return personTypes;
     }
 
-    
     //Tabla de PhonePerson
-    public List<PhonePerson> getPhonePerson(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException{
+    public List<PhonePerson> getPhonePerson(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
         return (List<PhonePerson>) listEntities(PhonePerson.class, request, logger, getMethodName());
     }
-    
+
     @Override
     public List<PhonePerson> getPhoneByPerson(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
         List<PhonePerson> phonePersonList = null;
@@ -103,19 +104,18 @@ public class PersonEJBImp extends AbstractWalletEJB implements PersonEJB, Person
         return phonePersonList;
     }
 
-    public PhonePerson loadPhonePerson(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException{
+    public PhonePerson loadPhonePerson(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
         PhonePerson phonePerson = (PhonePerson) loadEntity(PhonePerson.class, request, logger, getMethodName());
         return phonePerson;
     }
 
-    public PhonePerson savePhonePerson(PhonePerson phonePerson) throws RegisterNotFoundException, NullParameterException, GeneralException{
+    public PhonePerson savePhonePerson(PhonePerson phonePerson) throws RegisterNotFoundException, NullParameterException, GeneralException {
         if (phonePerson == null) {
             throw new NullParameterException("phonePerson", null);
         }
         return (PhonePerson) saveEntity(phonePerson);
     }
 
-    
     //PersonHasAddress
     @Override
     public List<PersonHasAddress> getPersonHasAddresses(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
@@ -147,40 +147,72 @@ public class PersonEJBImp extends AbstractWalletEJB implements PersonEJB, Person
         return (PersonHasAddress) saveEntity(personHasAddress);
     }
 
-    
     //LegalRepresentative
-    public List<LegalRepresentative> getLegalRepresentative(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException{
+    public List<LegalRepresentative> getLegalRepresentative(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
         return (List<LegalRepresentative>) listEntities(LegalRepresentative.class, request, logger, getMethodName());
     }
 
-    public LegalRepresentative loadLegalRepresentative(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException{
+    public LegalRepresentative loadLegalRepresentative(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
         LegalRepresentative legalRepresentative = (LegalRepresentative) loadEntity(LegalRepresentative.class, request, logger, getMethodName());
         return legalRepresentative;
     }
 
-    public LegalRepresentative saveLegalRepresentative(LegalRepresentative legalRepresentative) throws RegisterNotFoundException, NullParameterException, GeneralException{
+    public LegalRepresentative saveLegalRepresentative(LegalRepresentative legalRepresentative) throws RegisterNotFoundException, NullParameterException, GeneralException {
         if (legalRepresentative == null) {
             throw new NullParameterException("legalRepresentative", null);
         }
         return (LegalRepresentative) saveEntity(legalRepresentative);
     }
-    
+
+    //Person
+    public List<Person> getPerson(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        return (List<Person>) listEntities(Person.class, request, logger, getMethodName());
+    }
+
+    public Person loadPerson(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
+        Person person = (Person) loadEntity(Person.class, request, logger, getMethodName());
+        return person;
+    }
+
+    public Person savePerson(Person person) throws RegisterNotFoundException, NullParameterException, GeneralException {
+        if (person == null) {
+            throw new NullParameterException("person", null);
+        }
+        return (Person) saveEntity(person);
+    }
+
     //Natural Person
-    public List<NaturalPerson> getNaturalPerson(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException{
+    public List<NaturalPerson> getNaturalPerson(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
         return (List<NaturalPerson>) listEntities(NaturalPerson.class, request, logger, getMethodName());
     }
 
-    public NaturalPerson loadNaturalPerson(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException{
+    public NaturalPerson loadNaturalPerson(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
         NaturalPerson naturalPerson = (NaturalPerson) loadEntity(NaturalPerson.class, request, logger, getMethodName());
         return naturalPerson;
     }
 
-    public NaturalPerson saveNaturalPerson(NaturalPerson naturalPerson) throws RegisterNotFoundException, NullParameterException, GeneralException{
+    public NaturalPerson saveNaturalPerson(NaturalPerson naturalPerson) throws RegisterNotFoundException, NullParameterException, GeneralException {
         if (naturalPerson == null) {
             throw new NullParameterException("naturalPerson", null);
         }
         return (NaturalPerson) saveEntity(naturalPerson);
     }
 
+    //Legal Person
+    public List<LegalPerson> getLegalPerson(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        return (List<LegalPerson>) listEntities(LegalPerson.class, request, logger, getMethodName());
+    }
+
+    public LegalPerson loadLegalPerson(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
+        LegalPerson legalPerson = (LegalPerson) loadEntity(LegalPerson.class, request, logger, getMethodName());
+        return legalPerson;
+    }
+
+    public LegalPerson saveLegalPerson(LegalPerson legalPerson) throws RegisterNotFoundException, NullParameterException, GeneralException {
+        if (legalPerson == null) {
+            throw new NullParameterException("legalPerson", null);
+        }
+        return (LegalPerson) saveEntity(legalPerson);
+    }
 
 }
