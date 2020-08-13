@@ -33,6 +33,8 @@ import com.alodiga.wallet.common.model.BankOperationType;
 import com.alodiga.wallet.common.model.BusinessAffiliationRequest;
 import com.alodiga.wallet.common.model.BusinessCategory;
 import com.alodiga.wallet.common.model.BusinessSubCategory;
+import com.alodiga.wallet.common.model.BusinessType;
+import com.alodiga.wallet.common.model.BusinessServiceType;
 import com.alodiga.wallet.common.model.City;
 import com.alodiga.wallet.common.model.Close;
 import com.alodiga.wallet.common.model.CollectionType;
@@ -46,7 +48,9 @@ import com.alodiga.wallet.common.model.Enterprise;
 import com.alodiga.wallet.common.model.ExchangeRate;
 import com.alodiga.wallet.common.model.Language;
 import com.alodiga.wallet.common.model.Period;
+import com.alodiga.wallet.common.model.PersonType;
 import com.alodiga.wallet.common.model.PreferenceValue;
+import com.alodiga.wallet.common.model.RequestHasCollectionRequest;
 import com.alodiga.wallet.common.model.Sms;
 import com.alodiga.wallet.common.model.State;
 import com.alodiga.wallet.common.model.StatusBusinessAffiliationHasFinalState;
@@ -730,6 +734,30 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         return (BusinessSubCategory) saveEntity(businessSubCategory);
     }
 
+    //BusinessType
+    public List<BusinessType> getBusinessType(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        return (List<BusinessType>) listEntities(BusinessType.class, request, logger, getMethodName());
+    }
+    
+    public BusinessType saveBusinessType(BusinessType businessType) throws RegisterNotFoundException, NullParameterException, GeneralException {
+        if (businessType == null) {
+            throw new NullParameterException("businessType", null);
+        }
+        return (BusinessType) saveEntity(businessType);
+    }
+    
+    //BusinessServiceType
+     public List<BusinessServiceType> getBusinessServiceType(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        return (List<BusinessServiceType>) listEntities(BusinessServiceType.class, request, logger, getMethodName());
+    }
+     
+     public BusinessServiceType saveBusinessServiceType(BusinessServiceType businessServiceType) throws RegisterNotFoundException, NullParameterException, GeneralException {
+        if (businessServiceType == null) {
+            throw new NullParameterException("businessServiceType", null);
+        }
+        return (BusinessServiceType) saveEntity(businessServiceType);
+    }
+    
     //TransactionApproveRequest
     public List<TransactionApproveRequest> getTransactionApproveRequest(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
         return (List<TransactionApproveRequest>) listEntities(TransactionApproveRequest.class, request, logger, getMethodName());
@@ -923,5 +951,67 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
 		}
 		return valid;
     }
+
+	@Override
+	public List<RequestHasCollectionRequest> getRequestsHasCollectionsRequest(EJBRequest request)throws EmptyListException, GeneralException, NullParameterException {
+		 List<RequestHasCollectionRequest> requestHasCollectionsRequest = (List<RequestHasCollectionRequest>) listEntities(RequestHasCollectionRequest.class, request, logger, getMethodName());
+	      return requestHasCollectionsRequest;
+	}
+
+	@Override
+	public RequestHasCollectionRequest loadRequestHasCollectionsRequest(EJBRequest request)throws RegisterNotFoundException, NullParameterException, GeneralException {
+		RequestHasCollectionRequest requestHasCollectionsRequest = (RequestHasCollectionRequest) loadEntity(RequestHasCollectionRequest.class, request, logger, getMethodName());
+	      return requestHasCollectionsRequest;
+	}
+
+	@Override
+	public RequestHasCollectionRequest saveRequestHasCollectionsRequest(RequestHasCollectionRequest requestHasCollectionsRequest) throws NullParameterException, GeneralException {
+		   if (requestHasCollectionsRequest == null) {
+	            throw new NullParameterException("requestHasCollectionsRequest", null);
+	        }
+	        return (RequestHasCollectionRequest) saveEntity(requestHasCollectionsRequest);
+	}
+
+	@Override
+	public List<RequestHasCollectionRequest> getRequestsHasCollectionsRequestByRequestByCollectionRequest(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+		 List<RequestHasCollectionRequest> requestHasCollectionsRequestList = null;
+	        Map<String, Object> params = request.getParams();
+	        if (!params.containsKey(EjbConstants.PARAM_BUSINESS_AFFILIATION_REQUEST)) {
+	            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_BUSINESS_AFFILIATION_REQUEST), null);
+	        }
+	        if (!params.containsKey(EjbConstants.PARAM_COLLECTION_REQUEST_ID)) {
+	            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_COLLECTION_REQUEST_ID), null);
+	        }
+	        requestHasCollectionsRequestList = (List<RequestHasCollectionRequest>) getNamedQueryResult(RequestHasCollectionRequest.class, QueryConstants.REQUEST_HAS_COLLECTION_REQUEST_BY_REQUEST_BY_COLLECTION_REQUEST, request, getMethodName(), logger, "requestHasCollectionsRequestList");
+	        return requestHasCollectionsRequestList;
+	}
+
+	@Override
+	public List<RequestHasCollectionRequest> getRequestsHasCollectionsRequestByBusinessAffiliationRequest(EJBRequest request)throws EmptyListException, GeneralException, NullParameterException {
+		   List<RequestHasCollectionRequest> requestHasCollectionsRequestList = null;
+	        Map<String, Object> params = request.getParams();
+	        if (!params.containsKey(EjbConstants.PARAM_BUSINESS_AFFILIATION_REQUEST)) {
+	            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_BUSINESS_AFFILIATION_REQUEST), null);
+	        }
+	        requestHasCollectionsRequestList = (List<RequestHasCollectionRequest>) getNamedQueryResult(RequestHasCollectionRequest.class, QueryConstants.REQUEST_HAS_COLLECTION_REQUEST_BY_BUSINESS_AFFILIATON_REQUEST, request, getMethodName(), logger, "requestHasCollectionsRequestList");
+	        return requestHasCollectionsRequestList;
+	}
+	
+	 @Override
+	 public List<PersonType> getPersonTypeByCountryByIndNaturalPerson(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+	        List<PersonType> personTypes = null;
+	        Map<String, Object> params = request.getParams();
+	        if (!params.containsKey(EjbConstants.PARAM_COUNTRY_ID)) {
+	            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_COUNTRY_ID), null);
+	        }
+	        if (!params.containsKey(EjbConstants.PARAM_ORIGIN_APPLICATION_ID)) {
+	            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_ORIGIN_APPLICATION_ID), null);
+	        }
+	        if (!params.containsKey(EjbConstants.PARAM_IND_NATURAL_PERSON)) {
+	            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_IND_NATURAL_PERSON), null);
+	        }
+	        personTypes = (List<PersonType>) getNamedQueryResult(PersonType.class, QueryConstants.PERSON_TYPE_BY_COUNTRY_BY_IND_NATURAL_PERSON, request, getMethodName(), logger, "personTypes");
+	        return personTypes;
+	    }
 
 }
