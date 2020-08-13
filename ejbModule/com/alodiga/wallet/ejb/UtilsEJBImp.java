@@ -751,6 +751,23 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         return (List<BusinessServiceType>) listEntities(BusinessServiceType.class, request, logger, getMethodName());
     }
      
+     public BusinessServiceType loadBusinessServiceTypebyId(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
+        List<BusinessServiceType> businessService = null;
+        Map<String, Object> params = request.getParams();
+
+        if (!params.containsKey(QueryConstants.PARAM_BUSINESS_TYPE_ID)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), QueryConstants.PARAM_BUSINESS_TYPE_ID), null);
+        }
+
+        try {
+            businessService = (List<BusinessServiceType>) getNamedQueryResult(BusinessServiceType.class, QueryConstants.BUSINESS_TYPE_BY_ID, request, getMethodName(), logger, "businessTypeById");
+        } catch (EmptyListException e) {
+            throw new RegisterNotFoundException(logger, sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName(), "businessTypeById"), null);
+        }
+
+        return businessService.get(0);
+    }
+     
      public BusinessServiceType saveBusinessServiceType(BusinessServiceType businessServiceType) throws RegisterNotFoundException, NullParameterException, GeneralException {
         if (businessServiceType == null) {
             throw new NullParameterException("businessServiceType", null);
