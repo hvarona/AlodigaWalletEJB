@@ -17,9 +17,9 @@ import javax.persistence.NoResultException;
 import javax.persistence.Query;
 import org.apache.log4j.Logger;
 
-import com.alodiga.businessportal.ws.BPBusinessWSProxy;
-import com.alodiga.businessportal.ws.BpBusiness;
-import com.alodiga.businessportal.ws.BusinessSearchType;
+//import com.alodiga.businessportal.ws.BPBusinessWSProxy;
+//import com.alodiga.businessportal.ws.BpBusiness;
+//import com.alodiga.businessportal.ws.BusinessSearchType;
 import com.alodiga.wallet.common.ejb.ProductEJB;
 import com.alodiga.wallet.common.ejb.ProductEJBLocal;
 import com.alodiga.wallet.common.ejb.UtilsEJB;

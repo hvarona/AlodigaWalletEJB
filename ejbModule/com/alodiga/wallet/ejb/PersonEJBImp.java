@@ -19,6 +19,7 @@ import com.alodiga.wallet.common.genericEJB.WalletContextInterceptor;
 import com.alodiga.wallet.common.genericEJB.WalletLoggerInterceptor;
 import com.alodiga.wallet.common.model.DocumentsPersonType;
 import com.alodiga.wallet.common.model.LegalRepresentative;
+import com.alodiga.wallet.common.model.NaturalPerson;
 import com.alodiga.wallet.common.model.PersonHasAddress;
 import com.alodiga.wallet.common.model.PersonType;
 import com.alodiga.wallet.common.model.PhonePerson;
@@ -163,5 +164,23 @@ public class PersonEJBImp extends AbstractWalletEJB implements PersonEJB, Person
         }
         return (LegalRepresentative) saveEntity(legalRepresentative);
     }
+    
+    //Natural Person
+    public List<NaturalPerson> getNaturalPerson(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException{
+        return (List<NaturalPerson>) listEntities(NaturalPerson.class, request, logger, getMethodName());
+    }
+
+    public NaturalPerson loadNaturalPerson(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException{
+        NaturalPerson naturalPerson = (NaturalPerson) loadEntity(NaturalPerson.class, request, logger, getMethodName());
+        return naturalPerson;
+    }
+
+    public NaturalPerson saveNaturalPerson(NaturalPerson naturalPerson) throws RegisterNotFoundException, NullParameterException, GeneralException{
+        if (naturalPerson == null) {
+            throw new NullParameterException("naturalPerson", null);
+        }
+        return (NaturalPerson) saveEntity(naturalPerson);
+    }
+
 
 }
