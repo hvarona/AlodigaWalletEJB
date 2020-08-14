@@ -25,6 +25,7 @@ import com.alodiga.wallet.common.model.Person;
 import com.alodiga.wallet.common.model.PersonHasAddress;
 import com.alodiga.wallet.common.model.PersonType;
 import com.alodiga.wallet.common.model.PhonePerson;
+import com.alodiga.wallet.common.model.StatusApplicant;
 import com.alodiga.wallet.common.utils.EjbConstants;
 import com.alodiga.wallet.common.utils.QueryConstants;
 import java.util.Map;
@@ -213,6 +214,23 @@ public class PersonEJBImp extends AbstractWalletEJB implements PersonEJB, Person
             throw new NullParameterException("legalPerson", null);
         }
         return (LegalPerson) saveEntity(legalPerson);
+    }
+
+    //StatusApplicant
+    public List<StatusApplicant> getStatusApplicant(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        return (List<StatusApplicant>) listEntities(StatusApplicant.class, request, logger, getMethodName());
+    }
+
+    public StatusApplicant loadStatusApplicant(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
+        StatusApplicant statusApplicant = (StatusApplicant) loadEntity(StatusApplicant.class, request, logger, getMethodName());
+        return statusApplicant;
+    }
+
+    public StatusApplicant saveStatusApplicant(StatusApplicant statusApplicant) throws RegisterNotFoundException, NullParameterException, GeneralException {
+        if (statusApplicant == null) {
+            throw new NullParameterException("statusApplicant", null);
+        }
+        return (StatusApplicant) saveEntity(statusApplicant);
     }
 
 }
