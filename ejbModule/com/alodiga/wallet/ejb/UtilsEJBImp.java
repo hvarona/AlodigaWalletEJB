@@ -53,6 +53,8 @@ import com.alodiga.wallet.common.model.PreferenceValue;
 import com.alodiga.wallet.common.model.RequestHasCollectionRequest;
 import com.alodiga.wallet.common.model.Sms;
 import com.alodiga.wallet.common.model.State;
+import com.alodiga.wallet.common.model.StatusCard;
+import com.alodiga.wallet.common.model.StatusCardHasFinalState;
 import com.alodiga.wallet.common.model.StatusBusinessAffiliationHasFinalState;
 import com.alodiga.wallet.common.model.StatusBusinessAffiliationRequest;
 import com.alodiga.wallet.common.model.StatusTransactionApproveRequest;
@@ -1029,6 +1031,23 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
 	        }
 	        personTypes = (List<PersonType>) getNamedQueryResult(PersonType.class, QueryConstants.PERSON_TYPE_BY_COUNTRY_BY_IND_NATURAL_PERSON, request, getMethodName(), logger, "personTypes");
 	        return personTypes;
-	    }
-
+	}
+         
+        //StatusCard
+        public List<StatusCard> getStatusCard(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+                return (List<StatusCard>) listEntities(StatusCard.class, request, logger, getMethodName());
+        }
+        
+	public StatusCard saveStatusCard(StatusCard statusCard) throws NullParameterException, GeneralException {
+		   if (statusCard == null) {
+	            throw new NullParameterException("statusCard", null);
+	        }
+	        return (StatusCard) saveEntity(statusCard);
+        }
+        
+        
+        //StatusCardHasFinalState
+        public List<StatusCardHasFinalState> getStatusCardHasFinalState(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+                return (List<StatusCardHasFinalState>) listEntities(StatusCardHasFinalState.class, request, logger, getMethodName());
+        }
 }
