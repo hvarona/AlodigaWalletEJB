@@ -3,9 +3,9 @@ package com.alodiga.wallet.ejb;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import javax.ejb.Stateless;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
@@ -13,9 +13,7 @@ import javax.interceptor.Interceptors;
 import javax.persistence.EntityTransaction;
 import javax.persistence.NoResultException;
 import javax.persistence.Query;
-
 import org.apache.log4j.Logger;
-
 import com.alodiga.wallet.common.ejb.UtilsEJB;
 import com.alodiga.wallet.common.ejb.UtilsEJBLocal;
 import com.alodiga.wallet.common.exception.EmptyListException;
@@ -51,6 +49,7 @@ import com.alodiga.wallet.common.model.Period;
 import com.alodiga.wallet.common.model.PersonType;
 import com.alodiga.wallet.common.model.PreferenceValue;
 import com.alodiga.wallet.common.model.RequestHasCollectionRequest;
+import com.alodiga.wallet.common.model.ReviewOfac;
 import com.alodiga.wallet.common.model.Sms;
 import com.alodiga.wallet.common.model.State;
 import com.alodiga.wallet.common.model.StatusCard;
@@ -61,6 +60,7 @@ import com.alodiga.wallet.common.model.StatusTransactionApproveRequest;
 import com.alodiga.wallet.common.model.Transaction;
 import com.alodiga.wallet.common.model.TransactionApproveRequest;
 import com.alodiga.wallet.common.model.TransactionType;
+import com.alodiga.wallet.common.utils.Constants;
 import com.alodiga.wallet.common.utils.EjbConstants;
 import com.alodiga.wallet.common.utils.EjbUtils;
 import com.alodiga.wallet.common.utils.QueryConstants;
@@ -740,16 +740,16 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
     public List<BusinessType> getBusinessType(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
         return (List<BusinessType>) listEntities(BusinessType.class, request, logger, getMethodName());
     }
-    
+
     public BusinessType saveBusinessType(BusinessType businessType) throws RegisterNotFoundException, NullParameterException, GeneralException {
         if (businessType == null) {
             throw new NullParameterException("businessType", null);
         }
         return (BusinessType) saveEntity(businessType);
     }
-    
+
     //BusinessServiceType
-     public List<BusinessServiceType> getBusinessServiceType(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+    public List<BusinessServiceType> getBusinessServiceType(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
         return (List<BusinessServiceType>) listEntities(BusinessServiceType.class, request, logger, getMethodName());
     }
      
@@ -776,7 +776,7 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         }
         return (BusinessServiceType) saveEntity(businessServiceType);
     }
-    
+
     //TransactionApproveRequest
     public List<TransactionApproveRequest> getTransactionApproveRequest(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
         return (List<TransactionApproveRequest>) listEntities(TransactionApproveRequest.class, request, logger, getMethodName());
@@ -855,7 +855,7 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
     public List<CollectionsRequest> getCollectionsRequest(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
         return (List<CollectionsRequest>) listEntities(CollectionsRequest.class, request, logger, getMethodName());
     }
-    
+
     public List<CollectionsRequest> getCollectionsRequestByID(CollectionsRequest collectionsRequest) throws GeneralException, EmptyListException, NullParameterException {
         List<CollectionsRequest> collectionsRequestList = null;
         try {
@@ -888,150 +888,204 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         return (CollectionsRequest) saveEntity(collectionsRequest);
     }
 
+    @Override
+    public List<StatusBusinessAffiliationRequest> getStatusBusinessAffiliationRequest(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        List<StatusBusinessAffiliationRequest> statusBusinessAffiliationRequests = (List<StatusBusinessAffiliationRequest>) listEntities(StatusBusinessAffiliationRequest.class, request, logger, getMethodName());
+        return statusBusinessAffiliationRequests;
+    }
 
 	@Override
 	public List<StatusBusinessAffiliationRequest> getStatusBusinessAffiliationRequest(EJBRequest request)throws EmptyListException, GeneralException, NullParameterException {
-		  List<StatusBusinessAffiliationRequest> statusBusinessAffiliationRequests = (List<StatusBusinessAffiliationRequest>) listEntities(StatusBusinessAffiliationRequest.class, request, logger, getMethodName());
-	      return statusBusinessAffiliationRequests;
+            List<StatusBusinessAffiliationRequest> statusBusinessAffiliationRequest = (List<StatusBusinessAffiliationRequest>) listEntities(StatusBusinessAffiliationRequest.class, request, logger, getMethodName());
+	    return statusBusinessAffiliationRequest;
 	}
 
 	@Override
 	public StatusBusinessAffiliationRequest loadStatusBusinessAffiliationRequest(EJBRequest request)throws RegisterNotFoundException, NullParameterException, GeneralException {
 		StatusBusinessAffiliationRequest statusBusinessAffiliationRequest = (StatusBusinessAffiliationRequest) loadEntity(StatusBusinessAffiliationRequest.class, request, logger, getMethodName());
         return statusBusinessAffiliationRequest;
-	}
+    }
 
-	@Override
-	public StatusBusinessAffiliationRequest saveStatusBusinessAffiliationRequest(StatusTransactionApproveRequest statusTransactionApproveRequest)throws RegisterNotFoundException, NullParameterException, GeneralException {
-		if (statusTransactionApproveRequest == null) {
+    @Override
+    public StatusBusinessAffiliationRequest saveStatusBusinessAffiliationRequest(StatusTransactionApproveRequest statusTransactionApproveRequest) throws RegisterNotFoundException, NullParameterException, GeneralException {
+        if (statusTransactionApproveRequest == null) {
             throw new NullParameterException("statusTransactionApproveRequest", null);
         }
         return (StatusBusinessAffiliationRequest) saveEntity(statusTransactionApproveRequest);
-	}
+    }
 
-	@Override
-	public List<StatusBusinessAffiliationHasFinalState> getStatusBusinessAffiliationHasFinalState(EJBRequest request)throws EmptyListException, GeneralException, NullParameterException {
-		List<StatusBusinessAffiliationHasFinalState> hasFinalStates = (List<StatusBusinessAffiliationHasFinalState>) listEntities(StatusBusinessAffiliationHasFinalState.class, request, logger, getMethodName());
-	    return hasFinalStates;
-	}
+    @Override
+    public List<StatusBusinessAffiliationHasFinalState> getStatusBusinessAffiliationHasFinalState(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        List<StatusBusinessAffiliationHasFinalState> hasFinalStates = (List<StatusBusinessAffiliationHasFinalState>) listEntities(StatusBusinessAffiliationHasFinalState.class, request, logger, getMethodName());
+        return hasFinalStates;
+    }
 
-	@Override
-	public StatusBusinessAffiliationHasFinalState loadStatusBusinessAffiliationHasFinalState(EJBRequest request)throws RegisterNotFoundException, NullParameterException, GeneralException {
-		StatusBusinessAffiliationHasFinalState hasFinalState = (StatusBusinessAffiliationHasFinalState) loadEntity(StatusBusinessAffiliationHasFinalState.class, request, logger, getMethodName());
+    @Override
+    public StatusBusinessAffiliationHasFinalState loadStatusBusinessAffiliationHasFinalState(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
+        StatusBusinessAffiliationHasFinalState hasFinalState = (StatusBusinessAffiliationHasFinalState) loadEntity(StatusBusinessAffiliationHasFinalState.class, request, logger, getMethodName());
         return hasFinalState;
-	}
+    }
 
-	@Override
-	public StatusBusinessAffiliationHasFinalState saveStatusBusinessAffiliationHasFinalState(StatusBusinessAffiliationHasFinalState statusBusinessAffiliationHasFinalState)throws RegisterNotFoundException, NullParameterException, GeneralException {
-		if (statusBusinessAffiliationHasFinalState == null) {
+    @Override
+    public StatusBusinessAffiliationHasFinalState saveStatusBusinessAffiliationHasFinalState(StatusBusinessAffiliationHasFinalState statusBusinessAffiliationHasFinalState) throws RegisterNotFoundException, NullParameterException, GeneralException {
+        if (statusBusinessAffiliationHasFinalState == null) {
             throw new NullParameterException("statusBusinessAffiliationHasFinalState", null);
         }
         return (StatusBusinessAffiliationHasFinalState) saveEntity(statusBusinessAffiliationHasFinalState);
-	}
-    
+    }
+
     //BusinessAffiliationRequets
-	@Override
-    public List<BusinessAffiliationRequest> getBusinessAffiliationRequest(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException{
+    @Override
+    public List<BusinessAffiliationRequest> getBusinessAffiliationRequest(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
         return (List<BusinessAffiliationRequest>) listEntities(BusinessAffiliationRequest.class, request, logger, getMethodName());
     }
 
-	@Override
-    public BusinessAffiliationRequest loadBusinessAffiliationRequest(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException{
+    @Override
+    public BusinessAffiliationRequest loadBusinessAffiliationRequest(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
         BusinessAffiliationRequest businessAffiliationRequest = (BusinessAffiliationRequest) loadEntity(BusinessAffiliationRequest.class, request, logger, getMethodName());
         return businessAffiliationRequest;
     }
 
-	@Override
-    public BusinessAffiliationRequest saveBusinessAffiliationRequest(BusinessAffiliationRequest businessAffiliationRequest) throws RegisterNotFoundException, NullParameterException, GeneralException{
+    @Override
+    public BusinessAffiliationRequest saveBusinessAffiliationRequest(BusinessAffiliationRequest businessAffiliationRequest) throws RegisterNotFoundException, NullParameterException, GeneralException {
         if (businessAffiliationRequest == null) {
             throw new NullParameterException("businessAffiliationRequest", null);
         }
         return (BusinessAffiliationRequest) saveEntity(businessAffiliationRequest);
     }
-    
-	@Override
-    public boolean validateStatusBusinessAffiliationHasFinalState(Integer statusId,Integer finalId)throws GeneralException, NullParameterException {
-    	if (statusId == null || finalId == null) {
+
+    @Override
+    public boolean validateStatusBusinessAffiliationHasFinalState(Integer statusId, Integer finalId) throws GeneralException, NullParameterException {
+        if (statusId == null || finalId == null) {
             throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "statusId or finalId"), null);
         }
-		boolean valid = false;
-		List<PreferenceValue> preferenceValues = new ArrayList<PreferenceValue>();
-		Query query = null;
-		try {
-			query = createQuery("SELECT s FROM StatusBusinessAffiliationHasFinalState s WHERE s.statusBusinessAffiliationRequetsId.id=?1 AND s.finalStateId.id=?2");
-			query.setParameter("1", statusId);
-			query.setParameter("2", finalId);
-			preferenceValues = query.setHint("toplink.refresh", "true").getResultList();
-		} catch (Exception e) {
-			throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(),	getMethodName(), e.getMessage()), null);
-		}
-		if (preferenceValues.isEmpty()) {
-			valid = true;
-		}
-		return valid;
+        boolean valid = false;
+        List<PreferenceValue> preferenceValues = new ArrayList<PreferenceValue>();
+        Query query = null;
+        try {
+            query = createQuery("SELECT s FROM StatusBusinessAffiliationHasFinalState s WHERE s.statusBusinessAffiliationRequetsId.id=?1 AND s.finalStateId.id=?2");
+            query.setParameter("1", statusId);
+            query.setParameter("2", finalId);
+            preferenceValues = query.setHint("toplink.refresh", "true").getResultList();
+        } catch (Exception e) {
+            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), e.getMessage()), null);
+        }
+        if (preferenceValues.isEmpty()) {
+            valid = true;
+        }
+        return valid;
     }
 
-	@Override
-	public List<RequestHasCollectionRequest> getRequestsHasCollectionsRequest(EJBRequest request)throws EmptyListException, GeneralException, NullParameterException {
-		 List<RequestHasCollectionRequest> requestHasCollectionsRequest = (List<RequestHasCollectionRequest>) listEntities(RequestHasCollectionRequest.class, request, logger, getMethodName());
-	      return requestHasCollectionsRequest;
-	}
+    @Override
+    public List<RequestHasCollectionRequest> getRequestsHasCollectionsRequest(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        List<RequestHasCollectionRequest> requestHasCollectionsRequest = (List<RequestHasCollectionRequest>) listEntities(RequestHasCollectionRequest.class, request, logger, getMethodName());
+        return requestHasCollectionsRequest;
+    }
 
-	@Override
-	public RequestHasCollectionRequest loadRequestHasCollectionsRequest(EJBRequest request)throws RegisterNotFoundException, NullParameterException, GeneralException {
-		RequestHasCollectionRequest requestHasCollectionsRequest = (RequestHasCollectionRequest) loadEntity(RequestHasCollectionRequest.class, request, logger, getMethodName());
-	      return requestHasCollectionsRequest;
-	}
+    @Override
+    public RequestHasCollectionRequest loadRequestHasCollectionsRequest(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
+        RequestHasCollectionRequest requestHasCollectionsRequest = (RequestHasCollectionRequest) loadEntity(RequestHasCollectionRequest.class, request, logger, getMethodName());
+        return requestHasCollectionsRequest;
+    }
 
-	@Override
-	public RequestHasCollectionRequest saveRequestHasCollectionsRequest(RequestHasCollectionRequest requestHasCollectionsRequest) throws NullParameterException, GeneralException {
-		   if (requestHasCollectionsRequest == null) {
-	            throw new NullParameterException("requestHasCollectionsRequest", null);
-	        }
-	        return (RequestHasCollectionRequest) saveEntity(requestHasCollectionsRequest);
-	}
+    @Override
+    public RequestHasCollectionRequest saveRequestHasCollectionsRequest(RequestHasCollectionRequest requestHasCollectionsRequest) throws NullParameterException, GeneralException {
+        if (requestHasCollectionsRequest == null) {
+            throw new NullParameterException("requestHasCollectionsRequest", null);
+        }
+        return (RequestHasCollectionRequest) saveEntity(requestHasCollectionsRequest);
+    }
 
-	@Override
-	public List<RequestHasCollectionRequest> getRequestsHasCollectionsRequestByRequestByCollectionRequest(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
-		 List<RequestHasCollectionRequest> requestHasCollectionsRequestList = null;
-	        Map<String, Object> params = request.getParams();
-	        if (!params.containsKey(EjbConstants.PARAM_BUSINESS_AFFILIATION_REQUEST)) {
-	            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_BUSINESS_AFFILIATION_REQUEST), null);
-	        }
-	        if (!params.containsKey(EjbConstants.PARAM_COLLECTION_REQUEST_ID)) {
-	            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_COLLECTION_REQUEST_ID), null);
-	        }
-	        requestHasCollectionsRequestList = (List<RequestHasCollectionRequest>) getNamedQueryResult(RequestHasCollectionRequest.class, QueryConstants.REQUEST_HAS_COLLECTION_REQUEST_BY_REQUEST_BY_COLLECTION_REQUEST, request, getMethodName(), logger, "requestHasCollectionsRequestList");
-	        return requestHasCollectionsRequestList;
-	}
+    @Override
+    public List<RequestHasCollectionRequest> getRequestsHasCollectionsRequestByRequestByCollectionRequest(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        List<RequestHasCollectionRequest> requestHasCollectionsRequestList = null;
+        Map<String, Object> params = request.getParams();
+        if (!params.containsKey(EjbConstants.PARAM_BUSINESS_AFFILIATION_REQUEST)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_BUSINESS_AFFILIATION_REQUEST), null);
+        }
+        if (!params.containsKey(EjbConstants.PARAM_COLLECTION_REQUEST_ID)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_COLLECTION_REQUEST_ID), null);
+        }
+        requestHasCollectionsRequestList = (List<RequestHasCollectionRequest>) getNamedQueryResult(RequestHasCollectionRequest.class, QueryConstants.REQUEST_HAS_COLLECTION_REQUEST_BY_REQUEST_BY_COLLECTION_REQUEST, request, getMethodName(), logger, "requestHasCollectionsRequestList");
+        return requestHasCollectionsRequestList;
+    }
 
+    @Override
+    public List<RequestHasCollectionRequest> getRequestsHasCollectionsRequestByBusinessAffiliationRequest(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        List<RequestHasCollectionRequest> requestHasCollectionsRequestList = null;
+        Map<String, Object> params = request.getParams();
+        if (!params.containsKey(EjbConstants.PARAM_BUSINESS_AFFILIATION_REQUEST)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_BUSINESS_AFFILIATION_REQUEST), null);
+        }
+        requestHasCollectionsRequestList = (List<RequestHasCollectionRequest>) getNamedQueryResult(RequestHasCollectionRequest.class, QueryConstants.REQUEST_HAS_COLLECTION_REQUEST_BY_BUSINESS_AFFILIATON_REQUEST, request, getMethodName(), logger, "requestHasCollectionsRequestList");
+        return requestHasCollectionsRequestList;
+    }
+
+
+	 @Override
+	 public void updateBusinessAffiliationRequest(EJBRequest request)throws EmptyListException, GeneralException, NullParameterException {
+		 List<RequestHasCollectionRequest> requestHasCollectionsRequestList = new ArrayList<RequestHasCollectionRequest>();
+		 boolean complet = false;
+		 Map<String, Object> params = request.getParams();
+		 if (!params.containsKey(EjbConstants.PARAM_BUSINESS_AFFILIATION_REQUEST)) {
+			 throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_BUSINESS_AFFILIATION_REQUEST), null);
+		 }
+		 Long businessAffiliationRequestId= (Long) params.get(EjbConstants.PARAM_BUSINESS_AFFILIATION_REQUEST);
+		 try {
+			 requestHasCollectionsRequestList = (List<RequestHasCollectionRequest>) getNamedQueryResult(RequestHasCollectionRequest.class, QueryConstants.REQUEST_HAS_COLLECTION_REQUEST_BY_BUSINESS_AFFILIATON_REQUEST_COMPLET, request, getMethodName(), logger, "requestHasCollectionsRequestList");
+		 }catch (EmptyListException e) {
+
+		 }
+		 if (requestHasCollectionsRequestList.isEmpty()) {
+			  params = new HashMap();
+	          params.put(Constants.PARAM_CODE, Constants.STATUS_BUSINESS_AFFILIATION_REQUEST_COMPLET);
+	          request.setParams(params);
+			 try {
+				 StatusBusinessAffiliationRequest status = loadStatusBusinessAffiliationRequestByCode(request);
+				 request = new EJBRequest();
+				 request.setParam(businessAffiliationRequestId);
+				 BusinessAffiliationRequest businessAffiliationRequest = loadBusinessAffiliationRequest(request);
+				 businessAffiliationRequest.setStatusBusinessAffiliationRequestId(status);
+				 saveBusinessAffiliationRequest(businessAffiliationRequest);
+			} catch (RegisterNotFoundException e) {
+
+			}
+		 }else {
+			 try {
+				 requestHasCollectionsRequestList = new ArrayList<RequestHasCollectionRequest>();
+				 requestHasCollectionsRequestList = (List<RequestHasCollectionRequest>) getNamedQueryResult(RequestHasCollectionRequest.class, QueryConstants.REQUEST_HAS_COLLECTION_REQUEST_BY_BUSINESS_AFFILIATON_REQUEST_INCOMPLET, request, getMethodName(), logger, "requestHasCollectionsRequestList");
+			 }catch (EmptyListException e) {
+
+			 }
+			 if (!requestHasCollectionsRequestList.isEmpty()) {
+				  params = new HashMap();
+		          params.put(Constants.PARAM_CODE, Constants.STATUS_BUSINESS_AFFILIATION_REQUEST_INCOMPLET);
+		          request.setParams(params);
+				 try {
+					 StatusBusinessAffiliationRequest status = loadStatusBusinessAffiliationRequestByCode(request);
+					 request = new EJBRequest();
+					 request.setParam(businessAffiliationRequestId);
+					 BusinessAffiliationRequest businessAffiliationRequest = loadBusinessAffiliationRequest(request);
+					 businessAffiliationRequest.setStatusBusinessAffiliationRequestId(status);
+					 saveBusinessAffiliationRequest(businessAffiliationRequest);
+				} catch (RegisterNotFoundException e) {
+
+				} 
+			 }
+		 } 
+	 }
+	 
 	@Override
-	public List<RequestHasCollectionRequest> getRequestsHasCollectionsRequestByBusinessAffiliationRequest(EJBRequest request)throws EmptyListException, GeneralException, NullParameterException {
-		   List<RequestHasCollectionRequest> requestHasCollectionsRequestList = null;
-	        Map<String, Object> params = request.getParams();
-	        if (!params.containsKey(EjbConstants.PARAM_BUSINESS_AFFILIATION_REQUEST)) {
-	            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_BUSINESS_AFFILIATION_REQUEST), null);
-	        }
-	        requestHasCollectionsRequestList = (List<RequestHasCollectionRequest>) getNamedQueryResult(RequestHasCollectionRequest.class, QueryConstants.REQUEST_HAS_COLLECTION_REQUEST_BY_BUSINESS_AFFILIATON_REQUEST, request, getMethodName(), logger, "requestHasCollectionsRequestList");
-	        return requestHasCollectionsRequestList;
+	public StatusBusinessAffiliationRequest loadStatusBusinessAffiliationRequestByCode(EJBRequest request)throws RegisterNotFoundException, NullParameterException, GeneralException, EmptyListException {
+		List<StatusBusinessAffiliationRequest> status = null;
+		Map<String, Object> params = request.getParams();
+		if (!params.containsKey(EjbConstants.PARAM_CODE)) {
+			 throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_CODE), null);
+		}
+		status = (List<StatusBusinessAffiliationRequest>) getNamedQueryResult(StatusBusinessAffiliationRequest.class,QueryConstants.STATUS_BUSINESS_AFFILIATON_REQUEST_BY_CODE, request, getMethodName(),logger, "status");
+		return status.get(0);
 	}
 	
-	 @Override
-	 public List<PersonType> getPersonTypeByCountryByIndNaturalPerson(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
-	        List<PersonType> personTypes = null;
-	        Map<String, Object> params = request.getParams();
-	        if (!params.containsKey(EjbConstants.PARAM_COUNTRY_ID)) {
-	            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_COUNTRY_ID), null);
-	        }
-	        if (!params.containsKey(EjbConstants.PARAM_ORIGIN_APPLICATION_ID)) {
-	            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_ORIGIN_APPLICATION_ID), null);
-	        }
-	        if (!params.containsKey(EjbConstants.PARAM_IND_NATURAL_PERSON)) {
-	            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_IND_NATURAL_PERSON), null);
-	        }
-	        personTypes = (List<PersonType>) getNamedQueryResult(PersonType.class, QueryConstants.PERSON_TYPE_BY_COUNTRY_BY_IND_NATURAL_PERSON, request, getMethodName(), logger, "personTypes");
-	        return personTypes;
-	}
          
         //StatusCard
         public List<StatusCard> getStatusCard(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
@@ -1050,4 +1104,40 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         public List<StatusCardHasFinalState> getStatusCardHasFinalState(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
                 return (List<StatusCardHasFinalState>) listEntities(StatusCardHasFinalState.class, request, logger, getMethodName());
         }
+
+
+    @Override
+    public List<PersonType> getPersonTypeByCountryByIndNaturalPerson(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        List<PersonType> personTypes = null;
+        Map<String, Object> params = request.getParams();
+        if (!params.containsKey(EjbConstants.PARAM_COUNTRY_ID)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_COUNTRY_ID), null);
+        }
+        if (!params.containsKey(EjbConstants.PARAM_ORIGIN_APPLICATION_ID)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_ORIGIN_APPLICATION_ID), null);
+        }
+        if (!params.containsKey(EjbConstants.PARAM_IND_NATURAL_PERSON)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_IND_NATURAL_PERSON), null);
+        }
+        personTypes = (List<PersonType>) getNamedQueryResult(PersonType.class, QueryConstants.PERSON_TYPE_BY_COUNTRY_BY_IND_NATURAL_PERSON, request, getMethodName(), logger, "personTypes");
+        return personTypes;
+    }
+
+    //ReviewOfac
+    public List<ReviewOfac> getReviewOfac(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        return (List<ReviewOfac>) listEntities(ReviewOfac.class, request, logger, getMethodName());
+    }
+
+    public ReviewOfac loadReviewOfac(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
+        ReviewOfac reviewOfac = (ReviewOfac) loadEntity(ReviewOfac.class, request, logger, getMethodName());
+        return reviewOfac;
+    }
+
+    public ReviewOfac saveReviewOfac(ReviewOfac reviewOfac) throws RegisterNotFoundException, NullParameterException, GeneralException {
+        if (reviewOfac == null) {
+            throw new NullParameterException("reviewOfac", null);
+        }
+        return (ReviewOfac) saveEntity(reviewOfac);
+    }
+
 }
