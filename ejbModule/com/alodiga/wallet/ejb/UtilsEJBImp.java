@@ -49,7 +49,9 @@ import com.alodiga.wallet.common.model.Period;
 import com.alodiga.wallet.common.model.PersonType;
 import com.alodiga.wallet.common.model.PreferenceValue;
 import com.alodiga.wallet.common.model.RequestHasCollectionRequest;
+import com.alodiga.wallet.common.model.ReviewBusinessAffiliationRequest;
 import com.alodiga.wallet.common.model.ReviewOfac;
+import com.alodiga.wallet.common.model.ReviewType;
 import com.alodiga.wallet.common.model.Sms;
 import com.alodiga.wallet.common.model.State;
 import com.alodiga.wallet.common.model.StatusCard;
@@ -969,7 +971,38 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         }
         return valid;
     }
+    
+    //ReviewBusinessAffiliationRequest
+    public List<ReviewBusinessAffiliationRequest> getReviewBusinessAffiliationRequest(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException{
+        return (List<ReviewBusinessAffiliationRequest>) listEntities(ReviewBusinessAffiliationRequest.class, request, logger, getMethodName());
+    }
+    
+    public ReviewBusinessAffiliationRequest loadReviewBusinessAffiliationRequest(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException{
+        ReviewBusinessAffiliationRequest reviewBusinessAffiliationRequest = (ReviewBusinessAffiliationRequest) loadEntity(ReviewBusinessAffiliationRequest.class, request, logger, getMethodName());
+        return reviewBusinessAffiliationRequest;
+    }
+    
+    public List<ReviewBusinessAffiliationRequest> getReviewBusinessRequestByRequest(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException{
+        List<ReviewBusinessAffiliationRequest> reviewRequest = null;
+        Map<String, Object> params = request.getParams();
+        if (!params.containsKey(EjbConstants.PARAM_BUSINESS_AFFILIATION_REQUEST)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_REQUEST_ID), null);
+        }
+        if (!params.containsKey(EjbConstants.PARAM_REVIEW_REQUEST_TYPE_ID)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_REVIEW_REQUEST_TYPE_ID), null);
+        }
+        reviewRequest = (List<ReviewBusinessAffiliationRequest>) getNamedQueryResult(ReviewBusinessAffiliationRequest.class, QueryConstants.REVIEW_REQUEST_BY_REQUEST, request, getMethodName(), logger, "reviewRequest");
+        return reviewRequest;
+    }
+    
+    public ReviewBusinessAffiliationRequest saveReviewBusinessAffiliationRequest(ReviewBusinessAffiliationRequest reviewBusinessAffiliationRequest) throws RegisterNotFoundException, NullParameterException, GeneralException{
+        if (reviewBusinessAffiliationRequest == null) {
+            throw new NullParameterException("reviewBusinessAffiliationRequest", null);
+        }
+        return (ReviewBusinessAffiliationRequest) saveEntity(reviewBusinessAffiliationRequest);
+    }
 
+    //RequestHasCollectionRequest
     @Override
     public List<RequestHasCollectionRequest> getRequestsHasCollectionsRequest(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
         List<RequestHasCollectionRequest> requestHasCollectionsRequest = (List<RequestHasCollectionRequest>) listEntities(RequestHasCollectionRequest.class, request, logger, getMethodName());
@@ -1160,6 +1193,19 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
     public List<ReviewOfac> getReviewOfac(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
         return (List<ReviewOfac>) listEntities(ReviewOfac.class, request, logger, getMethodName());
     }
+    
+    public List<ReviewOfac> getReviewOfacByRequest(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException{
+        List<ReviewOfac> reviewOfacList = null;
+        Map<String, Object> params = request.getParams();
+        if (!params.containsKey(EjbConstants.PARAM_PERSON_ID)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_PERSON_ID), null);
+        }
+        if (!params.containsKey(EjbConstants.PARAM_BUSINESS_AFFILIATION_REQUEST)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_BUSINESS_AFFILIATION_REQUEST), null);
+        }
+        reviewOfacList = (List<ReviewOfac>) getNamedQueryResult(ReviewOfac.class, QueryConstants.REVIEW_OFAC_BY_REQUEST, request, getMethodName(), logger, "reviewOfacList");
+        return reviewOfacList;
+    }
 
     public ReviewOfac loadReviewOfac(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
         ReviewOfac reviewOfac = (ReviewOfac) loadEntity(ReviewOfac.class, request, logger, getMethodName());
@@ -1171,6 +1217,23 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
             throw new NullParameterException("reviewOfac", null);
         }
         return (ReviewOfac) saveEntity(reviewOfac);
+    }
+    
+    //ReviewType
+    public List<ReviewType> getReviewType(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException{
+        return (List<ReviewType>) listEntities(ReviewType.class, request, logger, getMethodName());
+    }
+
+    public ReviewType loadReviewType(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException{
+        ReviewType reviewType = (ReviewType) loadEntity(ReviewType.class, request, logger, getMethodName());
+        return reviewType;
+    }
+
+    public ReviewType saveReviewType(ReviewType reviewType) throws RegisterNotFoundException, NullParameterException, GeneralException{
+        if (reviewType == null) {
+            throw new NullParameterException("reviewType", null);
+        }
+        return (ReviewType) saveEntity(reviewType);
     }
 
 }
