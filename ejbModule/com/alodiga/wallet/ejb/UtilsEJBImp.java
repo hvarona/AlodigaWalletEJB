@@ -858,6 +858,16 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         return (List<CollectionsRequest>) listEntities(CollectionsRequest.class, request, logger, getMethodName());
     }
 
+    public List<CollectionsRequest> getCollectionsByPersonType(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException{
+        List<CollectionsRequest> collectionsRequestByPersonTypeList = null;
+        Map<String, Object> params = request.getParams();
+        if (!params.containsKey(EjbConstants.PARAM_PERSON_TYPE_ID)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_PERSON_TYPE_ID), null);
+        }
+        collectionsRequestByPersonTypeList = (List<CollectionsRequest>) getNamedQueryResult(CollectionsRequest.class, QueryConstants.COLLECTIONS_BY_PERSON_TYPE, request, getMethodName(), logger, "collectionsRequestByPersonTypeList");
+        return collectionsRequestByPersonTypeList;
+    }
+    
     public List<CollectionsRequest> getCollectionsRequestByID(CollectionsRequest collectionsRequest) throws GeneralException, EmptyListException, NullParameterException {
         List<CollectionsRequest> collectionsRequestList = null;
         try {
