@@ -117,6 +117,10 @@
     <class>com.alodiga.wallet.common.model.StatusApplicant</class>
     <class>com.alodiga.wallet.common.model.StatusCard</class>
     <class>com.alodiga.wallet.common.model.StatusCardHasFinalState</class>
+    <class>com.alodiga.wallet.common.model.EmployedPosition</class>
+    <class>com.alodiga.wallet.common.model.PasswordChangeRequest</class>
+    <class>com.alodiga.wallet.common.model.Employee</class>
+    <class>com.alodiga.wallet.common.model.ComercialAgency</class>
     <exclude-unlisted-classes>true</exclude-unlisted-classes>
     <properties>
       <property name="eclipselink.logging.timestamp" value="true"/>
