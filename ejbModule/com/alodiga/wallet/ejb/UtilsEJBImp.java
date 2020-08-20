@@ -1,5 +1,6 @@
 package com.alodiga.wallet.ejb;
 
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -1083,6 +1084,7 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
 				 request = new EJBRequest();
 				 request.setParam(businessAffiliationRequestId);
 				 BusinessAffiliationRequest businessAffiliationRequest = loadBusinessAffiliationRequest(request);
+				 businessAffiliationRequest.setUpdateDate(new Timestamp(new Date().getTime()));
 				 businessAffiliationRequest.setStatusBusinessAffiliationRequestId(status);
 				 saveBusinessAffiliationRequest(businessAffiliationRequest);
 			} catch (RegisterNotFoundException e) {
@@ -1105,6 +1107,7 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
 					 request.setParam(businessAffiliationRequestId);
 					 BusinessAffiliationRequest businessAffiliationRequest = loadBusinessAffiliationRequest(request);
 					 businessAffiliationRequest.setStatusBusinessAffiliationRequestId(status);
+					 businessAffiliationRequest.setUpdateDate(new Timestamp(new Date().getTime()));
 					 saveBusinessAffiliationRequest(businessAffiliationRequest);
 				} catch (RegisterNotFoundException e) {
 

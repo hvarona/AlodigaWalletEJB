@@ -1,40 +1,56 @@
 package com.alodiga.wallet.ejb;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
 import javax.interceptor.Interceptors;
+import javax.persistence.Query;
 
 import org.apache.log4j.Logger;
+
 import com.alodiga.wallet.common.ejb.BusinessPortalEJB;
 import com.alodiga.wallet.common.ejb.UtilsEJB;
+import com.alodiga.wallet.common.ejb.UtilsEJBLocal;
+import com.alodiga.wallet.common.enumeraciones.PersonClassificationE;
 import com.alodiga.wallet.common.exception.EmptyListException;
 import com.alodiga.wallet.common.exception.GeneralException;
 import com.alodiga.wallet.common.exception.NullParameterException;
 import com.alodiga.wallet.common.exception.RegisterNotFoundException;
 import com.alodiga.wallet.common.genericEJB.AbstractWalletEJB;
+import com.alodiga.wallet.common.genericEJB.EJBRequest;
 import com.alodiga.wallet.common.genericEJB.WalletContextInterceptor;
 import com.alodiga.wallet.common.genericEJB.WalletLoggerInterceptor;
-import com.alodiga.wallet.common.model.AccountBank;
+import com.alodiga.wallet.common.model.Address;
+import com.alodiga.wallet.common.model.BusinessAffiliationRequest;
 import com.alodiga.wallet.common.model.City;
 import com.alodiga.wallet.common.model.CollectionType;
 import com.alodiga.wallet.common.model.CollectionsRequest;
 import com.alodiga.wallet.common.model.Country;
 import com.alodiga.wallet.common.model.DocumentsPersonType;
+import com.alodiga.wallet.common.model.LegalPerson;
+import com.alodiga.wallet.common.model.NaturalPerson;
+import com.alodiga.wallet.common.model.OriginApplication;
+import com.alodiga.wallet.common.model.Person;
+import com.alodiga.wallet.common.model.PersonClassification;
+import com.alodiga.wallet.common.model.PersonHasAddress;
 import com.alodiga.wallet.common.model.PersonType;
+import com.alodiga.wallet.common.model.PhonePerson;
+import com.alodiga.wallet.common.model.RequestHasCollectionRequest;
 import com.alodiga.wallet.common.model.Sequences;
 import com.alodiga.wallet.common.model.State;
-import com.alodiga.wallet.common.model.TransactionApproveRequest;
-import com.alodiga.wallet.common.utils.EjbConstants;
-import com.alodiga.wallet.common.exception.NoResultException;
-import com.alodiga.wallet.common.genericEJB.EJBRequest;
+import com.alodiga.wallet.common.model.StatusBusinessAffiliationRequest;
 import com.alodiga.wallet.common.utils.Constants;
+import com.alodiga.wallet.common.utils.EjbConstants;
 import com.alodiga.wallet.common.utils.QueryConstants;
-import java.util.Calendar;
-import java.util.Map;
-import javax.persistence.Query;
 
 @Interceptors({WalletLoggerInterceptor.class, WalletContextInterceptor.class})
 @Stateless(name = EjbConstants.BUSINESS_PORTAL_EJB, mappedName = EjbConstants.BUSINESS_PORTAL_EJB)
@@ -42,6 +58,8 @@ import javax.persistence.Query;
 public class BusinessPortalEJBImp extends AbstractWalletEJB implements BusinessPortalEJB {
 
     private static final Logger logger = Logger.getLogger(BusinessPortalEJBImp.class);
+    @EJB
+    private UtilsEJBLocal utilsEJB;
 
     @Override
     public List<PersonType> getPersonTypesBycountryId(Long countryId) throws EmptyListException, GeneralException, NullParameterException {
@@ -111,6 +129,7 @@ public class BusinessPortalEJBImp extends AbstractWalletEJB implements BusinessP
         return collectionsRequests;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public List<Country> getCountries() throws EmptyListException, GeneralException, NullParameterException {
         List<Country> countries = null;
@@ -161,6 +180,7 @@ public class BusinessPortalEJBImp extends AbstractWalletEJB implements BusinessP
         return citys;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public List<Sequences> getSequencesByDocumentType(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
         List<Sequences> sequence = null;
@@ -198,6 +218,9 @@ public class BusinessPortalEJBImp extends AbstractWalletEJB implements BusinessP
             case Constants.ORIGIN_APPLICATION_ADMIN_WALLET_ID:
                 prefixNumberSequence = "APP-";
                 break;
+            case Constants.ORIGIN_APPLICATION_PORTAL_WEB_ID:
+                prefixNumberSequence = "POR-";
+                break;
             default:
                 break;
         }
@@ -218,5 +241,205 @@ public class BusinessPortalEJBImp extends AbstractWalletEJB implements BusinessP
        }
        return (Sequences) saveEntity(sequence);
    }
+    
+	@Override
+	public BusinessAffiliationRequest saveBusinessAffiliationRequest(Person person, NaturalPerson naturalPerson, LegalPerson legalPerson, PhonePerson phonePerson,Address address) throws NullParameterException, GeneralException {
+		BusinessAffiliationRequest affiliatinRequest = new BusinessAffiliationRequest();
+		try {
+			if (person.getPersonTypeId().getIndNaturalPerson()) {
+	            //Se obtiene la Clasificacion del Solicitante Natural
+	            String personClassificationCode = PersonClassificationE.NABUAP.getPersonClassificationCode();
+	            PersonClassification personClassification = (PersonClassification) entityManager.createNamedQuery(QueryConstants.PERSON_CLASSIFICATION_BY_CODE, PersonClassification.class).setParameter(Constants.PARAM_CODE,personClassificationCode).getSingleResult();
+	     
+	            //Se guarda el objeto person en la BD
+	            person.setCreateDate(new Timestamp(new Date().getTime()));
+	            if (person.getEmail() != null) {
+	                person.setEmail(person.getEmail());
+	            } else {
+	                person.setEmail(null);
+	            }
+	            person.setPersonTypeId(person.getPersonTypeId());        
+	            person.setPersonClassificationId(personClassification);
+	            if (person.getWebSite() != null) {
+	                person.setWebSite(person.getWebSite());
+	            } else {
+	                person.setWebSite(null);
+	            }
+	            person.setCountryId(person.getCountryId());
+	            entityManager.persist(person);
+	
+	            //Se guarda el objeto NaturalPerson en la BD
+	            naturalPerson.setPersonId(person);
+	            naturalPerson.setDocumentsPersonTypeId(naturalPerson.getDocumentsPersonTypeId());
+	            naturalPerson.setIdentificationNumber(naturalPerson.getIdentificationNumber());
+	            if (naturalPerson.getIdentificactionNumberOld() != null) {
+	                naturalPerson.setIdentificactionNumberOld(naturalPerson.getIdentificactionNumberOld());
+	            } else {
+	                naturalPerson.setIdentificactionNumberOld(null);
+	            }
+	            naturalPerson.setDueDateDocumentIdentification(naturalPerson.getDueDateDocumentIdentification());
+	            naturalPerson.setFirstName(naturalPerson.getFirstName());
+	            naturalPerson.setLastName(naturalPerson.getLastName());
+	            if (naturalPerson.getMarriedLastName() != null) {
+	                naturalPerson.setMarriedLastName(naturalPerson.getMarriedLastName());
+	            } else {
+	                naturalPerson.setMarriedLastName(null);
+	            }
+	            naturalPerson.setGender(naturalPerson.getGender());
+	            naturalPerson.setPlaceBirth(naturalPerson.getPlaceBirth());
+	            naturalPerson.setDateBirth(naturalPerson.getDateBirth());
+	            naturalPerson.setCivilStatusId(naturalPerson.getCivilStatusId());
+	            if (naturalPerson.getProfessionId() != null) {
+	                naturalPerson.setProfessionId(naturalPerson.getProfessionId());
+	            } else {
+	                naturalPerson.setProfessionId(null);
+	            }
+	            naturalPerson.setCreateDate(new Timestamp(new Date().getTime()));
+	            entityManager.persist(naturalPerson);
+         }else {
+            String personClassificationCode = PersonClassificationE.LEBUAP.getPersonClassificationCode();
+                //Guardo person
+                person.setCreateDate(new Timestamp(new Date().getTime()));
+                if (person.getEmail() != null) {
+                    person.setEmail(person.getEmail());
+                } else {
+                    person.setEmail(null);
+                }
+                person.setPersonTypeId(person.getPersonTypeId());
+                //person.setPersonClassificationId(person.getPersonClassificationId());
+                PersonClassification personClassification = (PersonClassification) entityManager.createNamedQuery(QueryConstants.PERSON_CLASSIFICATION_BY_CODE, PersonClassification.class).setParameter("code", personClassificationCode).getSingleResult();
+                person.setPersonClassificationId(personClassification);
+                if (person.getWebSite() != null) {
+                    person.setWebSite(person.getWebSite());
+                } else {
+                    person.setWebSite(null);
+                }
+                person.setCountryId(person.getCountryId());
+                entityManager.persist(person);
+                //Guardo Legal Person
+                legalPerson.setCreateDate(new Timestamp(new Date().getTime()));
+                legalPerson.setPersonId(person);
+                legalPerson.setDocumentsPersonTypeId(legalPerson.getDocumentsPersonTypeId());
+                legalPerson.setIdentificationNumber(legalPerson.getIdentificationNumber());
+                if (legalPerson.getTradeName() != null) {
+                    legalPerson.setTradeName(legalPerson.getTradeName());
+                } else {
+                    legalPerson.setTradeName(null);
+                }
+                legalPerson.setBusinessName(legalPerson.getBusinessName());
+                legalPerson.setBusinessCategoryId(legalPerson.getBusinessCategoryId());
+                legalPerson.setRegisterNumber(legalPerson.getRegisterNumber());
+                legalPerson.setDateInscriptionRegister(legalPerson.getDateInscriptionRegister());
+                legalPerson.setPayedCapital(legalPerson.getPayedCapital());
+                entityManager.persist(legalPerson);
+            }
+            //Se guarda el objeto PhonePerson en la BD
+            phonePerson.setCountryId(phonePerson.getCountryId());
+            phonePerson.setCountryCode(phonePerson.getCountryCode());
+            phonePerson.setAreaCode(phonePerson.getAreaCode());
+            phonePerson.setNumberPhone(phonePerson.getNumberPhone());
+            phonePerson.setPersonId(person);
+            phonePerson.setPhoneTypeId(phonePerson.getPhoneTypeId());
+            if (phonePerson.getExtensionPhoneNumber() != null) {
+                phonePerson.setExtensionPhoneNumber(phonePerson.getExtensionPhoneNumber());
+            } else {
+                phonePerson.setExtensionPhoneNumber(null);
+            }
+            phonePerson.setIndMainPhone(phonePerson.getIndMainPhone());
+            phonePerson.setCreateDate(new Timestamp(new Date().getTime()));
+            entityManager.persist(phonePerson);
+            //Guardo Address
+            address.setCountryId(address.getCountryId());
+            address.setCityId(address.getCityId());
+            if (address.getCountyId() != null) {
+                address.setCountyId(address.getCountyId());
+            } else {
+                address.setCountyId(null);
+            }
+            if (address.getZipCode() != null) {
+                address.setZipCode(address.getZipCode());
+            } else {
+                address.setZipCode(null);
+            }
+            if (address.getStreetTypeId() != null) {
+                address.setStreetTypeId(address.getStreetTypeId());
+            } else {
+                address.setStreetTypeId(null);
+            }
+            if (address.getNameStreet() != null) {
+                address.setNameStreet(address.getNameStreet());
+            } else {
+                address.setNameStreet(null);
+            }
+            address.setEdificationTypeId(address.getEdificationTypeId());
+            if (address.getNameEdification() != null) {
+                address.setNameEdification(address.getNameEdification());
+            } else {
+                address.setNameEdification(null);
+            }
+            if (address.getTower() != null) {
+                address.setTower(address.getTower());
+            } else {
+                address.setTower(null);
+            }
+            if (address.getFloor() != null) {
+                address.setFloor(address.getFloor());
+            } else {
+                address.setFloor(null);
+            }
+            if (address.getUrbanization() != null) {
+                address.setUrbanization(address.getUrbanization());
+            } else {
+                address.setUrbanization(null);
+            }
+            address.setAddressLine1("calle:" + address.getNameStreet() + "," + "Urbanizacion: " + address.getUrbanization() + "," + "Edificio:" + address.getNameEdification() + "," + "Piso:" + address.getFloor() + "");
+            address.setAddressLine2("Pais:" + address.getCountryId().getName() + "," + "Ciudad:" + address.getCountyId().getName() + "," + "Codigo Postal:" + address.getZipCode() + "");
+            address.setAddressTypeId(address.getAddressTypeId());
+            address.setIndMainAddress(address.getIndMainAddress());
+            entityManager.persist(address);
+            //Guardo Person_has_addres
+            PersonHasAddress personHasAddress = new PersonHasAddress();
+            personHasAddress.setAddressId(address);
+            person = entityManager.find(Person.class, person.getId());
+            personHasAddress.setPersonId(person);
+            personHasAddress.setCreateDate(new Timestamp(new Date().getTime()));
+            entityManager.persist(personHasAddress);
+            Map<String, Object> params = new HashMap<String, Object>();
+	        params.put(Constants.PARAM_CODE, Constants.ORIGIN_APPLICATION_PORTAL_NEGOCIOS_CODE);
+	        EJBRequest request = new EJBRequest();
+	        request.setParams(params);
+			OriginApplication originApplication = utilsEJB.loadOriginApplicationByCode(request);
+			params = new HashMap<String, Object>();
+			params.put(EjbConstants.PARAM_DOCUMENT_TYPE_ID, naturalPerson.getDocumentsPersonTypeId().getId());
+			request = new EJBRequest();
+			request.setParams(params);
+
+			List<Sequences> sequences = getSequencesByDocumentType(request);
+
+			String numberSequence = generateNumberSequence(sequences, originApplication.getId());
+			affiliatinRequest.setBusinessPersonId(person);
+			affiliatinRequest.setCreateDate(new Timestamp(new Date().getTime()));
+			affiliatinRequest.setDateRequest(new Date());
+			params = new HashMap<String, Object>();
+			params.put(Constants.PARAM_CODE, Constants.STATUS_BUSINESS_AFFILIATION_REQUEST_PENDING);
+			request = new EJBRequest();
+			request.setParams(params);
+			affiliatinRequest.setNumberRequest(numberSequence);
+			StatusBusinessAffiliationRequest status = utilsEJB.loadStatusBusinessAffiliationRequestByCode(request);
+			affiliatinRequest.setStatusBusinessAffiliationRequestId(status);
+        } catch (Exception e) {
+        	throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), e.getMessage()), null);
+
+        }
+		return affiliatinRequest;
+	}
+
+	 @Override
+	 public RequestHasCollectionRequest saveRequestHasCollectionsRequest(RequestHasCollectionRequest requestHasCollectionsRequest) throws NullParameterException, GeneralException {
+	        if (requestHasCollectionsRequest == null) {
+	            throw new NullParameterException("requestHasCollectionsRequest", null);
+	        }
+	        return (RequestHasCollectionRequest) saveEntity(requestHasCollectionsRequest);
+	 }
 
 }
