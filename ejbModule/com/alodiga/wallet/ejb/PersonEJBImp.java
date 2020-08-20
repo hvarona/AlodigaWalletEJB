@@ -21,6 +21,7 @@ import com.alodiga.wallet.common.model.DocumentsPersonType;
 import com.alodiga.wallet.common.model.LegalPerson;
 import com.alodiga.wallet.common.model.LegalRepresentative;
 import com.alodiga.wallet.common.model.NaturalPerson;
+import com.alodiga.wallet.common.model.PasswordChangeRequest;
 import com.alodiga.wallet.common.model.Person;
 import com.alodiga.wallet.common.model.PersonHasAddress;
 import com.alodiga.wallet.common.model.PersonType;
@@ -243,4 +244,21 @@ public class PersonEJBImp extends AbstractWalletEJB implements PersonEJB, Person
         return (StatusApplicant) saveEntity(statusApplicant);
     }
 
+    
+    //PasswordChangeRequest
+    public List<PasswordChangeRequest> getPasswordChangeRequest(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException{
+        return (List<PasswordChangeRequest>) listEntities(PasswordChangeRequest.class, request, logger, getMethodName());
+    }
+    
+    public PasswordChangeRequest loadPasswordChangeRequest(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException{
+        PasswordChangeRequest passwordChangeRequest = (PasswordChangeRequest) loadEntity(PasswordChangeRequest.class, request, logger, getMethodName());
+        return passwordChangeRequest;
+    }
+    
+    public PasswordChangeRequest savePasswordChangeRequest(PasswordChangeRequest passwordChangeRequest) throws RegisterNotFoundException, NullParameterException, GeneralException{
+        if (passwordChangeRequest == null) {
+            throw new NullParameterException("passwordChangeRequest", null);
+        }
+        return (PasswordChangeRequest) saveEntity(passwordChangeRequest);
+    }
 }
