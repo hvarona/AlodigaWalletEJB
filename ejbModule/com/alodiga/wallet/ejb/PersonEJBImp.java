@@ -18,10 +18,13 @@ import com.alodiga.wallet.common.genericEJB.EJBRequest;
 import com.alodiga.wallet.common.genericEJB.WalletContextInterceptor;
 import com.alodiga.wallet.common.genericEJB.WalletLoggerInterceptor;
 import com.alodiga.wallet.common.model.DocumentsPersonType;
+import com.alodiga.wallet.common.model.Employee;
 import com.alodiga.wallet.common.model.LegalPerson;
 import com.alodiga.wallet.common.model.LegalRepresentative;
 import com.alodiga.wallet.common.model.NaturalPerson;
+import com.alodiga.wallet.common.model.PasswordChangeRequest;
 import com.alodiga.wallet.common.model.Person;
+import com.alodiga.wallet.common.model.PersonClassification;
 import com.alodiga.wallet.common.model.PersonHasAddress;
 import com.alodiga.wallet.common.model.PersonType;
 import com.alodiga.wallet.common.model.PhonePerson;
@@ -243,4 +246,36 @@ public class PersonEJBImp extends AbstractWalletEJB implements PersonEJB, Person
         return (StatusApplicant) saveEntity(statusApplicant);
     }
 
+    
+    //PasswordChangeRequest
+    public List<PasswordChangeRequest> getPasswordChangeRequest(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException{
+        return (List<PasswordChangeRequest>) listEntities(PasswordChangeRequest.class, request, logger, getMethodName());
+    }
+    
+    public PasswordChangeRequest loadPasswordChangeRequest(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException{
+        PasswordChangeRequest passwordChangeRequest = (PasswordChangeRequest) loadEntity(PasswordChangeRequest.class, request, logger, getMethodName());
+        return passwordChangeRequest;
+    }
+    
+    public PasswordChangeRequest savePasswordChangeRequest(PasswordChangeRequest passwordChangeRequest) throws RegisterNotFoundException, NullParameterException, GeneralException{
+        if (passwordChangeRequest == null) {
+            throw new NullParameterException("passwordChangeRequest", null);
+        }
+        return (PasswordChangeRequest) saveEntity(passwordChangeRequest);
+    }
+
+    @Override
+    public List<Employee> getEmployee(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Employee saveEmployee(Employee employee) throws RegisterNotFoundException, NullParameterException, GeneralException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public PersonClassification loadPersonClassification(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 }
