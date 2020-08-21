@@ -1063,31 +1063,17 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
     }
 
     @Override
-    public void updateBusinessAffiliationRequest(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
-        List<RequestHasCollectionRequest> requestHasCollectionsRequestList = new ArrayList<RequestHasCollectionRequest>();
-        boolean complet = false;
-        Map<String, Object> params = request.getParams();
-        if (!params.containsKey(EjbConstants.PARAM_BUSINESS_AFFILIATION_REQUEST)) {
-            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_BUSINESS_AFFILIATION_REQUEST), null);
-        }
-        Long businessAffiliationRequestId = (Long) params.get(EjbConstants.PARAM_BUSINESS_AFFILIATION_REQUEST);
-        try {
-            requestHasCollectionsRequestList = (List<RequestHasCollectionRequest>) getNamedQueryResult(RequestHasCollectionRequest.class, QueryConstants.REQUEST_HAS_COLLECTION_REQUEST_BY_BUSINESS_AFFILIATON_REQUEST_COMPLET, request, getMethodName(), logger, "requestHasCollectionsRequestList");
-        } catch (EmptyListException e) {
-
-        }
-        if (requestHasCollectionsRequestList.isEmpty()) {
-            params = new HashMap();
-            params.put(Constants.PARAM_CODE, Constants.STATUS_BUSINESS_AFFILIATION_REQUEST_COMPLET);
-            request.setParams(params);
-            try {
-                StatusBusinessAffiliationRequest status = loadStatusBusinessAffiliationRequestByCode(request);
-                request = new EJBRequest();
-                request.setParam(businessAffiliationRequestId);
-                BusinessAffiliationRequest businessAffiliationRequest = loadBusinessAffiliationRequest(request);
-                businessAffiliationRequest.setStatusBusinessAffiliationRequestId(status);
-                saveBusinessAffiliationRequest(businessAffiliationRequest);
-            } catch (RegisterNotFoundException e) {
+	 public void updateBusinessAffiliationRequest(EJBRequest request)throws EmptyListException, GeneralException, NullParameterException {
+		 List<RequestHasCollectionRequest> requestHasCollectionsRequestList = new ArrayList<RequestHasCollectionRequest>();
+		 boolean complet = false;
+		 Map<String, Object> params = request.getParams();
+		 if (!params.containsKey(EjbConstants.PARAM_BUSINESS_AFFILIATION_REQUEST)) {
+			 throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_BUSINESS_AFFILIATION_REQUEST), null);
+		 }
+		 Long businessAffiliationRequestId= (Long) params.get(EjbConstants.PARAM_BUSINESS_AFFILIATION_REQUEST);
+		 try {
+			 requestHasCollectionsRequestList = (List<RequestHasCollectionRequest>) getNamedQueryResult(RequestHasCollectionRequest.class, QueryConstants.REQUEST_HAS_COLLECTION_REQUEST_BY_BUSINESS_AFFILIATON_REQUEST_COMPLET, request, getMethodName(), logger, "requestHasCollectionsRequestList");
+		 }catch (EmptyListException e) {
 
 		 }
 		 if (requestHasCollectionsRequestList.isEmpty()) {
@@ -1104,19 +1090,12 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
 				 saveBusinessAffiliationRequest(businessAffiliationRequest);
 			} catch (RegisterNotFoundException e) {
 
-            }
-            if (!requestHasCollectionsRequestList.isEmpty()) {
-                params = new HashMap();
-                params.put(Constants.PARAM_CODE, Constants.STATUS_BUSINESS_AFFILIATION_REQUEST_INCOMPLET);
-                request.setParams(params);
-                try {
-                    StatusBusinessAffiliationRequest status = loadStatusBusinessAffiliationRequestByCode(request);
-                    request = new EJBRequest();
-                    request.setParam(businessAffiliationRequestId);
-                    BusinessAffiliationRequest businessAffiliationRequest = loadBusinessAffiliationRequest(request);
-                    businessAffiliationRequest.setStatusBusinessAffiliationRequestId(status);
-                    saveBusinessAffiliationRequest(businessAffiliationRequest);
-                } catch (RegisterNotFoundException e) {
+			}
+		 }else {
+			 try {
+				 requestHasCollectionsRequestList = new ArrayList<RequestHasCollectionRequest>();
+				 requestHasCollectionsRequestList = (List<RequestHasCollectionRequest>) getNamedQueryResult(RequestHasCollectionRequest.class, QueryConstants.REQUEST_HAS_COLLECTION_REQUEST_BY_BUSINESS_AFFILIATON_REQUEST_INCOMPLET, request, getMethodName(), logger, "requestHasCollectionsRequestList");
+			 }catch (EmptyListException e) {
 
 			 }
 			 if (!requestHasCollectionsRequestList.isEmpty()) {
@@ -1132,6 +1111,12 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
 					 businessAffiliationRequest.setUpdateDate(new Timestamp(new Date().getTime()));
 					 saveBusinessAffiliationRequest(businessAffiliationRequest);
 				} catch (RegisterNotFoundException e) {
+
+				} 
+			 }
+		 } 
+	 }
+			
 
     @Override
     public StatusBusinessAffiliationRequest loadStatusBusinessAffiliationRequestByCode(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException, EmptyListException {
