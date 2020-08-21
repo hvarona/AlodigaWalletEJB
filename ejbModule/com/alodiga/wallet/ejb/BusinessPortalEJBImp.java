@@ -30,12 +30,15 @@ import com.alodiga.wallet.common.genericEJB.EJBRequest;
 import com.alodiga.wallet.common.genericEJB.WalletContextInterceptor;
 import com.alodiga.wallet.common.genericEJB.WalletLoggerInterceptor;
 import com.alodiga.wallet.common.model.Address;
+import com.alodiga.wallet.common.model.AddressType;
 import com.alodiga.wallet.common.model.BusinessAffiliationRequest;
 import com.alodiga.wallet.common.model.City;
+import com.alodiga.wallet.common.model.CivilStatus;
 import com.alodiga.wallet.common.model.CollectionType;
 import com.alodiga.wallet.common.model.CollectionsRequest;
 import com.alodiga.wallet.common.model.Country;
 import com.alodiga.wallet.common.model.DocumentsPersonType;
+import com.alodiga.wallet.common.model.EdificationType;
 import com.alodiga.wallet.common.model.LegalPerson;
 import com.alodiga.wallet.common.model.NaturalPerson;
 import com.alodiga.wallet.common.model.OriginApplication;
@@ -44,10 +47,14 @@ import com.alodiga.wallet.common.model.PersonClassification;
 import com.alodiga.wallet.common.model.PersonHasAddress;
 import com.alodiga.wallet.common.model.PersonType;
 import com.alodiga.wallet.common.model.PhonePerson;
+import com.alodiga.wallet.common.model.PhoneType;
+import com.alodiga.wallet.common.model.Profession;
 import com.alodiga.wallet.common.model.RequestHasCollectionRequest;
 import com.alodiga.wallet.common.model.Sequences;
 import com.alodiga.wallet.common.model.State;
+import com.alodiga.wallet.common.model.StatusApplicant;
 import com.alodiga.wallet.common.model.StatusBusinessAffiliationRequest;
+import com.alodiga.wallet.common.model.StreetType;
 import com.alodiga.wallet.common.utils.Constants;
 import com.alodiga.wallet.common.utils.EjbConstants;
 import com.alodiga.wallet.common.utils.QueryConstants;
@@ -219,7 +226,7 @@ public class BusinessPortalEJBImp extends AbstractWalletEJB implements BusinessP
                 prefixNumberSequence = "APP-";
                 break;
             case Constants.ORIGIN_APPLICATION_PORTAL_WEB_ID:
-                prefixNumberSequence = "POR-";
+                prefixNumberSequence = "POR";
                 break;
             default:
                 break;
@@ -266,7 +273,7 @@ public class BusinessPortalEJBImp extends AbstractWalletEJB implements BusinessP
 	                person.setWebSite(null);
 	            }
 	            person.setCountryId(person.getCountryId());
-	            entityManager.persist(person);
+	            person = (Person)saveEntity(person);
 	
 	            //Se guarda el objeto NaturalPerson en la BD
 	            naturalPerson.setPersonId(person);
@@ -295,7 +302,7 @@ public class BusinessPortalEJBImp extends AbstractWalletEJB implements BusinessP
 	                naturalPerson.setProfessionId(null);
 	            }
 	            naturalPerson.setCreateDate(new Timestamp(new Date().getTime()));
-	            entityManager.persist(naturalPerson);
+	            saveEntity(naturalPerson);
          }else {
             String personClassificationCode = PersonClassificationE.LEBUAP.getPersonClassificationCode();
                 //Guardo person
@@ -315,7 +322,7 @@ public class BusinessPortalEJBImp extends AbstractWalletEJB implements BusinessP
                     person.setWebSite(null);
                 }
                 person.setCountryId(person.getCountryId());
-                entityManager.persist(person);
+                person = (Person)saveEntity(person);
                 //Guardo Legal Person
                 legalPerson.setCreateDate(new Timestamp(new Date().getTime()));
                 legalPerson.setPersonId(person);
@@ -331,7 +338,7 @@ public class BusinessPortalEJBImp extends AbstractWalletEJB implements BusinessP
                 legalPerson.setRegisterNumber(legalPerson.getRegisterNumber());
                 legalPerson.setDateInscriptionRegister(legalPerson.getDateInscriptionRegister());
                 legalPerson.setPayedCapital(legalPerson.getPayedCapital());
-                entityManager.persist(legalPerson);
+                saveEntity(legalPerson);
             }
             //Se guarda el objeto PhonePerson en la BD
             phonePerson.setCountryId(phonePerson.getCountryId());
@@ -347,7 +354,7 @@ public class BusinessPortalEJBImp extends AbstractWalletEJB implements BusinessP
             }
             phonePerson.setIndMainPhone(phonePerson.getIndMainPhone());
             phonePerson.setCreateDate(new Timestamp(new Date().getTime()));
-            entityManager.persist(phonePerson);
+            saveEntity(phonePerson);
             //Guardo Address
             address.setCountryId(address.getCountryId());
             address.setCityId(address.getCityId());
@@ -393,17 +400,16 @@ public class BusinessPortalEJBImp extends AbstractWalletEJB implements BusinessP
                 address.setUrbanization(null);
             }
             address.setAddressLine1("calle:" + address.getNameStreet() + "," + "Urbanizacion: " + address.getUrbanization() + "," + "Edificio:" + address.getNameEdification() + "," + "Piso:" + address.getFloor() + "");
-            address.setAddressLine2("Pais:" + address.getCountryId().getName() + "," + "Ciudad:" + address.getCountyId().getName() + "," + "Codigo Postal:" + address.getZipCode() + "");
+            address.setAddressLine2("Pais:" + address.getCountryId().getName() + "," + "Ciudad:" + address.getCityId().getName() + "," + "Codigo Postal:" + address.getZipCode() + "");
             address.setAddressTypeId(address.getAddressTypeId());
             address.setIndMainAddress(address.getIndMainAddress());
-            entityManager.persist(address);
+            address = (Address)saveEntity(address);
             //Guardo Person_has_addres
             PersonHasAddress personHasAddress = new PersonHasAddress();
             personHasAddress.setAddressId(address);
-            person = entityManager.find(Person.class, person.getId());
             personHasAddress.setPersonId(person);
             personHasAddress.setCreateDate(new Timestamp(new Date().getTime()));
-            entityManager.persist(personHasAddress);
+            saveEntity(personHasAddress);
             Map<String, Object> params = new HashMap<String, Object>();
 	        params.put(Constants.PARAM_CODE, Constants.ORIGIN_APPLICATION_PORTAL_NEGOCIOS_CODE);
 	        EJBRequest request = new EJBRequest();
@@ -427,6 +433,7 @@ public class BusinessPortalEJBImp extends AbstractWalletEJB implements BusinessP
 			affiliatinRequest.setNumberRequest(numberSequence);
 			StatusBusinessAffiliationRequest status = utilsEJB.loadStatusBusinessAffiliationRequestByCode(request);
 			affiliatinRequest.setStatusBusinessAffiliationRequestId(status);
+			affiliatinRequest = (BusinessAffiliationRequest) saveEntity(affiliatinRequest);
         } catch (Exception e) {
         	throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), e.getMessage()), null);
 
@@ -442,4 +449,39 @@ public class BusinessPortalEJBImp extends AbstractWalletEJB implements BusinessP
 	        return (RequestHasCollectionRequest) saveEntity(requestHasCollectionsRequest);
 	 }
 
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<CivilStatus> getCivilStatus(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+		 return (List<CivilStatus>) listEntities(CivilStatus.class, request, logger, getMethodName());
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<Profession> getProfession(EJBRequest request)throws EmptyListException, GeneralException, NullParameterException {
+		 return (List<Profession>) listEntities(Profession.class, request, logger, getMethodName());
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<PhoneType> getPhoneType(EJBRequest request)throws EmptyListException, GeneralException, NullParameterException {
+		return (List<PhoneType>) listEntities(PhoneType.class, request, logger, getMethodName());
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<AddressType> getAddressType(EJBRequest request)throws EmptyListException, GeneralException, NullParameterException {
+		return (List<AddressType>) listEntities(AddressType.class, request, logger, getMethodName());
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<EdificationType> getEdificationType(EJBRequest request)throws EmptyListException, GeneralException, NullParameterException {
+		return (List<EdificationType>) listEntities(EdificationType.class, request, logger, getMethodName());
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<StreetType> getStreetType(EJBRequest request)throws EmptyListException, GeneralException, NullParameterException {
+		return (List<StreetType>) listEntities(StreetType.class, request, logger, getMethodName());
+	}
 }
