@@ -17,7 +17,9 @@ import com.alodiga.wallet.common.genericEJB.AbstractWalletEJB;
 import com.alodiga.wallet.common.genericEJB.EJBRequest;
 import com.alodiga.wallet.common.genericEJB.WalletContextInterceptor;
 import com.alodiga.wallet.common.genericEJB.WalletLoggerInterceptor;
+import com.alodiga.wallet.common.model.ComercialAgency;
 import com.alodiga.wallet.common.model.DocumentsPersonType;
+import com.alodiga.wallet.common.model.EmployedPosition;
 import com.alodiga.wallet.common.model.Employee;
 import com.alodiga.wallet.common.model.LegalPerson;
 import com.alodiga.wallet.common.model.LegalRepresentative;
@@ -28,6 +30,7 @@ import com.alodiga.wallet.common.model.PersonClassification;
 import com.alodiga.wallet.common.model.PersonHasAddress;
 import com.alodiga.wallet.common.model.PersonType;
 import com.alodiga.wallet.common.model.PhonePerson;
+import com.alodiga.wallet.common.model.PhoneType;
 import com.alodiga.wallet.common.model.StatusApplicant;
 import com.alodiga.wallet.common.utils.EjbConstants;
 import com.alodiga.wallet.common.utils.QueryConstants;
@@ -55,6 +58,23 @@ public class PersonEJBImp extends AbstractWalletEJB implements PersonEJB, Person
             throw new NullParameterException("documentsPersonType", null);
         }
         return (DocumentsPersonType) saveEntity(documentsPersonType);
+    }
+    
+    @Override
+    public List<DocumentsPersonType> getDocumentsPersonByCountry(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        List<DocumentsPersonType> documentsPersonType = null;
+        Map<String, Object> params = request.getParams();
+        if (!params.containsKey(EjbConstants.PARAM_COUNTRY_ID)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_COUNTRY_ID), null);
+        }
+        if (!params.containsKey(EjbConstants.PARAM_IND_NATURAL_PERSON)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_IND_NATURAL_PERSON), null);
+        }
+        if (!params.containsKey(EjbConstants.PARAM_ORIGIN_APPLICATION_ID)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_ORIGIN_APPLICATION_ID), null);
+        }
+        documentsPersonType = (List<DocumentsPersonType>) getNamedQueryResult(DocumentsPersonType.class, QueryConstants.DOCUMENTS_BY_COUNTRY, request, getMethodName(), logger, "documentsPersonType");
+        return documentsPersonType;
     }
 
     //PersonType
@@ -118,6 +138,16 @@ public class PersonEJBImp extends AbstractWalletEJB implements PersonEJB, Person
             throw new NullParameterException("phonePerson", null);
         }
         return (PhonePerson) saveEntity(phonePerson);
+    }
+    
+    public List<PhonePerson> getValidateMainPhone(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        List<PhonePerson> phonePersonList = null;
+        Map<String, Object> params = request.getParams();
+        if (!params.containsKey(EjbConstants.PARAM_PERSON_ID)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_PERSON_ID), null);
+        }       
+        phonePersonList = (List<PhonePerson>) getNamedQueryResult(PhonePerson.class, QueryConstants.PHONES_BY_MAIN , request, getMethodName(), logger, "phonePersonList");
+        return phonePersonList;
     }
 
     //PersonHasAddress
@@ -266,16 +296,43 @@ public class PersonEJBImp extends AbstractWalletEJB implements PersonEJB, Person
 
     @Override
     public List<Employee> getEmployee(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        List<Employee> employee = (List<Employee>) listEntities(Employee.class, request, logger, getMethodName());
+        return employee;
     }
 
     @Override
     public Employee saveEmployee(Employee employee) throws RegisterNotFoundException, NullParameterException, GeneralException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        if (employee == null) {
+            throw new NullParameterException("employee", null);
+        }
+        return (Employee) saveEntity(employee);
     }
 
     @Override
     public PersonClassification loadPersonClassification(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        PersonClassification personclassification = (PersonClassification) loadEntity(PersonClassification.class, request, logger, getMethodName());
+        return personclassification;
+
     }
+    
+    //ComercialAgency
+    @Override
+    public List<ComercialAgency> getComercialAgency(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        List<ComercialAgency> comercialAgency = (List<ComercialAgency>) listEntities(ComercialAgency.class, request, logger, getMethodName());
+        return comercialAgency;
+    }
+    
+    //EmployedPosition
+        @Override
+        public List<EmployedPosition> getEmployedPosition(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        List<EmployedPosition> employedPosition = (List<EmployedPosition>) listEntities(EmployedPosition.class, request, logger, getMethodName());
+        return employedPosition;
+    }
+        
+    //PhoneType
+    @Override
+    public List<PhoneType> getPhoneType(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        List<PhoneType> phoneType = (List<PhoneType>) listEntities(PhoneType.class, request, logger, getMethodName());
+        return phoneType;
+    }    
 }

@@ -947,7 +947,16 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
     //BusinessAffiliationRequets
     @Override
     public List<BusinessAffiliationRequest> getBusinessAffiliationRequest(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
-        return (List<BusinessAffiliationRequest>) listEntities(BusinessAffiliationRequest.class, request, logger, getMethodName());
+    	 List<BusinessAffiliationRequest> businessAffiliationRequests = new ArrayList<BusinessAffiliationRequest>();
+         try {
+        	 businessAffiliationRequests = (List<BusinessAffiliationRequest>) entityManager.createNamedQuery("BusinessAffiliationRequest.findAll", BusinessAffiliationRequest.class).setHint("toplink.refresh", "true").getResultList();
+         } catch (Exception e) {
+             throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), e.getMessage()), null);
+         }
+         if (businessAffiliationRequests.isEmpty()) {
+             throw new EmptyListException(logger, sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName()), null);
+         }
+         return businessAffiliationRequests;
     }
 
     @Override
