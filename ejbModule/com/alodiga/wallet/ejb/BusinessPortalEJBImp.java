@@ -30,12 +30,15 @@ import com.alodiga.wallet.common.genericEJB.EJBRequest;
 import com.alodiga.wallet.common.genericEJB.WalletContextInterceptor;
 import com.alodiga.wallet.common.genericEJB.WalletLoggerInterceptor;
 import com.alodiga.wallet.common.model.Address;
+import com.alodiga.wallet.common.model.AddressType;
 import com.alodiga.wallet.common.model.BusinessAffiliationRequest;
 import com.alodiga.wallet.common.model.City;
+import com.alodiga.wallet.common.model.CivilStatus;
 import com.alodiga.wallet.common.model.CollectionType;
 import com.alodiga.wallet.common.model.CollectionsRequest;
 import com.alodiga.wallet.common.model.Country;
 import com.alodiga.wallet.common.model.DocumentsPersonType;
+import com.alodiga.wallet.common.model.EdificationType;
 import com.alodiga.wallet.common.model.LegalPerson;
 import com.alodiga.wallet.common.model.NaturalPerson;
 import com.alodiga.wallet.common.model.OriginApplication;
@@ -44,10 +47,13 @@ import com.alodiga.wallet.common.model.PersonClassification;
 import com.alodiga.wallet.common.model.PersonHasAddress;
 import com.alodiga.wallet.common.model.PersonType;
 import com.alodiga.wallet.common.model.PhonePerson;
+import com.alodiga.wallet.common.model.PhoneType;
+import com.alodiga.wallet.common.model.Profession;
 import com.alodiga.wallet.common.model.RequestHasCollectionRequest;
 import com.alodiga.wallet.common.model.Sequences;
 import com.alodiga.wallet.common.model.State;
 import com.alodiga.wallet.common.model.StatusBusinessAffiliationRequest;
+import com.alodiga.wallet.common.model.StreetType;
 import com.alodiga.wallet.common.utils.Constants;
 import com.alodiga.wallet.common.utils.EjbConstants;
 import com.alodiga.wallet.common.utils.QueryConstants;
@@ -441,5 +447,35 @@ public class BusinessPortalEJBImp extends AbstractWalletEJB implements BusinessP
 	        }
 	        return (RequestHasCollectionRequest) saveEntity(requestHasCollectionsRequest);
 	 }
+
+    @Override
+    public List<CivilStatus> getCivilStatus(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List<Profession> getProfession(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List<PhoneType> getPhoneType(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List<AddressType> getAddressType(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List<EdificationType> getEdificationType(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List<StreetType> getStreetType(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 
 }
