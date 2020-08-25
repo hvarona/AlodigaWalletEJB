@@ -64,6 +64,23 @@ public class PersonEJBImp extends AbstractWalletEJB implements PersonEJB, Person
         }
         return (DocumentsPersonType) saveEntity(documentsPersonType);
     }
+    
+    @Override
+    public List<DocumentsPersonType> getDocumentsPersonByCountry(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        List<DocumentsPersonType> documentsPersonType = null;
+        Map<String, Object> params = request.getParams();
+        if (!params.containsKey(EjbConstants.PARAM_COUNTRY_ID)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_COUNTRY_ID), null);
+        }
+        if (!params.containsKey(EjbConstants.PARAM_IND_NATURAL_PERSON)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_IND_NATURAL_PERSON), null);
+        }
+        if (!params.containsKey(EjbConstants.PARAM_ORIGIN_APPLICATION_ID)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_ORIGIN_APPLICATION_ID), null);
+        }
+        documentsPersonType = (List<DocumentsPersonType>) getNamedQueryResult(DocumentsPersonType.class, QueryConstants.DOCUMENTS_BY_COUNTRY, request, getMethodName(), logger, "documentsPersonType");
+        return documentsPersonType;
+    }
 
     //PersonType
     @Override
@@ -126,6 +143,16 @@ public class PersonEJBImp extends AbstractWalletEJB implements PersonEJB, Person
             throw new NullParameterException("phonePerson", null);
         }
         return (PhonePerson) saveEntity(phonePerson);
+    }
+    
+    public List<PhonePerson> getValidateMainPhone(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        List<PhonePerson> phonePersonList = null;
+        Map<String, Object> params = request.getParams();
+        if (!params.containsKey(EjbConstants.PARAM_PERSON_ID)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_PERSON_ID), null);
+        }       
+        phonePersonList = (List<PhonePerson>) getNamedQueryResult(PhonePerson.class, QueryConstants.PHONES_BY_MAIN , request, getMethodName(), logger, "phonePersonList");
+        return phonePersonList;
     }
 
     //PersonHasAddress
@@ -254,7 +281,7 @@ public class PersonEJBImp extends AbstractWalletEJB implements PersonEJB, Person
         return (StatusApplicant) saveEntity(statusApplicant);
     }
 
-    
+    @SuppressWarnings("unchecked")
     //PasswordChangeRequest
     public List<PasswordChangeRequest> getPasswordChangeRequest(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException{
         return (List<PasswordChangeRequest>) listEntities(PasswordChangeRequest.class, request, logger, getMethodName());
@@ -272,128 +299,162 @@ public class PersonEJBImp extends AbstractWalletEJB implements PersonEJB, Person
         return (PasswordChangeRequest) saveEntity(passwordChangeRequest);
     }
 
-    @Override
+	@SuppressWarnings("unchecked")
+	@Override
     public List<Employee> getEmployee(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        List<Employee> employee = (List<Employee>) listEntities(Employee.class, request, logger, getMethodName());
+        return employee;
+
     }
 
     @Override
     public Employee saveEmployee(Employee employee) throws RegisterNotFoundException, NullParameterException, GeneralException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        if (employee == null) {
+            throw new NullParameterException("employee", null);
+        }
+        return (Employee) saveEntity(employee);
     }
 
     @Override
     public PersonClassification loadPersonClassification(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    	PersonClassification personClassification = (PersonClassification) loadEntity(PersonClassification.class, request, logger, getMethodName());
+        return personClassification;
+    }
+    
+
+	@Override
+    public CivilStatus loadCivilStatus(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
+    	CivilStatus civilStatus = (CivilStatus) loadEntity(CivilStatus.class, request, logger, getMethodName());
+        return civilStatus;
     }
 
-    @Override
-    public List<DocumentsPersonType> getDocumentsPersonByCountry(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<CivilStatus> getCivilStatus(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+		 return (List<CivilStatus>) listEntities(CivilStatus.class, request, logger, getMethodName());
+	}
 
-    @Override
-    public List<PhonePerson> getValidateMainPhone(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
+	@Override
+	public CivilStatus saveCivilStatus(CivilStatus civilStatus)throws RegisterNotFoundException, NullParameterException, GeneralException {
+		if (civilStatus == null) {
+			throw new NullParameterException("civilStatus", null);
+		}
+		return (CivilStatus) saveEntity(civilStatus);
+	}
 
+	@Override
+	public Profession loadProfession(EJBRequest request)throws RegisterNotFoundException, NullParameterException, GeneralException {
+		Profession profession = (Profession) loadEntity(Profession.class, request, logger, getMethodName());
+        return profession;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<Profession> getProfession(EJBRequest request)throws EmptyListException, GeneralException, NullParameterException {
+		 return (List<Profession>) listEntities(Profession.class, request, logger, getMethodName());
+	}
+
+	@Override
+	public Profession saveProfession(Profession profession)throws RegisterNotFoundException, NullParameterException, GeneralException {
+		if (profession == null) {
+			throw new NullParameterException("profession", null);
+		}
+		return (Profession) saveEntity(profession);
+	}
+
+	@Override
+	public PhoneType loadPhoneType(EJBRequest request)throws RegisterNotFoundException, NullParameterException, GeneralException {
+		PhoneType phoneType = (PhoneType) loadEntity(PhoneType.class, request, logger, getMethodName());
+        return phoneType;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<PhoneType> getPhoneType(EJBRequest request)throws EmptyListException, GeneralException, NullParameterException {
+		return (List<PhoneType>) listEntities(PhoneType.class, request, logger, getMethodName());
+	}
+
+	@Override
+	public PhoneType savePhoneType(PhoneType phoneType)throws RegisterNotFoundException, NullParameterException, GeneralException {
+		if (phoneType == null) {
+			throw new NullParameterException("phoneType", null);
+		}
+		return (PhoneType) saveEntity(phoneType);
+	}
+
+	@Override
+	public AddressType loadAddressType(EJBRequest request)throws RegisterNotFoundException, NullParameterException, GeneralException {
+		AddressType addressType = (AddressType) loadEntity(AddressType.class, request, logger, getMethodName());
+        return addressType;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<AddressType> getAddressType(EJBRequest request)throws EmptyListException, GeneralException, NullParameterException {
+		return (List<AddressType>) listEntities(AddressType.class, request, logger, getMethodName());
+	}
+
+	@Override
+	public AddressType saveAddressType(AddressType addressType)throws RegisterNotFoundException, NullParameterException, GeneralException {
+		if (addressType == null) {
+			throw new NullParameterException("addressType", null);
+		}
+		return (AddressType) saveEntity(addressType);
+	}
+	
+	@Override
+	public EdificationType loadEdificationType(EJBRequest request)throws RegisterNotFoundException, NullParameterException, GeneralException {
+		EdificationType edificationType = (EdificationType) loadEntity(EdificationType.class, request, logger, getMethodName());
+        return edificationType;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<EdificationType> getEdificationType(EJBRequest request)throws EmptyListException, GeneralException, NullParameterException {
+		return (List<EdificationType>) listEntities(EdificationType.class, request, logger, getMethodName());
+	}
+
+	@Override
+	public EdificationType saveEdificationType(EdificationType edificationType)throws RegisterNotFoundException, NullParameterException, GeneralException {
+		if (edificationType == null) {
+			throw new NullParameterException("edificationType", null);
+		}
+		return (EdificationType) saveEntity(edificationType);
+	}
+
+	@Override
+	public StreetType loadStreetType(EJBRequest request)throws RegisterNotFoundException, NullParameterException, GeneralException {
+		StreetType streetType = (StreetType) loadEntity(StreetType.class, request, logger, getMethodName());
+        return streetType;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<StreetType> getStreetType(EJBRequest request)throws EmptyListException, GeneralException, NullParameterException {
+		return (List<StreetType>) listEntities(StreetType.class, request, logger, getMethodName());
+	}
+
+	@Override
+	public StreetType saveStreetType(StreetType streetType)throws RegisterNotFoundException, NullParameterException, GeneralException {
+		if (streetType == null) {
+			throw new NullParameterException("streetType", null);
+		}
+		return (StreetType) saveEntity(streetType);
+	}
+
+    //ComercialAgency
     @Override
     public List<ComercialAgency> getComercialAgency(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        List<ComercialAgency> comercialAgency = (List<ComercialAgency>) listEntities(ComercialAgency.class, request, logger, getMethodName());
+        return comercialAgency;
     }
+    
+    //EmployedPosition
+        @Override
+        public List<EmployedPosition> getEmployedPosition(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        List<EmployedPosition> employedPosition = (List<EmployedPosition>) listEntities(EmployedPosition.class, request, logger, getMethodName());
+        return employedPosition;
+    }
+           
 
-    @Override
-    public List<EmployedPosition> getEmployedPosition(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public CivilStatus loadCivilStatus(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public List<CivilStatus> getCivilStatus(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public CivilStatus saveCivilStatus(CivilStatus civilStatus) throws RegisterNotFoundException, NullParameterException, GeneralException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public Profession loadProfession(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public List<Profession> getProfession(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public Profession saveProfession(Profession profession) throws RegisterNotFoundException, NullParameterException, GeneralException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public PhoneType loadPhoneType(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public List<PhoneType> getPhoneType(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public PhoneType savePhoneType(PhoneType phoneType) throws RegisterNotFoundException, NullParameterException, GeneralException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public AddressType loadAddressType(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public List<AddressType> getAddressType(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public AddressType saveAddressType(AddressType addressType) throws RegisterNotFoundException, NullParameterException, GeneralException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public EdificationType loadEdificationType(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public List<EdificationType> getEdificationType(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public EdificationType saveEdificationType(EdificationType edificationType) throws RegisterNotFoundException, NullParameterException, GeneralException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public StreetType loadStreetType(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public List<StreetType> getStreetType(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public StreetType saveStreetType(StreetType streetType) throws RegisterNotFoundException, NullParameterException, GeneralException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
 }
