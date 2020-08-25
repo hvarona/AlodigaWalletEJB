@@ -19,8 +19,10 @@ import com.alodiga.wallet.common.genericEJB.WalletContextInterceptor;
 import com.alodiga.wallet.common.genericEJB.WalletLoggerInterceptor;
 import com.alodiga.wallet.common.model.AddressType;
 import com.alodiga.wallet.common.model.CivilStatus;
+import com.alodiga.wallet.common.model.ComercialAgency;
 import com.alodiga.wallet.common.model.DocumentsPersonType;
 import com.alodiga.wallet.common.model.EdificationType;
+import com.alodiga.wallet.common.model.EmployedPosition;
 import com.alodiga.wallet.common.model.Employee;
 import com.alodiga.wallet.common.model.LegalPerson;
 import com.alodiga.wallet.common.model.LegalRepresentative;
@@ -61,6 +63,23 @@ public class PersonEJBImp extends AbstractWalletEJB implements PersonEJB, Person
             throw new NullParameterException("documentsPersonType", null);
         }
         return (DocumentsPersonType) saveEntity(documentsPersonType);
+    }
+    
+    @Override
+    public List<DocumentsPersonType> getDocumentsPersonByCountry(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        List<DocumentsPersonType> documentsPersonType = null;
+        Map<String, Object> params = request.getParams();
+        if (!params.containsKey(EjbConstants.PARAM_COUNTRY_ID)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_COUNTRY_ID), null);
+        }
+        if (!params.containsKey(EjbConstants.PARAM_IND_NATURAL_PERSON)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_IND_NATURAL_PERSON), null);
+        }
+        if (!params.containsKey(EjbConstants.PARAM_ORIGIN_APPLICATION_ID)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_ORIGIN_APPLICATION_ID), null);
+        }
+        documentsPersonType = (List<DocumentsPersonType>) getNamedQueryResult(DocumentsPersonType.class, QueryConstants.DOCUMENTS_BY_COUNTRY, request, getMethodName(), logger, "documentsPersonType");
+        return documentsPersonType;
     }
 
     //PersonType
@@ -124,6 +143,16 @@ public class PersonEJBImp extends AbstractWalletEJB implements PersonEJB, Person
             throw new NullParameterException("phonePerson", null);
         }
         return (PhonePerson) saveEntity(phonePerson);
+    }
+    
+    public List<PhonePerson> getValidateMainPhone(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        List<PhonePerson> phonePersonList = null;
+        Map<String, Object> params = request.getParams();
+        if (!params.containsKey(EjbConstants.PARAM_PERSON_ID)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_PERSON_ID), null);
+        }       
+        phonePersonList = (List<PhonePerson>) getNamedQueryResult(PhonePerson.class, QueryConstants.PHONES_BY_MAIN , request, getMethodName(), logger, "phonePersonList");
+        return phonePersonList;
     }
 
     //PersonHasAddress
@@ -273,7 +302,9 @@ public class PersonEJBImp extends AbstractWalletEJB implements PersonEJB, Person
 	@SuppressWarnings("unchecked")
 	@Override
     public List<Employee> getEmployee(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
-    	return (List<Employee>) listEntities(Employee.class, request, logger, getMethodName());
+        List<Employee> employee = (List<Employee>) listEntities(Employee.class, request, logger, getMethodName());
+        return employee;
+
     }
 
     @Override
@@ -290,6 +321,7 @@ public class PersonEJBImp extends AbstractWalletEJB implements PersonEJB, Person
         return personClassification;
     }
     
+
 	@Override
     public CivilStatus loadCivilStatus(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
     	CivilStatus civilStatus = (CivilStatus) loadEntity(CivilStatus.class, request, logger, getMethodName());
@@ -409,4 +441,20 @@ public class PersonEJBImp extends AbstractWalletEJB implements PersonEJB, Person
 		}
 		return (StreetType) saveEntity(streetType);
 	}
+
+    //ComercialAgency
+    @Override
+    public List<ComercialAgency> getComercialAgency(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        List<ComercialAgency> comercialAgency = (List<ComercialAgency>) listEntities(ComercialAgency.class, request, logger, getMethodName());
+        return comercialAgency;
+    }
+    
+    //EmployedPosition
+        @Override
+        public List<EmployedPosition> getEmployedPosition(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        List<EmployedPosition> employedPosition = (List<EmployedPosition>) listEntities(EmployedPosition.class, request, logger, getMethodName());
+        return employedPosition;
+    }
+           
+
 }
