@@ -284,4 +284,36 @@ public class PreferencesEJBImp extends AbstractWalletEJB implements PreferencesE
 		}
 		return valid;
     }
+    
+    public Map<Long, String> getLastPreferenceValuesByBusiness(EJBRequest request) throws GeneralException, RegisterNotFoundException, NullParameterException, EmptyListException {
+        Map<Long, String> currentValues = new HashMap<Long, String>();
+        Map<String, Object> params = request.getParams();
+        List<PreferenceField> fields = this.getPreferenceFields(request);
+        for (PreferenceField field : fields) {
+            PreferenceValue pv = getLastPreferenceValueByPreferenceFieldByBusiness(field.getId(), Long.valueOf("" + params.get("classificationId")), Long.valueOf("" + params.get("productId")), Long.valueOf("" + params.get("transactionTypeId")), Long.valueOf("" + params.get("bussinessId")));
+            if (pv != null) {
+                currentValues.put(field.getId(), pv.getValue());
+            }
+        }
+        return currentValues;
+    }
+    
+    private PreferenceValue getLastPreferenceValueByPreferenceFieldByBusiness(Long preferenceFieldId, Long classificationId, Long productId,Long transactionTypeId, Long bussinessId ) throws GeneralException, NullParameterException, EmptyListException {
+
+    	PreferenceValue preferenceValue = null;
+        Query query = null;
+        try {
+        	 query = createQuery("SELECT p FROM PreferenceValue p WHERE p.preferenceFieldId.id=?1 and p.preferenceClassficationId.id= ?2 and p.productId.id=?3 AND p.transactionTypeId.id=?4 AND p.bussinessId=?5");
+             query.setParameter("1", preferenceFieldId);
+             query.setParameter("2", classificationId);
+             query.setParameter("3", productId);
+             query.setParameter("4", transactionTypeId);
+             query.setParameter("5", bussinessId);
+           
+             preferenceValue = (PreferenceValue) query.setHint("toplink.refresh", "true").getSingleResult();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return preferenceValue;
+    }
 }
