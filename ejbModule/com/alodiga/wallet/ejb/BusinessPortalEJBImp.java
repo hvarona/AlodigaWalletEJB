@@ -220,13 +220,13 @@ public class BusinessPortalEJBImp extends AbstractWalletEJB implements BusinessP
         int year = cal.get(Calendar.YEAR);
         switch (originApplication) {
             case Constants.ORIGIN_APPLICATION_APP_ALODIGA_WALLET_ID:
-                prefixNumberSequence = "CMS-";
-                break;
-            case Constants.ORIGIN_APPLICATION_ADMIN_WALLET_ID:
                 prefixNumberSequence = "APP-";
                 break;
+            case Constants.ORIGIN_APPLICATION_ADMIN_WALLET_ID:
+                prefixNumberSequence = "ADM-";
+                break;
             case Constants.ORIGIN_APPLICATION_PORTAL_WEB_ID:
-                prefixNumberSequence = "POR";
+                prefixNumberSequence = "PBW";
                 break;
             default:
                 break;
@@ -253,56 +253,56 @@ public class BusinessPortalEJBImp extends AbstractWalletEJB implements BusinessP
 	public BusinessAffiliationRequest saveBusinessAffiliationRequest(Person person, NaturalPerson naturalPerson, LegalPerson legalPerson, PhonePerson phonePerson,Address address) throws NullParameterException, GeneralException {
 		BusinessAffiliationRequest affiliatinRequest = new BusinessAffiliationRequest();
 		try {
-			if (person.getPersonTypeId().getIndNaturalPerson()) {
-	            //Se obtiene la Clasificacion del Solicitante Natural
-	            String personClassificationCode = PersonClassificationE.NABUAP.getPersonClassificationCode();
-	            PersonClassification personClassification = (PersonClassification) entityManager.createNamedQuery(QueryConstants.PERSON_CLASSIFICATION_BY_CODE, PersonClassification.class).setParameter(Constants.PARAM_CODE,personClassificationCode).getSingleResult();
-	     
-	            //Se guarda el objeto person en la BD
-	            person.setCreateDate(new Timestamp(new Date().getTime()));
-	            if (person.getEmail() != null) {
-	                person.setEmail(person.getEmail());
-	            } else {
-	                person.setEmail(null);
-	            }
-	            person.setPersonTypeId(person.getPersonTypeId());        
-	            person.setPersonClassificationId(personClassification);
-	            if (person.getWebSite() != null) {
-	                person.setWebSite(person.getWebSite());
-	            } else {
-	                person.setWebSite(null);
-	            }
-	            person.setCountryId(person.getCountryId());
-	            person = (Person)saveEntity(person);
-	
-	            //Se guarda el objeto NaturalPerson en la BD
-	            naturalPerson.setPersonId(person);
-	            naturalPerson.setDocumentsPersonTypeId(naturalPerson.getDocumentsPersonTypeId());
-	            naturalPerson.setIdentificationNumber(naturalPerson.getIdentificationNumber());
-	            if (naturalPerson.getIdentificactionNumberOld() != null) {
-	                naturalPerson.setIdentificactionNumberOld(naturalPerson.getIdentificactionNumberOld());
-	            } else {
-	                naturalPerson.setIdentificactionNumberOld(null);
-	            }
-	            naturalPerson.setDueDateDocumentIdentification(naturalPerson.getDueDateDocumentIdentification());
-	            naturalPerson.setFirstName(naturalPerson.getFirstName());
-	            naturalPerson.setLastName(naturalPerson.getLastName());
-	            if (naturalPerson.getMarriedLastName() != null) {
-	                naturalPerson.setMarriedLastName(naturalPerson.getMarriedLastName());
-	            } else {
-	                naturalPerson.setMarriedLastName(null);
-	            }
-	            naturalPerson.setGender(naturalPerson.getGender());
-	            naturalPerson.setPlaceBirth(naturalPerson.getPlaceBirth());
-	            naturalPerson.setDateBirth(naturalPerson.getDateBirth());
-	            naturalPerson.setCivilStatusId(naturalPerson.getCivilStatusId());
-	            if (naturalPerson.getProfessionId() != null) {
-	                naturalPerson.setProfessionId(naturalPerson.getProfessionId());
-	            } else {
-	                naturalPerson.setProfessionId(null);
-	            }
-	            naturalPerson.setCreateDate(new Timestamp(new Date().getTime()));
-	            saveEntity(naturalPerson);
+                    if (person.getPersonTypeId().getIndNaturalPerson()) {
+                        //Se obtiene la Clasificacion del Solicitante Natural
+                        String personClassificationCode = PersonClassificationE.NABUAP.getPersonClassificationCode();
+                        PersonClassification personClassification = (PersonClassification) entityManager.createNamedQuery(QueryConstants.PERSON_CLASSIFICATION_BY_CODE, PersonClassification.class).setParameter(Constants.PARAM_CODE,personClassificationCode).getSingleResult();
+
+                        //Se guarda el objeto person en la BD
+                        person.setCreateDate(new Timestamp(new Date().getTime()));
+                        if (person.getEmail() != null) {
+                            person.setEmail(person.getEmail());
+                        } else {
+                            person.setEmail(null);
+                        }
+                        person.setPersonTypeId(person.getPersonTypeId());        
+                        person.setPersonClassificationId(personClassification);
+                        if (person.getWebSite() != null) {
+                            person.setWebSite(person.getWebSite());
+                        } else {
+                            person.setWebSite(null);
+                        }
+                        person.setCountryId(person.getCountryId());
+                        person = (Person)saveEntity(person);
+
+                        //Se guarda el objeto NaturalPerson en la BD
+                        naturalPerson.setPersonId(person);
+                        naturalPerson.setDocumentsPersonTypeId(naturalPerson.getDocumentsPersonTypeId());
+                        naturalPerson.setIdentificationNumber(naturalPerson.getIdentificationNumber());
+                        if (naturalPerson.getIdentificactionNumberOld() != null) {
+                            naturalPerson.setIdentificactionNumberOld(naturalPerson.getIdentificactionNumberOld());
+                        } else {
+                            naturalPerson.setIdentificactionNumberOld(null);
+                        }
+                        naturalPerson.setDueDateDocumentIdentification(naturalPerson.getDueDateDocumentIdentification());
+                        naturalPerson.setFirstName(naturalPerson.getFirstName());
+                        naturalPerson.setLastName(naturalPerson.getLastName());
+                        if (naturalPerson.getMarriedLastName() != null) {
+                            naturalPerson.setMarriedLastName(naturalPerson.getMarriedLastName());
+                        } else {
+                            naturalPerson.setMarriedLastName(null);
+                        }
+                        naturalPerson.setGender(naturalPerson.getGender());
+                        naturalPerson.setPlaceBirth(naturalPerson.getPlaceBirth());
+                        naturalPerson.setDateBirth(naturalPerson.getDateBirth());
+                        naturalPerson.setCivilStatusId(naturalPerson.getCivilStatusId());
+                        if (naturalPerson.getProfessionId() != null) {
+                            naturalPerson.setProfessionId(naturalPerson.getProfessionId());
+                        } else {
+                            naturalPerson.setProfessionId(null);
+                        }
+                        naturalPerson.setCreateDate(new Timestamp(new Date().getTime()));
+                        saveEntity(naturalPerson);
          }else {
             String personClassificationCode = PersonClassificationE.LEBUAP.getPersonClassificationCode();
                 //Guardo person
