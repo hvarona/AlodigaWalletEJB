@@ -277,22 +277,13 @@ public class ProductEJBImp extends AbstractWalletEJB implements ProductEJB, Prod
 
     //BankHasProduct
     @Override
-    public List<BankHasProduct> getBankHasProduct(EJBRequest request) throws GeneralException, EmptyListException, NullParameterException {
+    public List<BankHasProduct> getBankHasProduct(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
         List<BankHasProduct> bankHasProductList = null;
-        Product product = (Product) request.getParam();
-        try {
-            if (product == null) {
-                throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "product"), null);
-            }      //To change body of generated methods, choose Tools | Templates.
-
-            StringBuilder sqlBuilder = new StringBuilder("SELECT * FROM bank_has_product where productId=");
-            sqlBuilder.append(product.getId());
-            Query query = entityManager.createNativeQuery(sqlBuilder.toString(), BankHasProduct.class);
-            bankHasProductList = (List<BankHasProduct>) query.setHint("toplink.refresh", "true").getResultList();
-
-        } catch (Exception ex) {
-            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), ex.getMessage()), ex);
+        Map<String, Object> params = request.getParams();
+        if (!params.containsKey(EjbConstants.PARAM_PRODUCT_ID)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_PRODUCT_ID), null);
         }
+        bankHasProductList = (List<BankHasProduct>) getNamedQueryResult(BankHasProduct.class, QueryConstants.BANK_BY_PRODUCT, request, getMethodName(), logger, "bankHasProductList");
         return bankHasProductList;
     }
 
