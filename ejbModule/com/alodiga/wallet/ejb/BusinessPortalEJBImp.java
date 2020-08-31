@@ -221,13 +221,13 @@ public class BusinessPortalEJBImp extends AbstractWalletEJB implements BusinessP
         int year = cal.get(Calendar.YEAR);
         switch (originApplication) {
             case Constants.ORIGIN_APPLICATION_APP_ALODIGA_WALLET_ID:
-                prefixNumberSequence = "CMS-";
-                break;
-            case Constants.ORIGIN_APPLICATION_ADMIN_WALLET_ID:
                 prefixNumberSequence = "APP-";
                 break;
+            case Constants.ORIGIN_APPLICATION_ADMIN_WALLET_ID:
+                prefixNumberSequence = "ADM-";
+                break;
             case Constants.ORIGIN_APPLICATION_PORTAL_WEB_ID:
-                prefixNumberSequence = "POR";
+                prefixNumberSequence = "PBW";
                 break;
             default:
                 break;

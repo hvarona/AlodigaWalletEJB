@@ -455,6 +455,6 @@ public class PersonEJBImp extends AbstractWalletEJB implements PersonEJB, Person
         List<EmployedPosition> employedPosition = (List<EmployedPosition>) listEntities(EmployedPosition.class, request, logger, getMethodName());
         return employedPosition;
     }
-           
-
+        
+    
 }
