@@ -17,6 +17,7 @@ import javax.persistence.Query;
 import org.apache.log4j.Logger;
 import com.alodiga.wallet.common.ejb.UtilsEJB;
 import com.alodiga.wallet.common.ejb.UtilsEJBLocal;
+import com.alodiga.wallet.common.exception.DuplicateEntryException;
 import com.alodiga.wallet.common.exception.EmptyListException;
 import com.alodiga.wallet.common.exception.GeneralException;
 import com.alodiga.wallet.common.exception.NullParameterException;
@@ -69,6 +70,7 @@ import com.alodiga.wallet.common.utils.Constants;
 import com.alodiga.wallet.common.utils.EjbConstants;
 import com.alodiga.wallet.common.utils.EjbUtils;
 import com.alodiga.wallet.common.utils.QueryConstants;
+import com.sun.tools.ws.wsdl.framework.DuplicateEntityException;
 import java.util.Calendar;
 
 @Interceptors({WalletLoggerInterceptor.class, WalletContextInterceptor.class})
@@ -197,6 +199,7 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         }
         return country;
     }
+    
 
     public Country searchCountry(String name) throws RegisterNotFoundException, NullParameterException, GeneralException {
         Country country = new Country();
@@ -1338,4 +1341,23 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         numberSequenceDoc = numberSequenceDoc.concat(suffixNumberSequence);
         return numberSequenceDoc;
     }
+    
+    public Country saveNewCountry(Country country) throws RegisterNotFoundException, GeneralException, NullParameterException,DuplicateEntryException {
+        try {
+            
+            Country countryResponse = new Country();
+            countryResponse = loadCountryByShortName(country.getShortName());
+            if(countryResponse!= null) {
+                 throw new DuplicateEntryException("DuplicateEntryException");
+            }
+        } catch (RegisterNotFoundException e) {
+            country = (Country) saveEntity(country);
+            return country;
+        } catch (GeneralException e) {
+            throw new GeneralException(e.getMessage());
+        }
+        return country;
+    }
+
+    
 }
