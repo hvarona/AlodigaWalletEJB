@@ -35,6 +35,7 @@ import com.alodiga.wallet.common.model.BusinessCategory;
 import com.alodiga.wallet.common.model.BusinessSubCategory;
 import com.alodiga.wallet.common.model.BusinessType;
 import com.alodiga.wallet.common.model.BusinessServiceType;
+import com.alodiga.wallet.common.model.CalendarDays;
 import com.alodiga.wallet.common.model.City;
 import com.alodiga.wallet.common.model.Close;
 import com.alodiga.wallet.common.model.CollectionType;
@@ -1359,5 +1360,19 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         return country;
     }
 
+    //Calendar Days
+    public List<CalendarDays> getCalendarDays(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        List<CalendarDays> calendarDays = (List<CalendarDays>) listEntities(CalendarDays.class, request, logger, getMethodName());
+        return calendarDays;
+    }
     
+    @Override
+    public CalendarDays saveCalendarDays(CalendarDays calendarDays) throws RegisterNotFoundException, NullParameterException, GeneralException {
+        if (calendarDays == null) {
+            throw new NullParameterException("calendarDays", null);
+        }
+        return (CalendarDays) saveEntity(calendarDays);
+    }
+    
+  
 }
