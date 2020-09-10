@@ -17,6 +17,7 @@ import javax.persistence.Query;
 import org.apache.log4j.Logger;
 import com.alodiga.wallet.common.ejb.UtilsEJB;
 import com.alodiga.wallet.common.ejb.UtilsEJBLocal;
+import com.alodiga.wallet.common.exception.DuplicateEntryException;
 import com.alodiga.wallet.common.exception.EmptyListException;
 import com.alodiga.wallet.common.exception.GeneralException;
 import com.alodiga.wallet.common.exception.NullParameterException;
@@ -34,6 +35,7 @@ import com.alodiga.wallet.common.model.BusinessCategory;
 import com.alodiga.wallet.common.model.BusinessSubCategory;
 import com.alodiga.wallet.common.model.BusinessType;
 import com.alodiga.wallet.common.model.BusinessServiceType;
+import com.alodiga.wallet.common.model.CalendarDays;
 import com.alodiga.wallet.common.model.City;
 import com.alodiga.wallet.common.model.Close;
 import com.alodiga.wallet.common.model.CollectionType;
@@ -69,6 +71,7 @@ import com.alodiga.wallet.common.utils.Constants;
 import com.alodiga.wallet.common.utils.EjbConstants;
 import com.alodiga.wallet.common.utils.EjbUtils;
 import com.alodiga.wallet.common.utils.QueryConstants;
+import com.sun.tools.ws.wsdl.framework.DuplicateEntityException;
 import java.util.Calendar;
 
 @Interceptors({WalletLoggerInterceptor.class, WalletContextInterceptor.class})
@@ -197,6 +200,7 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         }
         return country;
     }
+    
 
     public Country searchCountry(String name) throws RegisterNotFoundException, NullParameterException, GeneralException {
         Country country = new Country();
@@ -1378,4 +1382,37 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         numberSequenceDoc = numberSequenceDoc.concat(suffixNumberSequence);
         return numberSequenceDoc;
     }
+    
+    public Country saveNewCountry(Country country) throws RegisterNotFoundException, GeneralException, NullParameterException,DuplicateEntryException {
+        try {
+            
+            Country countryResponse = new Country();
+            countryResponse = loadCountryByShortName(country.getShortName());
+            if(countryResponse!= null) {
+                 throw new DuplicateEntryException("DuplicateEntryException");
+            }
+        } catch (RegisterNotFoundException e) {
+            country = (Country) saveEntity(country);
+            return country;
+        } catch (GeneralException e) {
+            throw new GeneralException(e.getMessage());
+        }
+        return country;
+    }
+
+    //Calendar Days
+    public List<CalendarDays> getCalendarDays(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        List<CalendarDays> calendarDays = (List<CalendarDays>) listEntities(CalendarDays.class, request, logger, getMethodName());
+        return calendarDays;
+    }
+    
+    @Override
+    public CalendarDays saveCalendarDays(CalendarDays calendarDays) throws RegisterNotFoundException, NullParameterException, GeneralException {
+        if (calendarDays == null) {
+            throw new NullParameterException("calendarDays", null);
+        }
+        return (CalendarDays) saveEntity(calendarDays);
+    }
+    
+  
 }
