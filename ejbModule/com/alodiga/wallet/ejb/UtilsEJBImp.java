@@ -1362,7 +1362,9 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         }
         return (StatusCardHasFinalState) saveEntity(statusCardHasFinalState);
     }
-
+    
+    //PersonType
+    
     @Override
     public List<PersonType> getPersonTypeByCountryByIndNaturalPerson(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
         List<PersonType> personTypes = null;
@@ -1377,6 +1379,21 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
             throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_IND_NATURAL_PERSON), null);
         }
         personTypes = (List<PersonType>) getNamedQueryResult(PersonType.class, QueryConstants.PERSON_TYPE_BY_COUNTRY_BY_IND_NATURAL_PERSON, request, getMethodName(), logger, "personTypes");
+        return personTypes;
+    }
+    
+    @Override
+    public List<PersonType> getPersonTypeByCountryByOriginApplication(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        List<PersonType> personTypes = null;
+        Map<String, Object> params = request.getParams();
+        if (!params.containsKey(EjbConstants.PARAM_COUNTRY_ID)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_COUNTRY_ID), null);
+        }
+        if (!params.containsKey(EjbConstants.PARAM_ORIGIN_APPLICATION_ID)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_ORIGIN_APPLICATION_ID), null);
+        }
+       
+        personTypes = (List<PersonType>) getNamedQueryResult(PersonType.class, QueryConstants.PERSON_TYPE_BY_COUNTRY_BY_ORIGIN_APPLICATION, request, getMethodName(), logger, "personTypeByCountryByOriginApplication");
         return personTypes;
     }
 
@@ -1426,7 +1443,15 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         }
         return (ReviewType) saveEntity(reviewType);
     }
-
+    
+    
+    //OriginApplication
+    
+    public List<OriginApplication> getOriginApplications(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        List<OriginApplication> originApplications = (List<OriginApplication>) listEntities(OriginApplication.class, request, logger, getMethodName());
+        return originApplications;
+    }
+    
     @SuppressWarnings("unchecked")
 	@Override
 	public OriginApplication loadOriginApplicationByCode(EJBRequest request)throws RegisterNotFoundException, NullParameterException, GeneralException, EmptyListException {
