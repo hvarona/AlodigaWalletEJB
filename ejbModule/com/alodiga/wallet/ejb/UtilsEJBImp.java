@@ -803,21 +803,18 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         return (List<BusinessServiceType>) listEntities(BusinessServiceType.class, request, logger, getMethodName());
     }
 
-    public BusinessServiceType loadBusinessServiceTypebyId(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
-        List<BusinessServiceType> businessService = null;
+    public List<BusinessServiceType> getBusinessServiceTypeByBusinessType(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
+        List<BusinessServiceType> businessServiceList = null;
         Map<String, Object> params = request.getParams();
-
         if (!params.containsKey(QueryConstants.PARAM_BUSINESS_TYPE_ID)) {
             throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), QueryConstants.PARAM_BUSINESS_TYPE_ID), null);
         }
-
         try {
-            businessService = (List<BusinessServiceType>) getNamedQueryResult(BusinessServiceType.class, QueryConstants.BUSINESS_TYPE_BY_ID, request, getMethodName(), logger, "businessTypeById");
+            businessServiceList = (List<BusinessServiceType>) getNamedQueryResult(BusinessServiceType.class, QueryConstants.BUSINESS_SERVICE_TYPE_BY_BUSINESS_TYPE, request, getMethodName(), logger, "businessServiceList");
         } catch (EmptyListException e) {
-            throw new RegisterNotFoundException(logger, sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName(), "businessTypeById"), null);
+            throw new RegisterNotFoundException(logger, sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName(), "businessServiceList"), null);
         }
-
-        return businessService.get(0);
+        return businessServiceList;
     }
 
     public BusinessServiceType saveBusinessServiceType(BusinessServiceType businessServiceType) throws RegisterNotFoundException, NullParameterException, GeneralException {
