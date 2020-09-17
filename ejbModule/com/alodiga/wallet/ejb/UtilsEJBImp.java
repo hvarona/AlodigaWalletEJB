@@ -1364,6 +1364,17 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
     }
     
     //PersonType
+    public PersonType savePersonType(PersonType personType) throws NullParameterException, GeneralException {
+        if (personType == null) {
+            throw new NullParameterException("personType", null);
+        }
+        return (PersonType) saveEntity(personType);
+    }
+    
+    @Override
+     public List<PersonType> getPersonType(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        return (List<PersonType>) listEntities(PersonType.class, request, logger, getMethodName());
+    }
     
     @Override
     public List<PersonType> getPersonTypeByCountryByIndNaturalPerson(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
@@ -1395,6 +1406,27 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
        
         personTypes = (List<PersonType>) getNamedQueryResult(PersonType.class, QueryConstants.PERSON_TYPE_BY_COUNTRY_BY_ORIGIN_APPLICATION, request, getMethodName(), logger, "personTypeByCountryByOriginApplication");
         return personTypes;
+    }
+    
+    public List<PersonType> getSearchPersonTypeByCountry(String name) throws EmptyListException, GeneralException, NullParameterException {
+        List<PersonType> personType = null;
+        try {
+            if (name == null) {
+                throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "name"), null);
+            }
+      
+            StringBuilder sqlBuilder = new StringBuilder("SELECT * FROM person_type p ");
+            sqlBuilder.append("WHERE p.countryId IN (SELECT c.id FROM country c WHERE c.name LIKE '").append(name).append("%')");
+            Query query = entityManager.createNativeQuery(sqlBuilder.toString(), PersonType.class);
+            personType = query.setHint("toplink.refresh", "true").getResultList();
+            
+        
+        } catch (NoResultException ex) {
+            throw new EmptyListException("No distributions found");
+        } catch (Exception ex) {
+            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), ex.getMessage()), ex);
+        }
+        return personType;
     }
 
     //ReviewOfac
@@ -1563,6 +1595,5 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         }
         return (CalendarDays) saveEntity(calendarDays);
     }
-    
-  
+ 
 }
