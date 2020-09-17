@@ -18,11 +18,17 @@ import com.alodiga.wallet.common.genericEJB.WalletContextInterceptor;
 import com.alodiga.wallet.common.genericEJB.WalletLoggerInterceptor;
 import com.alodiga.wallet.common.model.ParameterType;
 import com.alodiga.wallet.common.model.Report;
+import com.alodiga.wallet.common.model.Enterprise;
 import com.alodiga.wallet.common.model.ReportParameter;
 import com.alodiga.wallet.common.model.ReportType;
 import com.alodiga.wallet.common.model.Transaction;
 import com.alodiga.wallet.common.model.User;
 import com.alodiga.wallet.common.utils.EjbConstants;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import javax.persistence.Query;
+import com.alodiga.wallet.common.utils.QueryConstants;
 
 @Interceptors({WalletLoggerInterceptor.class, WalletContextInterceptor.class})
 @Stateless(name = EjbConstants.REPORT_EJB, mappedName = EjbConstants.REPORT_EJB)
@@ -31,71 +37,133 @@ public class ReportEJBImp extends AbstractWalletEJB implements ReportEJB, Report
     private static final Logger logger = Logger.getLogger(ReportEJBImp.class);
     
     //Report
-    @Override
-    public void deleteProfileReports(EJBRequest request) throws NullParameterException, GeneralException{
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public void deleteProfileReports(EJBRequest request) throws NullParameterException, GeneralException {
+//        Object param = request.getParam();
+//        if (param == null || !(param instanceof Long)) {
+//            throw new NullParameterException( sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "profileId"), null);
+//        }
+//        Map<String, Object> map = new HashMap<String, Object>();
+//        map.put("reportId", (Long) param);
+//        try {
+//            executeNameQuery(ReportHasProfile.class, QueryConstants.DELETE_REPORT_PROFILE, map, getMethodName(), logger, "ReportProfile", null, null);
+//        } catch (Exception e) {
+//            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), e.getMessage()), null);
+//        }
     }
 
-    @Override
-    public void deleteReportParameter(EJBRequest request) throws NullParameterException, GeneralException{
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public void deleteReportParameter(EJBRequest request) throws NullParameterException, GeneralException {
+        Object param = request.getParam();
+        if (param == null || !(param instanceof Long)) {
+            throw new NullParameterException( sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "reportId"), null);
+        }
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("reportId", (Long) param);
+        try {
+            executeNameQuery(ReportParameter.class, QueryConstants.DELETE_REPORT_PARAMETER, map, getMethodName(), logger, "ReportParameter", null, null);
+        } catch (Exception e) {
+            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), e.getMessage()), null);
+        }
     }
 
-    @Override
-    public Report enableProduct(EJBRequest request) throws GeneralException, NullParameterException, RegisterNotFoundException{
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-    
-    @Override
-    public List<Report> getReport(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException{
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public Report enableProduct(EJBRequest request) throws GeneralException, NullParameterException, RegisterNotFoundException {
+        return (Report) saveEntity(request, logger, getMethodName());
     }
 
-    @Override
-    public List<Report> getReportByReportTypeId(Long reportTypeId, User currentUser) throws NullParameterException, GeneralException, EmptyListException{
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-    
-    @Override
-    public Report loadReport(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException{
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-    
-    @Override
-    public List<String> runReport(EJBRequest request) throws NullParameterException, GeneralException, EmptyListException{
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public List<ParameterType> getParameterType(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        List<ParameterType> parameterType = (List<ParameterType>) listEntities(ParameterType.class, request, logger, getMethodName());
+        return parameterType;
     }
 
-    @Override
-    public Report saveReport(EJBRequest request) throws NullParameterException, GeneralException, NullParameterException{
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public List<Report> getReport(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        List<Report> reports = (List<Report>) listEntities(Report.class, request, logger, getMethodName());
+
+        return reports;
     }
 
-    //ParameterType
-    @Override
-    public List<ParameterType> getParameterType(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException{
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//    public List<ReportHasProfile> getReportByProfile(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+//        List<ReportHasProfile> reportHasProfiles = null;
+//        Map<String, Object> params = request.getParams();
+//
+//        if (!params.containsKey("profileId")) {
+//            throw new NullParameterException( sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "profileId"), null);
+//        }
+//        reportHasProfiles = (List<ReportHasProfile>) getNamedQueryResult(ReportEJB.class, QueryConstants.REPORT_BY_PROFILE, request, getMethodName(), logger, "reports");
+//
+//        return reportHasProfiles;
+//    }
+
+    public List<Report> getReportByReportTypeId(Long reportTypeId, User currentUser) throws NullParameterException, GeneralException, EmptyListException {
+//        Long profileId = currentUser.getCurrentProfile(Enterprise.ALODIGA_USA).getId();
+//        if (reportTypeId == null) {
+//            throw new NullParameterException( sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "reportTypeId"), null);
+//        } else if (currentUser == null) {
+//            throw new NullParameterException( sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "currentUser"), null);
+//        }
+        List<Report> reports = new ArrayList<Report>();
+//        String sql = "SELECT rhp.report FROM ReportHasProfile rhp WHERE  rhp.profile.id= ?1 AND rhp.report.reportType.id= ?2";
+//        try {
+//            Query query = createQuery(sql);
+//            query.setParameter("1", profileId);
+//            query.setParameter("2", reportTypeId);
+//            reports = query.setHint("toplink.refresh", "true").getResultList();
+//        } catch (Exception ex) {
+//            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), ex.getMessage()), null);
+//        }
+//        if (reports.isEmpty()) {
+//            throw new EmptyListException(logger, sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName()), null);
+//        }
+        return reports;
     }
-    
-    @Override
-    public ParameterType loadParameterType(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException{
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+
+    public List<ReportParameter> getReportParameter(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        List<ReportParameter> reportParameters = (List<ReportParameter>) listEntities(ReportParameter.class, request, logger, getMethodName());
+
+        return reportParameters;
     }
-    
-    //ReportType
-    @Override
-    public List<ReportType> getReportTypes(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException{
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+
+    public List<ReportType> getReportTypes(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        List<ReportType> reportTypes = (List<ReportType>) listEntities(ReportType.class, request, logger, getMethodName());
+        return reportTypes;
     }
-    
-    //ReportParameter
-    @Override
-    public List<ReportParameter> getReportParameter(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException{
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+
+    public ParameterType loadParameterType(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
+        ParameterType parameterType = (ParameterType) loadEntity(ParameterType.class, request, logger, getMethodName());
+
+        return parameterType;
     }
-    
-    @Override
-    public ReportParameter loadReportParameter(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException{
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+
+    public Report loadReport(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
+        Report report = (Report) loadEntity(Report.class, request, logger, getMethodName());
+
+        return report;
+    }
+
+    public ReportParameter loadReportParameter(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
+        ReportParameter reportParameter = (ReportParameter) loadEntity(ReportParameter.class, request, logger, getMethodName());
+        return reportParameter;
+    }
+
+    public List<String> runReport(EJBRequest request) throws NullParameterException, GeneralException, EmptyListException {
+        List<String> reports = new ArrayList<String>();
+
+        Map<String, Object> params = request.getParams();
+        String sql = (String) params.get(QueryConstants.PARAM_SQL);
+        if (!params.containsKey(QueryConstants.PARAM_SQL)) {
+            throw new NullParameterException( sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), QueryConstants.PARAM_PROFILE_ID), null);
+        }
+        try {
+            reports = entityManager.createNativeQuery(sql).setHint("toplink.refresh", "true").getResultList();
+        } catch (Exception e) {
+            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), e.getMessage()), null);
+        }
+        if (reports.isEmpty()) {
+            throw new EmptyListException(logger, sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName()), null);
+        }
+
+        return reports;
+    }
+
+    public Report saveReport(EJBRequest request) throws NullParameterException, GeneralException {
+        return (Report) saveEntity(request, logger, getMethodName());
     }
 }
