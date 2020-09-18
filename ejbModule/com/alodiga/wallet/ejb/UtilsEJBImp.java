@@ -951,6 +951,16 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         }
         return (BusinessServiceType) saveEntity(businessServiceType);
     }
+    
+    public List<BusinessServiceType> getBusinessServiceTypeValidateCode(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        List<BusinessServiceType> businessServiceTypeList = null;
+        Map<String, Object> params = request.getParams();
+        if (!params.containsKey(EjbConstants.PARAM_CODE)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_CODE), null);
+        }       
+        businessServiceTypeList = (List<BusinessServiceType>) getNamedQueryResult(BusinessServiceType.class, QueryConstants.CODE_EXIST_IN_BD_BUSINESS_SERVICE_TYPE, request, getMethodName(), logger, "businessServiceTypeList");
+        return businessServiceTypeList;
+    }
 
     //TransactionApproveRequest
     public List<TransactionApproveRequest> getTransactionApproveRequest(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
