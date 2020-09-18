@@ -53,6 +53,7 @@ import com.alodiga.wallet.common.model.OriginApplication;
 import com.alodiga.wallet.common.model.Period;
 import com.alodiga.wallet.common.model.PersonType;
 import com.alodiga.wallet.common.model.PreferenceValue;
+import com.alodiga.wallet.common.model.Product;
 import com.alodiga.wallet.common.model.RequestHasCollectionRequest;
 import com.alodiga.wallet.common.model.ReviewBusinessAffiliationRequest;
 import com.alodiga.wallet.common.model.ReviewOfac;
@@ -75,6 +76,7 @@ import com.alodiga.wallet.common.utils.QueryConstants;
 import com.sun.tools.ws.wsdl.framework.DuplicateEntityException;
 import java.text.DateFormat;
 import java.util.Calendar;
+import java.util.logging.Level;
 
 @Interceptors({WalletLoggerInterceptor.class, WalletContextInterceptor.class})
 @Stateless(name = EjbConstants.UTILS_EJB, mappedName = EjbConstants.UTILS_EJB)
@@ -1414,7 +1416,63 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         return (CalendarDays) saveEntity(calendarDays);
     }
 
-    
+    @Override
+    public ExchangeRate getExchangeRateByBeginningDate(Product productId, Date creationDate) throws EmptyListException, GeneralException, NullParameterException, RegisterNotFoundException {
+        ExchangeRate exchangeRate = new ExchangeRate();
+        try {
 
+            if (productId == null) {
+                throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "productId"), null);
+            }
+            if (creationDate == null) {
+                throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "creationDate"), null);
+            }
+            Query query = createQuery("SELECT e FROM ExchangeRate e WHERE e.productId = ?1 AND e.beginningDate = ?2 AND e.endingDate IS NOT NULL ");
+            
+            
+            query.setParameter("1", productId);
+            query.setParameter("2", creationDate);
+            exchangeRate = (ExchangeRate) query.setHint("toplink.refresh", "true").getSingleResult();
+        } catch (NoResultException ex) {
+            Query query;
+            try {
+                query = createQuery("SELECT e FROM ExchangeRate e WHERE e.productId = ?1 AND e.beginningDate = ?2 AND e.endingDate IS NULL ");
+                query.setParameter("1", productId);
+                query.setParameter("2", creationDate);
+                exchangeRate = (ExchangeRate) query.setHint("toplink.refresh", "true").getSingleResult();
+            } catch (Exception e) {
+                e.printStackTrace();
+                throw new RegisterNotFoundException(logger, sysError.format(EjbConstants.ERR_REGISTER_NOT_FOUND_EXCEPTION, ExchangeRate.class.getSimpleName(), "getExchangeRateByBeginningDate", ExchangeRate.class.getSimpleName(), null), ex);
+            }
+
+        } catch (RegisterNotFoundException ex) {
+            System.out.println("ex: " + ex);
+            throw new RegisterNotFoundException(logger, sysError.format(EjbConstants.ERR_REGISTER_NOT_FOUND_EXCEPTION, ExchangeRate.class.getSimpleName(), "getExchangeRateByBeginningDate", ExchangeRate.class.getSimpleName(), null), ex);
+        } catch (Exception ex) {
+            System.out.println("ex: " + ex);
+            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), ex.getMessage()), ex);
+        }
+
+        return exchangeRate;
+    }
     
+    
+    public Long loadTransactionTypeById(Long transactionTypeId) throws RegisterNotFoundException, NullParameterException, GeneralException {
+        TransactionType transactionType = new TransactionType();
+        try {
+            if (transactionTypeId == null) {
+                throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "transactionTypeId"), null);
+            }
+
+            Query query = createQuery("SELECT t FROM TransactionType t WHERE t.id =?1");
+            query.setParameter("1", transactionTypeId);
+            transactionType = (TransactionType) query.setHint("toplink.refresh", "true").getSingleResult();
+        } catch (NoResultException ex) {            
+            throw new RegisterNotFoundException(logger, sysError.format(EjbConstants.ERR_REGISTER_NOT_FOUND_EXCEPTION, TransactionType.class.getSimpleName(), "loadTransactionTypeById", TransactionType.class.getSimpleName(), null), ex);
+        } catch (Exception ex) {            
+            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), ex.getMessage()), ex);
+        }
+        return transactionType.getId();
+    }
+
 }
