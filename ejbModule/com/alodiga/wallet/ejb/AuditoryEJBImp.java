@@ -106,6 +106,10 @@ public class AuditoryEJBImp extends AbstractWalletEJB implements AuditoryEJB, Au
     public AuditAction deleteAuditAction(Long actionId) throws GeneralException, NullParameterException {
         return null;
     }
+    
+    public List<AuditAction> getAuditAction(EJBRequest request) throws GeneralException, RegisterNotFoundException, NullParameterException, EmptyListException {
+        return (List<AuditAction>) listEntities(AuditAction.class, request, logger, getMethodName());
+    }
 
     public List<AuditAction> getAuditActions(Date beginningDate, Date endingDate) throws GeneralException, RegisterNotFoundException, NullParameterException, EmptyListException {
         List<AuditAction> audits = new ArrayList<AuditAction>();
