@@ -447,6 +447,49 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         }
         return (Bank) saveEntity(bank);
     }
+    
+    @Override
+    public List<Bank> getSearchBank(String name) throws EmptyListException, GeneralException, NullParameterException {
+        List<Bank> bankyList = null;
+        if (name == null) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "name"), null);
+        }
+        try {
+            StringBuilder sqlBuilder = new StringBuilder("SELECT DISTINCT b FROM Bank b ");
+            sqlBuilder.append("WHERE b.name LIKE '").append(name).append("%'");
+
+            Query query = entityManager.createQuery(sqlBuilder.toString());
+            bankyList = query.setHint("toplink.refresh", "true").getResultList();
+
+        } catch (NoResultException ex) {
+            throw new EmptyListException("No distributions found");
+        } catch (Exception e) {
+            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), e.getMessage()), null);
+        }
+        return bankyList;
+    }
+    
+    @Override
+    public List<Bank> searchBankByCountry(String name) throws EmptyListException, GeneralException, NullParameterException {
+        List<Bank> bank = null;
+        try {
+            if (name == null) {
+                throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "name"), null);
+            }
+      
+            StringBuilder sqlBuilder = new StringBuilder("SELECT * FROM bank b ");
+            sqlBuilder.append("WHERE b.countryId IN (SELECT c.id FROM country c WHERE c.name LIKE '").append(name).append("%')");
+            Query query = entityManager.createNativeQuery(sqlBuilder.toString(), Bank.class);
+            bank = query.setHint("toplink.refresh", "true").getResultList();
+            
+        
+        } catch (NoResultException ex) {
+            throw new EmptyListException("No distributions found");
+        } catch (Exception ex) {
+            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), ex.getMessage()), ex);
+        }
+        return bank;
+    }
 
     //ExchangeRate
     public List<ExchangeRate> getExchangeRate(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
@@ -466,7 +509,17 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         }
         return (ExchangeRate) saveEntity(exchangeRate);
     }
-
+    
+    public List<ExchangeRate> getExchangeRateByProductAndEndingDate(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        List<ExchangeRate> exchangeList = null;
+        Map<String, Object> params = request.getParams();
+        if (!params.containsKey(EjbConstants.PARAM_PRODUCT_ID)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_PRODUCT_ID), null);
+        }
+        exchangeList = (List<ExchangeRate>) getNamedQueryResult(ExchangeRate.class, QueryConstants.EXCHANGE_RATE_BY_PRODUCT, request, getMethodName(), logger, "exchangeRateByProduct");
+        return exchangeList;
+    }
+    
     //Transaction
     @Override
     public List<Transaction> getTransaction(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
@@ -647,6 +700,21 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         }
         return (Commission) saveEntity(commission);
     }
+    
+    public List<Commission> getCommissionByProductAndTranssactionType(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        List<Commission> commissionByProductAndTranssactionType = null;
+        Map<String, Object> params = request.getParams();
+        if (!params.containsKey(EjbConstants.PARAM_PRODUCT_ID)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_PRODUCT_ID), null);
+        }
+        
+        if (!params.containsKey(EjbConstants.TRANSACTION_TYPE_KEY)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.TRANSACTION_TYPE_KEY), null);
+        }
+
+        commissionByProductAndTranssactionType = (List<Commission>) getNamedQueryResult(Commission.class, QueryConstants.COMMISSION_BY_TRANSACTIONTYPE_AND_PRODUCT, request, getMethodName(), logger, "comissionByTransactionTypeAndProduct");
+        return commissionByProductAndTranssactionType;
+    }
 
     //TransactionType
     public List<TransactionType> getTransactionType(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
@@ -761,6 +829,36 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         }
         return (BusinessCategory) saveEntity(businessCategory);
     }
+    
+    public List<BusinessCategory> getSearchBusinessCategory(String name) throws EmptyListException, GeneralException, NullParameterException {
+        List<BusinessCategory> businessCategoryList = null;
+        if (name == null) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "name"), null);
+        }
+        try {
+            StringBuilder sqlBuilder = new StringBuilder("SELECT DISTINCT b FROM BusinessCategory b ");
+            sqlBuilder.append("WHERE b.description LIKE '").append(name).append("%'");
+
+            Query query = entityManager.createQuery(sqlBuilder.toString());
+            businessCategoryList= query.setHint("toplink.refresh", "true").getResultList();
+
+        } catch (NoResultException ex) {
+            throw new EmptyListException("No distributions found");
+        } catch (Exception e) {
+            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), e.getMessage()), null);
+        }
+        return businessCategoryList;
+    }
+    
+    public List<BusinessCategory> getValidateCodeMCC(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        List<BusinessCategory> businessCategoryList = null;
+        Map<String, Object> params = request.getParams();
+        if (!params.containsKey(EjbConstants.PARAM_MCC_CODE)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_MCC_CODE), null);
+        }       
+        businessCategoryList = (List<BusinessCategory>) getNamedQueryResult(BusinessCategory.class, QueryConstants.CODEMCC_EXIST_IN_BD_BUSINESS_CATEGORY, request, getMethodName(), logger, "codeMCCExistInBdBusinessCategory");
+        return businessCategoryList;
+    }
 
     //BusinessSubCategory
     public List<BusinessSubCategory> getBusinessSubCategory(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
@@ -788,7 +886,37 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         }
         return (BusinessSubCategory) saveEntity(businessSubCategory);
     }
+    
+    public List<BusinessSubCategory> getSearchBusinessSubCategory(String name) throws EmptyListException, GeneralException, NullParameterException {
+        List<BusinessSubCategory> businessSubCategoryList = null;
+        if (name == null) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "name"), null);
+        }
+        try {
+            StringBuilder sqlBuilder = new StringBuilder("SELECT DISTINCT b FROM BusinessSubCategory b ");
+            sqlBuilder.append("WHERE b.description LIKE '").append(name).append("%'");
 
+            Query query = entityManager.createQuery(sqlBuilder.toString());
+            businessSubCategoryList= query.setHint("toplink.refresh", "true").getResultList();
+
+        } catch (NoResultException ex) {
+            throw new EmptyListException("No distributions found");
+        } catch (Exception e) {
+            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), e.getMessage()), null);
+        }
+        return businessSubCategoryList;
+    }
+    
+    public List<BusinessSubCategory> getBusinessSubCategoryValidateCodeMCC(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        List<BusinessSubCategory> businessSubCategoryList = null;
+        Map<String, Object> params = request.getParams();
+        if (!params.containsKey(EjbConstants.PARAM_MCC_CODE)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_MCC_CODE), null);
+        }       
+        businessSubCategoryList = (List<BusinessSubCategory>) getNamedQueryResult(BusinessCategory.class, QueryConstants.CODEMCC_EXIST_IN_BD_BUSINESS_SUB_CATEGORY, request, getMethodName(), logger, "codeMCCExistInBdBusinessSubCategory");
+        return businessSubCategoryList;
+    }
+    
     //BusinessType
     public List<BusinessType> getBusinessType(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
         return (List<BusinessType>) listEntities(BusinessType.class, request, logger, getMethodName());
@@ -806,21 +934,18 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         return (List<BusinessServiceType>) listEntities(BusinessServiceType.class, request, logger, getMethodName());
     }
 
-    public BusinessServiceType loadBusinessServiceTypebyId(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
-        List<BusinessServiceType> businessService = null;
+    public List<BusinessServiceType> getBusinessServiceTypeByBusinessType(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
+        List<BusinessServiceType> businessServiceList = null;
         Map<String, Object> params = request.getParams();
-
         if (!params.containsKey(QueryConstants.PARAM_BUSINESS_TYPE_ID)) {
             throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), QueryConstants.PARAM_BUSINESS_TYPE_ID), null);
         }
-
         try {
-            businessService = (List<BusinessServiceType>) getNamedQueryResult(BusinessServiceType.class, QueryConstants.BUSINESS_TYPE_BY_ID, request, getMethodName(), logger, "businessTypeById");
+            businessServiceList = (List<BusinessServiceType>) getNamedQueryResult(BusinessServiceType.class, QueryConstants.BUSINESS_SERVICE_TYPE_BY_BUSINESS_TYPE, request, getMethodName(), logger, "businessServiceList");
         } catch (EmptyListException e) {
-            throw new RegisterNotFoundException(logger, sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName(), "businessTypeById"), null);
+            throw new RegisterNotFoundException(logger, sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName(), "businessServiceList"), null);
         }
-
-        return businessService.get(0);
+        return businessServiceList;
     }
 
     public BusinessServiceType saveBusinessServiceType(BusinessServiceType businessServiceType) throws RegisterNotFoundException, NullParameterException, GeneralException {
@@ -828,6 +953,16 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
             throw new NullParameterException("businessServiceType", null);
         }
         return (BusinessServiceType) saveEntity(businessServiceType);
+    }
+    
+    public List<BusinessServiceType> getBusinessServiceTypeValidateCode(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        List<BusinessServiceType> businessServiceTypeList = null;
+        Map<String, Object> params = request.getParams();
+        if (!params.containsKey(EjbConstants.PARAM_CODE)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_CODE), null);
+        }       
+        businessServiceTypeList = (List<BusinessServiceType>) getNamedQueryResult(BusinessServiceType.class, QueryConstants.CODE_EXIST_IN_BD_BUSINESS_SERVICE_TYPE, request, getMethodName(), logger, "businessServiceTypeList");
+        return businessServiceTypeList;
     }
 
     //TransactionApproveRequest
@@ -1239,7 +1374,20 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         }
         return (StatusCardHasFinalState) saveEntity(statusCardHasFinalState);
     }
-
+    
+    //PersonType
+    public PersonType savePersonType(PersonType personType) throws NullParameterException, GeneralException {
+        if (personType == null) {
+            throw new NullParameterException("personType", null);
+        }
+        return (PersonType) saveEntity(personType);
+    }
+    
+    @Override
+     public List<PersonType> getPersonType(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        return (List<PersonType>) listEntities(PersonType.class, request, logger, getMethodName());
+    }
+    
     @Override
     public List<PersonType> getPersonTypeByCountryByIndNaturalPerson(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
         List<PersonType> personTypes = null;
@@ -1255,6 +1403,42 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         }
         personTypes = (List<PersonType>) getNamedQueryResult(PersonType.class, QueryConstants.PERSON_TYPE_BY_COUNTRY_BY_IND_NATURAL_PERSON, request, getMethodName(), logger, "personTypes");
         return personTypes;
+    }
+    
+    @Override
+    public List<PersonType> getPersonTypeByCountryByOriginApplication(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        List<PersonType> personTypes = null;
+        Map<String, Object> params = request.getParams();
+        if (!params.containsKey(EjbConstants.PARAM_COUNTRY_ID)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_COUNTRY_ID), null);
+        }
+        if (!params.containsKey(EjbConstants.PARAM_ORIGIN_APPLICATION_ID)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_ORIGIN_APPLICATION_ID), null);
+        }
+       
+        personTypes = (List<PersonType>) getNamedQueryResult(PersonType.class, QueryConstants.PERSON_TYPE_BY_COUNTRY_BY_ORIGIN_APPLICATION, request, getMethodName(), logger, "personTypeByCountryByOriginApplication");
+        return personTypes;
+    }
+    
+    public List<PersonType> getSearchPersonTypeByCountry(String name) throws EmptyListException, GeneralException, NullParameterException {
+        List<PersonType> personType = null;
+        try {
+            if (name == null) {
+                throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "name"), null);
+            }
+      
+            StringBuilder sqlBuilder = new StringBuilder("SELECT * FROM person_type p ");
+            sqlBuilder.append("WHERE p.countryId IN (SELECT c.id FROM country c WHERE c.name LIKE '").append(name).append("%')");
+            Query query = entityManager.createNativeQuery(sqlBuilder.toString(), PersonType.class);
+            personType = query.setHint("toplink.refresh", "true").getResultList();
+            
+        
+        } catch (NoResultException ex) {
+            throw new EmptyListException("No distributions found");
+        } catch (Exception ex) {
+            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), ex.getMessage()), ex);
+        }
+        return personType;
     }
 
     //ReviewOfac
@@ -1303,7 +1487,15 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         }
         return (ReviewType) saveEntity(reviewType);
     }
-
+    
+    
+    //OriginApplication
+    
+    public List<OriginApplication> getOriginApplications(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        List<OriginApplication> originApplications = (List<OriginApplication>) listEntities(OriginApplication.class, request, logger, getMethodName());
+        return originApplications;
+    }
+    
     @SuppressWarnings("unchecked")
     @Override
     public OriginApplication loadOriginApplicationByCode(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException, EmptyListException {
@@ -1415,6 +1607,7 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         }
         return (CalendarDays) saveEntity(calendarDays);
     }
+ 
 
     @Override
     public ExchangeRate getExchangeRateByBeginningDate(Product productId, Date creationDate) throws EmptyListException, GeneralException, NullParameterException, RegisterNotFoundException {
