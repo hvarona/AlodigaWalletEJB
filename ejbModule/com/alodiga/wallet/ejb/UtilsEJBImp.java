@@ -763,6 +763,12 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         collectionTypeByCountry = (List<CollectionType>) getNamedQueryResult(UtilsEJB.class, QueryConstants.COLLECTION_TYPE_BY_COUNTRY, request, getMethodName(), logger, "collectionTypeByCountry");
         return collectionTypeByCountry;
     }
+    
+    public List<CollectionType> getCollectionTypeByCountryByPersonType(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        List<CollectionType> collectionTypeByCountry = null;
+        collectionTypeByCountry = (List<CollectionType>) getNamedQueryResult(UtilsEJB.class, QueryConstants.COLLECTION_TYPE_BY_COUNTRY_BY_PERSON_TYPE, request, getMethodName(), logger, "CollectionTypeByCountryByPersonType");
+        return collectionTypeByCountry;
+    }
 
     public CollectionType loadCollectionType(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
         CollectionType collectionType = (CollectionType) loadEntity(CollectionType.class, request, logger, getMethodName());
