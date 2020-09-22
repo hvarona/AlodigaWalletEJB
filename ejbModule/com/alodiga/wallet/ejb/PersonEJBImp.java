@@ -450,6 +450,12 @@ public class PersonEJBImp extends AbstractWalletEJB implements PersonEJB, Person
         return comercialAgency;
     }
     
+    @Override
+    public ComercialAgency loadComercialAgency(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
+        ComercialAgency comercialAgency = (ComercialAgency) loadEntity(ComercialAgency.class, request, logger, getMethodName());
+        return comercialAgency;
+    }
+    
     //EmployedPosition
         @Override
         public List<EmployedPosition> getEmployedPosition(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
