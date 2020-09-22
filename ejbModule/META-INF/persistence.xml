@@ -127,6 +127,7 @@
     <class>com.alodiga.wallet.common.model.StatusTransactionLog</class>
     <class>com.alodiga.wallet.common.model.TransactionLog</class>
     <class>com.alodiga.wallet.common.model.DailyClosingType</class>
+    <class>com.alodiga.wallet.common.model.BusinessHasProduct</class>
     <exclude-unlisted-classes>true</exclude-unlisted-classes>
     <properties>
       <property name="eclipselink.logging.timestamp" value="true"/>

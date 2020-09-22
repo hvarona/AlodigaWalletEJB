@@ -497,5 +497,31 @@ public class BusinessPortalEJBImp extends AbstractWalletEJB implements BusinessP
         OriginApplication originApplication = (OriginApplication) loadEntity(OriginApplication.class, request, logger, getMethodName());
     return originApplication;
     }
+    
+    @SuppressWarnings("unchecked")
+    @Override
+    public List<StatusApplicant> getStatusApplicant(EJBRequest request)throws EmptyListException, GeneralException, NullParameterException{
+        return (List<StatusApplicant>) listEntities(StatusApplicant.class, request, logger, getMethodName());
+    }
+    
+    @Override
+    public StatusApplicant loadStatusApplicant(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
+    	StatusApplicant statusApplicant = (StatusApplicant) loadEntity(StatusApplicant.class, request, logger, getMethodName());
+    	return statusApplicant;
+    }
+    
+    @Override
+    public PhoneType loadPhoneType(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
+    	PhoneType phoneType = (PhoneType) loadEntity(PhoneType.class, request, logger, getMethodName());
+    	return phoneType;
+    }
+    
+    @Override
+    public BusinessAffiliationRequest loadBusinessAffiliationRequest(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
+    	BusinessAffiliationRequest businessAffiliationRequest = (BusinessAffiliationRequest) loadEntity(BusinessAffiliationRequest.class, request, logger, getMethodName());
+    	return businessAffiliationRequest;
+    }
+    
+
 
 }
