@@ -12,6 +12,7 @@ import com.alodiga.wallet.common.ejb.AuditoryEJB;
 import com.alodiga.wallet.common.ejb.AuditoryEJBLocal;
 import com.alodiga.wallet.common.exception.EmptyListException;
 import com.alodiga.wallet.common.exception.GeneralException;
+import com.alodiga.wallet.common.exception.NoResultException;
 import com.alodiga.wallet.common.exception.NullParameterException;
 import com.alodiga.wallet.common.exception.RegisterNotFoundException;
 import com.alodiga.wallet.common.genericEJB.AbstractWalletEJB;
@@ -106,6 +107,10 @@ public class AuditoryEJBImp extends AbstractWalletEJB implements AuditoryEJB, Au
     public AuditAction deleteAuditAction(Long actionId) throws GeneralException, NullParameterException {
         return null;
     }
+    
+    public List<AuditAction> getAuditAction(EJBRequest request) throws GeneralException, RegisterNotFoundException, NullParameterException, EmptyListException {
+        return (List<AuditAction>) listEntities(AuditAction.class, request, logger, getMethodName());
+    }
 
     public List<AuditAction> getAuditActions(Date beginningDate, Date endingDate) throws GeneralException, RegisterNotFoundException, NullParameterException, EmptyListException {
         List<AuditAction> audits = new ArrayList<AuditAction>();
@@ -147,6 +152,7 @@ public class AuditoryEJBImp extends AbstractWalletEJB implements AuditoryEJB, Au
         }
         Query query = null;
         try {
+            
             query = createQuery(sqlBuilder.toString());
             query.setParameter("date1", GeneralUtils.getBeginningDate(beginningDate));
             query.setParameter("date2", GeneralUtils.getEndingDate(endingDate));
@@ -187,7 +193,7 @@ public class AuditoryEJBImp extends AbstractWalletEJB implements AuditoryEJB, Au
         }
         return audits;
     }
-    
+      
     public Event loadEvent(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
     	Event event = (Event) loadEntity(Event.class, request, logger, getMethodName());
         return event;
