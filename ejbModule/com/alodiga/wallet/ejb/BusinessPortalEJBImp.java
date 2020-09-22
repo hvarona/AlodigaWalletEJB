@@ -515,6 +515,13 @@ public class BusinessPortalEJBImp extends AbstractWalletEJB implements BusinessP
     	PhoneType phoneType = (PhoneType) loadEntity(PhoneType.class, request, logger, getMethodName());
     	return phoneType;
     }
+    
+    @Override
+    public BusinessAffiliationRequest loadBusinessAffiliationRequest(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
+    	BusinessAffiliationRequest businessAffiliationRequest = (BusinessAffiliationRequest) loadEntity(BusinessAffiliationRequest.class, request, logger, getMethodName());
+    	return businessAffiliationRequest;
+    }
+    
 
 
 }
