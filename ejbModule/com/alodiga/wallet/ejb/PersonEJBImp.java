@@ -115,9 +115,10 @@ public class PersonEJBImp extends AbstractWalletEJB implements PersonEJB, Person
 //        if (!params.containsKey(EjbConstants.PARAM_ORIGIN_APPLICATION_ID)) {
 //            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_ORIGIN_APPLICATION_ID), null);
 //        }
-        personTypes = (List<PersonType>) getNamedQueryResult(PersonType.class, QueryConstants.PERSON_TYPE_BY_COUNTRY, request, getMethodName(), logger, "personTypes");
+        personTypes = (List<PersonType>) getNamedQueryResult(PersonType.class, QueryConstants.PERSON_TYPE_BY_COUNTRY_BY_ORIGIN_APPLICATION_PORTAL, request, getMethodName(), logger, "personTypes");
         return personTypes;
     }
+
 
     //Tabla de PhonePerson
     public List<PhonePerson> getPhonePerson(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
