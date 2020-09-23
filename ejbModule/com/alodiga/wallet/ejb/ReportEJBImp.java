@@ -19,6 +19,7 @@ import com.alodiga.wallet.common.genericEJB.WalletLoggerInterceptor;
 import com.alodiga.wallet.common.model.ParameterType;
 import com.alodiga.wallet.common.model.Report;
 import com.alodiga.wallet.common.model.Enterprise;
+import com.alodiga.wallet.common.model.ReportHasProfile;
 import com.alodiga.wallet.common.model.ReportParameter;
 import com.alodiga.wallet.common.model.ReportType;
 import com.alodiga.wallet.common.model.Transaction;
@@ -38,17 +39,17 @@ public class ReportEJBImp extends AbstractWalletEJB implements ReportEJB, Report
     
     //Report
     public void deleteProfileReports(EJBRequest request) throws NullParameterException, GeneralException {
-//        Object param = request.getParam();
-//        if (param == null || !(param instanceof Long)) {
-//            throw new NullParameterException( sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "profileId"), null);
-//        }
-//        Map<String, Object> map = new HashMap<String, Object>();
-//        map.put("reportId", (Long) param);
-//        try {
-//            executeNameQuery(ReportHasProfile.class, QueryConstants.DELETE_REPORT_PROFILE, map, getMethodName(), logger, "ReportProfile", null, null);
-//        } catch (Exception e) {
-//            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), e.getMessage()), null);
-//        }
+        Object param = request.getParam();
+        if (param == null || !(param instanceof Long)) {
+            throw new NullParameterException( sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "profileId"), null);
+        }
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("reportId", (Long) param);
+        try {
+            executeNameQuery(ReportHasProfile.class, QueryConstants.DELETE_REPORT_PROFILE, map, getMethodName(), logger, "ReportProfile", null, null);
+        } catch (Exception e) {
+            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), e.getMessage()), null);
+        }
     }
 
     public void deleteReportParameter(EJBRequest request) throws NullParameterException, GeneralException {
@@ -80,38 +81,38 @@ public class ReportEJBImp extends AbstractWalletEJB implements ReportEJB, Report
         return reports;
     }
 
-//    public List<ReportHasProfile> getReportByProfile(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
-//        List<ReportHasProfile> reportHasProfiles = null;
-//        Map<String, Object> params = request.getParams();
-//
-//        if (!params.containsKey("profileId")) {
-//            throw new NullParameterException( sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "profileId"), null);
-//        }
-//        reportHasProfiles = (List<ReportHasProfile>) getNamedQueryResult(ReportEJB.class, QueryConstants.REPORT_BY_PROFILE, request, getMethodName(), logger, "reports");
-//
-//        return reportHasProfiles;
-//    }
+    public List<ReportHasProfile> getReportByProfile(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        List<ReportHasProfile> reportHasProfiles = null;
+        Map<String, Object> params = request.getParams();
+
+        if (!params.containsKey("profileId")) {
+            throw new NullParameterException( sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "profileId"), null);
+        }
+        reportHasProfiles = (List<ReportHasProfile>) getNamedQueryResult(ReportEJB.class, QueryConstants.REPORT_BY_PROFILE, request, getMethodName(), logger, "reports");
+
+        return reportHasProfiles;
+    }
 
     public List<Report> getReportByReportTypeId(Long reportTypeId, User currentUser) throws NullParameterException, GeneralException, EmptyListException {
-//        Long profileId = currentUser.getCurrentProfile(Enterprise.ALODIGA_USA).getId();
-//        if (reportTypeId == null) {
-//            throw new NullParameterException( sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "reportTypeId"), null);
-//        } else if (currentUser == null) {
-//            throw new NullParameterException( sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "currentUser"), null);
-//        }
+        Long profileId = currentUser.getCurrentProfile().getId();
+        if (reportTypeId == null) {
+            throw new NullParameterException( sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "reportTypeId"), null);
+        } else if (currentUser == null) {
+            throw new NullParameterException( sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "currentUser"), null);
+        }
         List<Report> reports = new ArrayList<Report>();
-//        String sql = "SELECT rhp.report FROM ReportHasProfile rhp WHERE  rhp.profile.id= ?1 AND rhp.report.reportType.id= ?2";
-//        try {
-//            Query query = createQuery(sql);
-//            query.setParameter("1", profileId);
-//            query.setParameter("2", reportTypeId);
-//            reports = query.setHint("toplink.refresh", "true").getResultList();
-//        } catch (Exception ex) {
-//            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), ex.getMessage()), null);
-//        }
-//        if (reports.isEmpty()) {
-//            throw new EmptyListException(logger, sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName()), null);
-//        }
+        String sql = "SELECT rhp.reportId FROM ReportHasProfile rhp WHERE rhp.profileId.id= ?1 AND rhp.reportId.reportTypeId.id= ?2";
+        try {
+            Query query = createQuery(sql);
+            query.setParameter("1", profileId);
+            query.setParameter("2", reportTypeId);
+            reports = query.setHint("toplink.refresh", "true").getResultList();
+        } catch (Exception ex) {
+            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), ex.getMessage()), null);
+        }
+        if (reports.isEmpty()) {
+            throw new EmptyListException(logger, sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName()), null);
+        }
         return reports;
     }
 
