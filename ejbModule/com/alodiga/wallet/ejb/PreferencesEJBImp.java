@@ -257,6 +257,41 @@ public class PreferencesEJBImp extends AbstractWalletEJB implements PreferencesE
         return (List<TransactionType>) listEntities(TransactionType.class, request, logger, getMethodName());
     }
     
+    public TransactionType saveTransactionType(EJBRequest request) throws GeneralException, NullParameterException {
+        return (TransactionType) saveEntity(request, logger, getMethodName());
+    }
+    
+    public List<TransactionType> getTransactionTypeByCode(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        List<TransactionType> transactionTypeList = null;
+        Map<String, Object> params = request.getParams();
+        if (!params.containsKey(EjbConstants.PARAM_CODE)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_CODE), null);
+        }       
+        transactionTypeList = (List<TransactionType>) getNamedQueryResult(TransactionType.class, QueryConstants.CODE_EXIST_IN_BD_TRANSACTION_TYPE, request, getMethodName(), logger, "transactionTypeList");
+        return transactionTypeList;
+    }
+    
+    public List<TransactionType> searchTransactionType(String name) throws EmptyListException, GeneralException, NullParameterException {
+        List<TransactionType> transactionTypeList = null;
+        if (name == null) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "name"), null);
+        }
+        try {
+            StringBuilder sqlBuilder = new StringBuilder("SELECT DISTINCT t FROM TransactionType t ");
+            sqlBuilder.append("WHERE t.code LIKE '").append(name).append("%'");
+
+            Query query = entityManager.createQuery(sqlBuilder.toString());
+            transactionTypeList= query.setHint("toplink.refresh", "true").getResultList();
+
+        } catch (NoResultException ex) {
+            throw new EmptyListException("No distributions found");
+        } catch (Exception e) {
+            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), e.getMessage()), null);
+        }
+        return transactionTypeList;
+    }
+    
+   
     public List<PreferenceValue> getPreferenceValuesByParam(Long classificationId, Long productId, Long transactionTypeId, Long bussinessId) throws GeneralException, NullParameterException, EmptyListException {
         List<PreferenceValue> preferenceValues = new ArrayList<PreferenceValue>();
 
