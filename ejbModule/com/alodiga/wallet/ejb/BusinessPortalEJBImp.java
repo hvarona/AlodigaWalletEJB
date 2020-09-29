@@ -29,8 +29,10 @@ import com.alodiga.wallet.common.genericEJB.AbstractWalletEJB;
 import com.alodiga.wallet.common.genericEJB.EJBRequest;
 import com.alodiga.wallet.common.genericEJB.WalletContextInterceptor;
 import com.alodiga.wallet.common.genericEJB.WalletLoggerInterceptor;
+import com.alodiga.wallet.common.model.AccountTypeBank;
 import com.alodiga.wallet.common.model.Address;
 import com.alodiga.wallet.common.model.AddressType;
+import com.alodiga.wallet.common.model.Bank;
 import com.alodiga.wallet.common.model.BusinessAffiliationRequest;
 import com.alodiga.wallet.common.model.City;
 import com.alodiga.wallet.common.model.CivilStatus;
@@ -522,6 +524,28 @@ public class BusinessPortalEJBImp extends AbstractWalletEJB implements BusinessP
     	return businessAffiliationRequest;
     }
     
-
+    @Override
+    public Bank loadBank(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
+    	Bank bank = (Bank) loadEntity(Bank.class, request, logger, getMethodName());
+    	return bank;
+    }
+    
+    @Override
+    public AccountTypeBank loadAccountTypeBank(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
+    	AccountTypeBank accountTypeBank = (AccountTypeBank) loadEntity(AccountTypeBank.class, request, logger, getMethodName());
+    	return accountTypeBank;
+    }
+    
+    @SuppressWarnings("unchecked")
+    @Override
+    public List<Bank> getBanks(EJBRequest request)throws EmptyListException, GeneralException, NullParameterException{
+        return (List<Bank>) listEntities(Bank.class, request, logger, getMethodName());
+    }
+    
+    @SuppressWarnings("unchecked")
+    @Override
+    public List<AccountTypeBank> getAccountTypeBanks(EJBRequest request)throws EmptyListException, GeneralException, NullParameterException{
+        return (List<AccountTypeBank>) listEntities(AccountTypeBank.class, request, logger, getMethodName());
+    }
 
 }
