@@ -585,6 +585,76 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         }
         return transactionsList;
     }
+    
+    public List<Transaction> getTransactionByBeginningDateAndOrigin(Date beginningDate, Long transactionSourceId) throws EmptyListException, GeneralException, NullParameterException {
+        List<Transaction> transactionsList = new ArrayList<Transaction>();
+        try {
+            String pattern = "yyyy-MM-dd";
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
+
+            if (beginningDate == null) {
+                throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "beginningDate & origin"), null);
+            }
+            
+            if (transactionSourceId == null) {
+                throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "beginningDate & origin"), null);
+            }
+
+            String strDate = (simpleDateFormat.format(beginningDate));
+
+            StringBuilder sqlBuilder = new StringBuilder("select * from transaction t where t.transactionSourceId = ");  
+            sqlBuilder.append(transactionSourceId);
+            sqlBuilder.append(" and t.creationDate like '");
+            sqlBuilder.append(strDate);
+            sqlBuilder.append("%'");
+            Query query = entityManager.createNativeQuery(sqlBuilder.toString(), Transaction.class);
+            transactionsList = (List<Transaction>) query.setHint("toplink.refresh", "true").getResultList();
+
+        } catch (Exception e) {
+            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), e.getMessage()), null);
+        }
+        if (transactionsList.isEmpty()) {
+            throw new EmptyListException(logger, sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName()), null);
+        }
+        return transactionsList;
+    }
+    
+    public List<Transaction> getTransactionByDatesAndOrigin(Date beginningDate, Date endingDate, Long transactionSourceId) throws RegisterNotFoundException, NullParameterException, GeneralException, EmptyListException {
+        List<Transaction> transactionsList = new ArrayList<Transaction>();
+
+        try {
+            String pattern = "yyyy-MM-dd";
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
+
+            if (beginningDate == null || endingDate == null) {
+                throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "beginningDate & endingDate"), null);
+            }
+            
+            if (transactionSourceId == null) {
+                throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "beginningDate & origin"), null);
+            }
+            
+            String strDate1 = (simpleDateFormat.format(beginningDate));
+            String strDate2 = (simpleDateFormat.format(endingDate));
+
+            StringBuilder sqlBuilder = new StringBuilder("select * from transaction t where t.transactionSourceId = "); 
+            sqlBuilder.append(transactionSourceId);
+            sqlBuilder.append(" and t.creationDate BETWEEN '");
+            sqlBuilder.append(strDate1);
+            sqlBuilder.append("' and '");
+            sqlBuilder.append(strDate2);
+            sqlBuilder.append("'");
+            Query query = entityManager.createNativeQuery(sqlBuilder.toString(), Transaction.class);
+            transactionsList = (List<Transaction>) query.setHint("toplink.refresh", "true").getResultList();
+
+        } catch (Exception e) {
+            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), e.getMessage()), null);
+        }
+        if (transactionsList.isEmpty()) {
+            throw new EmptyListException(logger, sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName()), null);
+        }
+        return transactionsList;
+    }
 
     @Override
     public Transaction loadTransaction(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
