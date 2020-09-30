@@ -57,6 +57,7 @@ import com.alodiga.wallet.common.model.Profession;
 import com.alodiga.wallet.common.model.RequestHasCollectionRequest;
 import com.alodiga.wallet.common.model.Sequences;
 import com.alodiga.wallet.common.model.State;
+import com.alodiga.wallet.common.model.StatusAccountBank;
 import com.alodiga.wallet.common.model.StatusApplicant;
 import com.alodiga.wallet.common.model.StatusBusinessAffiliationRequest;
 import com.alodiga.wallet.common.model.StreetType;
@@ -579,6 +580,18 @@ public class BusinessPortalEJBImp extends AbstractWalletEJB implements BusinessP
     @Override
     public Currency loadCurrency(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException{
     	Currency currency = (Currency) loadEntity(Currency.class, request, logger, getMethodName());
+    	return currency;
+    }
+    
+    @SuppressWarnings("unchecked")
+    @Override
+    public List<StatusAccountBank> getStatusAccountBanks(EJBRequest request)throws EmptyListException, GeneralException, NullParameterException{
+        return (List<StatusAccountBank>) listEntities(StatusAccountBank.class, request, logger, getMethodName());
+    }
+    
+    @Override
+    public StatusAccountBank loadStatusAccountBank(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException{
+    	StatusAccountBank currency = (StatusAccountBank) loadEntity(StatusAccountBank.class, request, logger, getMethodName());
     	return currency;
     }
 }
