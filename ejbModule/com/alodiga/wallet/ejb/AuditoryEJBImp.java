@@ -12,6 +12,7 @@ import com.alodiga.wallet.common.ejb.AuditoryEJB;
 import com.alodiga.wallet.common.ejb.AuditoryEJBLocal;
 import com.alodiga.wallet.common.exception.EmptyListException;
 import com.alodiga.wallet.common.exception.GeneralException;
+import com.alodiga.wallet.common.exception.NoResultException;
 import com.alodiga.wallet.common.exception.NullParameterException;
 import com.alodiga.wallet.common.exception.RegisterNotFoundException;
 import com.alodiga.wallet.common.genericEJB.AbstractWalletEJB;
@@ -25,6 +26,7 @@ import com.alodiga.wallet.common.utils.EjbConstants;
 import com.alodiga.wallet.common.utils.EjbUtils;
 import com.alodiga.wallet.common.utils.GeneralUtils;
 import com.alodiga.wallet.common.utils.QueryConstants;
+import java.text.SimpleDateFormat;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -106,6 +108,10 @@ public class AuditoryEJBImp extends AbstractWalletEJB implements AuditoryEJB, Au
     public AuditAction deleteAuditAction(Long actionId) throws GeneralException, NullParameterException {
         return null;
     }
+    
+    public List<AuditAction> getAuditAction(EJBRequest request) throws GeneralException, RegisterNotFoundException, NullParameterException, EmptyListException {
+        return (List<AuditAction>) listEntities(AuditAction.class, request, logger, getMethodName());
+    }
 
     public List<AuditAction> getAuditActions(Date beginningDate, Date endingDate) throws GeneralException, RegisterNotFoundException, NullParameterException, EmptyListException {
         List<AuditAction> audits = new ArrayList<AuditAction>();
@@ -131,7 +137,7 @@ public class AuditoryEJBImp extends AbstractWalletEJB implements AuditoryEJB, Au
      public List<AuditAction> searchAuditAction(String login, String userName, Long permissionId, Date beginningDate, Date endingDate) throws GeneralException, NullParameterException, EmptyListException {
         List<AuditAction> audits = new ArrayList<AuditAction>();
 
-        if (beginningDate == null || beginningDate == null) {
+        if (beginningDate == null || endingDate == null) {
             throw new NullParameterException( sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "beginningDate & endingDate"), null);
         }
         StringBuilder sqlBuilder = new StringBuilder("SELECT a FROM AuditAction a WHERE a.date BETWEEN :date1 AND :date2");
@@ -147,6 +153,7 @@ public class AuditoryEJBImp extends AbstractWalletEJB implements AuditoryEJB, Au
         }
         Query query = null;
         try {
+            
             query = createQuery(sqlBuilder.toString());
             query.setParameter("date1", GeneralUtils.getBeginningDate(beginningDate));
             query.setParameter("date2", GeneralUtils.getEndingDate(endingDate));
@@ -159,6 +166,48 @@ public class AuditoryEJBImp extends AbstractWalletEJB implements AuditoryEJB, Au
         }
         return audits;
     }
+     
+     public List<AuditAction> searchAuditActionTest(Long userId, Long permissionId, Date beginningDate, Date endingDate) throws GeneralException, NullParameterException, EmptyListException {
+        List<AuditAction> audits = new ArrayList<AuditAction>();
+        try {
+            String pattern = "yyyy-MM-dd";
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
+
+            if (beginningDate == null || endingDate == null) {
+                throw new NullParameterException( sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "beginningDate & endingDate"), null);
+            }
+
+            if (userId == null) {
+                    throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "beginningDate & origin"), null);
+            }
+
+            if (permissionId == null) {
+                    throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "beginningDate & origin"), null);
+            }
+
+            String strDate1 = (simpleDateFormat.format(beginningDate));
+            String strDate2 = (simpleDateFormat.format(endingDate));
+            StringBuilder sqlBuilder = new StringBuilder("SELECT * FROM audit_action a WHERE a.userId = ");
+            sqlBuilder.append(userId);
+            sqlBuilder.append(" and a.permissionId = ");
+            sqlBuilder.append(permissionId);
+            sqlBuilder.append(" and a.date BETWEEN '");
+            sqlBuilder.append(strDate1);
+            sqlBuilder.append("' and '");
+            sqlBuilder.append(strDate2);
+            sqlBuilder.append("'");
+            Query query = entityManager.createNativeQuery(sqlBuilder.toString(), AuditAction.class);
+            audits = (List<AuditAction>) query.setHint("toplink.refresh", "true").getResultList();
+        
+        } catch (Exception e) {
+            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), e.getMessage()), null);
+        }
+        if (audits.isEmpty()) {
+            throw new EmptyListException(logger, sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName()), null);
+        }
+        return audits;
+    }
+     
 
     public AuditAction saveAuditAction(AuditAction action) throws GeneralException, NullParameterException {
         return (AuditAction) saveEntity(action);
@@ -187,7 +236,7 @@ public class AuditoryEJBImp extends AbstractWalletEJB implements AuditoryEJB, Au
         }
         return audits;
     }
-    
+      
     public Event loadEvent(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
     	Event event = (Event) loadEntity(Event.class, request, logger, getMethodName());
         return event;

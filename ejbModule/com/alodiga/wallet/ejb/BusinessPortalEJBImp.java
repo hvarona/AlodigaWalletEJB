@@ -29,14 +29,18 @@ import com.alodiga.wallet.common.genericEJB.AbstractWalletEJB;
 import com.alodiga.wallet.common.genericEJB.EJBRequest;
 import com.alodiga.wallet.common.genericEJB.WalletContextInterceptor;
 import com.alodiga.wallet.common.genericEJB.WalletLoggerInterceptor;
+import com.alodiga.wallet.common.model.AccountBank;
+import com.alodiga.wallet.common.model.AccountTypeBank;
 import com.alodiga.wallet.common.model.Address;
 import com.alodiga.wallet.common.model.AddressType;
+import com.alodiga.wallet.common.model.Bank;
 import com.alodiga.wallet.common.model.BusinessAffiliationRequest;
 import com.alodiga.wallet.common.model.City;
 import com.alodiga.wallet.common.model.CivilStatus;
 import com.alodiga.wallet.common.model.CollectionType;
 import com.alodiga.wallet.common.model.CollectionsRequest;
 import com.alodiga.wallet.common.model.Country;
+import com.alodiga.wallet.common.model.Currency;
 import com.alodiga.wallet.common.model.DocumentType;
 import com.alodiga.wallet.common.model.DocumentsPersonType;
 import com.alodiga.wallet.common.model.EdificationType;
@@ -53,6 +57,7 @@ import com.alodiga.wallet.common.model.Profession;
 import com.alodiga.wallet.common.model.RequestHasCollectionRequest;
 import com.alodiga.wallet.common.model.Sequences;
 import com.alodiga.wallet.common.model.State;
+import com.alodiga.wallet.common.model.StatusAccountBank;
 import com.alodiga.wallet.common.model.StatusApplicant;
 import com.alodiga.wallet.common.model.StatusBusinessAffiliationRequest;
 import com.alodiga.wallet.common.model.StreetType;
@@ -497,5 +502,96 @@ public class BusinessPortalEJBImp extends AbstractWalletEJB implements BusinessP
         OriginApplication originApplication = (OriginApplication) loadEntity(OriginApplication.class, request, logger, getMethodName());
     return originApplication;
     }
+    
+    @SuppressWarnings("unchecked")
+    @Override
+    public List<StatusApplicant> getStatusApplicant(EJBRequest request)throws EmptyListException, GeneralException, NullParameterException{
+        return (List<StatusApplicant>) listEntities(StatusApplicant.class, request, logger, getMethodName());
+    }
+    
+    @Override
+    public StatusApplicant loadStatusApplicant(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
+    	StatusApplicant statusApplicant = (StatusApplicant) loadEntity(StatusApplicant.class, request, logger, getMethodName());
+    	return statusApplicant;
+    }
+    
+    @Override
+    public PhoneType loadPhoneType(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
+    	PhoneType phoneType = (PhoneType) loadEntity(PhoneType.class, request, logger, getMethodName());
+    	return phoneType;
+    }
+    
+    @Override
+    public BusinessAffiliationRequest loadBusinessAffiliationRequest(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
+    	BusinessAffiliationRequest businessAffiliationRequest = (BusinessAffiliationRequest) loadEntity(BusinessAffiliationRequest.class, request, logger, getMethodName());
+    	return businessAffiliationRequest;
+    }
+    
+    @Override
+    public Bank loadBank(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
+    	Bank bank = (Bank) loadEntity(Bank.class, request, logger, getMethodName());
+    	return bank;
+    }
+    
+    @Override
+    public AccountTypeBank loadAccountTypeBank(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
+    	AccountTypeBank accountTypeBank = (AccountTypeBank) loadEntity(AccountTypeBank.class, request, logger, getMethodName());
+    	return accountTypeBank;
+    }
+    
+    @SuppressWarnings("unchecked")
+    @Override
+    public List<Bank> getBanks(EJBRequest request)throws EmptyListException, GeneralException, NullParameterException{
+        return (List<Bank>) listEntities(Bank.class, request, logger, getMethodName());
+    }
+    
+    @SuppressWarnings("unchecked")
+    @Override
+    public List<AccountTypeBank> getAccountTypeBanks(EJBRequest request)throws EmptyListException, GeneralException, NullParameterException{
+        return (List<AccountTypeBank>) listEntities(AccountTypeBank.class, request, logger, getMethodName());
+    }
+    
+    @SuppressWarnings("unchecked")
+    @Override
+    public List<AccountBank> getAccountBanks(EJBRequest request)throws EmptyListException, GeneralException, NullParameterException{
+        return (List<AccountBank>) listEntities(AccountBank.class, request, logger, getMethodName());
+    }
+    
+    @Override
+    public AccountBank loadAccountBank(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException{
+    	AccountBank accountBank = (AccountBank) loadEntity(AccountBank.class, request, logger, getMethodName());
+    	return accountBank;
+    }
+    
+    @Override
+    public AccountBank saveAccountBank(AccountBank accountBank) throws RegisterNotFoundException, NullParameterException, GeneralException {
+        if (accountBank == null) {
+            throw new NullParameterException("accountBank", null);
+        }
+        return (AccountBank) saveEntity(accountBank);
+    }
 
+    @SuppressWarnings("unchecked")
+    @Override
+    public List<Currency> getCurrencies(EJBRequest request)throws EmptyListException, GeneralException, NullParameterException{
+        return (List<Currency>) listEntities(Currency.class, request, logger, getMethodName());
+    }
+    
+    @Override
+    public Currency loadCurrency(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException{
+    	Currency currency = (Currency) loadEntity(Currency.class, request, logger, getMethodName());
+    	return currency;
+    }
+    
+    @SuppressWarnings("unchecked")
+    @Override
+    public List<StatusAccountBank> getStatusAccountBanks(EJBRequest request)throws EmptyListException, GeneralException, NullParameterException{
+        return (List<StatusAccountBank>) listEntities(StatusAccountBank.class, request, logger, getMethodName());
+    }
+    
+    @Override
+    public StatusAccountBank loadStatusAccountBank(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException{
+    	StatusAccountBank currency = (StatusAccountBank) loadEntity(StatusAccountBank.class, request, logger, getMethodName());
+    	return currency;
+    }
 }

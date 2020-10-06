@@ -40,6 +40,8 @@ import com.alodiga.wallet.common.model.StreetType;
 import com.alodiga.wallet.common.utils.EjbConstants;
 import com.alodiga.wallet.common.utils.QueryConstants;
 import java.util.Map;
+import javax.persistence.NoResultException;
+import javax.persistence.Query;
 
 @Interceptors({WalletLoggerInterceptor.class, WalletContextInterceptor.class})
 @Stateless(name = EjbConstants.PERSON_EJB, mappedName = EjbConstants.PERSON_EJB)
@@ -113,9 +115,10 @@ public class PersonEJBImp extends AbstractWalletEJB implements PersonEJB, Person
 //        if (!params.containsKey(EjbConstants.PARAM_ORIGIN_APPLICATION_ID)) {
 //            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_ORIGIN_APPLICATION_ID), null);
 //        }
-        personTypes = (List<PersonType>) getNamedQueryResult(PersonType.class, QueryConstants.PERSON_TYPE_BY_COUNTRY, request, getMethodName(), logger, "personTypes");
+        personTypes = (List<PersonType>) getNamedQueryResult(PersonType.class, QueryConstants.PERSON_TYPE_BY_COUNTRY_BY_ORIGIN_APPLICATION_PORTAL, request, getMethodName(), logger, "personTypes");
         return personTypes;
     }
+
 
     //Tabla de PhonePerson
     public List<PhonePerson> getPhonePerson(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
@@ -298,9 +301,29 @@ public class PersonEJBImp extends AbstractWalletEJB implements PersonEJB, Person
         }
         return (PasswordChangeRequest) saveEntity(passwordChangeRequest);
     }
+    
+    public List<PasswordChangeRequest> getSearchPasswordChangeRequest(String name) throws EmptyListException, GeneralException, NullParameterException {
+        List<PasswordChangeRequest> passwordChangeRequestList = null;
+        if (name == null) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "name"), null);
+        }
+        try {
+            StringBuilder sqlBuilder = new StringBuilder("SELECT DISTINCT p FROM PasswordChangeRequest p ");
+            sqlBuilder.append("WHERE p.requestNumber LIKE '").append(name).append("%'");
 
-	@SuppressWarnings("unchecked")
-	@Override
+            Query query = entityManager.createQuery(sqlBuilder.toString());
+            passwordChangeRequestList = query.setHint("toplink.refresh", "true").getResultList();
+
+        } catch (NoResultException ex) {
+            throw new EmptyListException("No distributions found");
+        } catch (Exception e) {
+            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), e.getMessage()), null);
+        }
+        return passwordChangeRequestList;
+    }
+
+    
+    @Override
     public List<Employee> getEmployee(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
         List<Employee> employee = (List<Employee>) listEntities(Employee.class, request, logger, getMethodName());
         return employee;
@@ -314,7 +337,27 @@ public class PersonEJBImp extends AbstractWalletEJB implements PersonEJB, Person
         }
         return (Employee) saveEntity(employee);
     }
+    
+    public List<Employee> searchEmployee(String name) throws EmptyListException, GeneralException, NullParameterException {
+        List<Employee> employeeList = null;
+        if (name == null) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "name"), null);
+        }
+        try {
+            StringBuilder sqlBuilder = new StringBuilder("SELECT DISTINCT e FROM Employee e ");
+            sqlBuilder.append("WHERE e.firstNames LIKE '").append(name).append("%'");
 
+            Query query = entityManager.createQuery(sqlBuilder.toString());
+            employeeList = query.setHint("toplink.refresh", "true").getResultList();
+
+        } catch (NoResultException ex) {
+            throw new EmptyListException("No distributions found");
+        } catch (Exception e) {
+            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), e.getMessage()), null);
+        }
+        return employeeList;
+    }
+    
     @Override
     public PersonClassification loadPersonClassification(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
     	PersonClassification personClassification = (PersonClassification) loadEntity(PersonClassification.class, request, logger, getMethodName());
@@ -446,6 +489,12 @@ public class PersonEJBImp extends AbstractWalletEJB implements PersonEJB, Person
     @Override
     public List<ComercialAgency> getComercialAgency(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
         List<ComercialAgency> comercialAgency = (List<ComercialAgency>) listEntities(ComercialAgency.class, request, logger, getMethodName());
+        return comercialAgency;
+    }
+    
+    @Override
+    public ComercialAgency loadComercialAgency(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
+        ComercialAgency comercialAgency = (ComercialAgency) loadEntity(ComercialAgency.class, request, logger, getMethodName());
         return comercialAgency;
     }
     
