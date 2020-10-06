@@ -585,68 +585,59 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         }
         return transactionsList;
     }
-    
-    public List<Transaction> getTransactionByBeginningDateAndOrigin(Date beginningDate, Long transactionSourceId) throws EmptyListException, GeneralException, NullParameterException {
-        List<Transaction> transactionsList = new ArrayList<Transaction>();
-        try {
+   
+    public List<Transaction> getTransactionByBeginningDateAndOriginTransaccion(EJBRequest request) throws GeneralException, NullParameterException, EmptyListException {
+	List<Transaction> transactionsList = new ArrayList<Transaction>();
+        try{
+            Map<String, Object> params = request.getParams();
             String pattern = "yyyy-MM-dd";
             SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
+            String strDate = (simpleDateFormat.format(EjbUtils.getBeginningDate((Date) params.get(QueryConstants.PARAM_BEGINNING_DATE))));
 
-            if (beginningDate == null) {
-                throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "beginningDate & origin"), null);
-            }
-            
-            if (transactionSourceId == null) {
-                throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "beginningDate & origin"), null);
-            }
-
-            String strDate = (simpleDateFormat.format(beginningDate));
-
-            StringBuilder sqlBuilder = new StringBuilder("select * from transaction t where t.transactionSourceId = ");  
-            sqlBuilder.append(transactionSourceId);
-            sqlBuilder.append(" and t.creationDate like '");
+            StringBuilder sqlBuilder = new StringBuilder("SELECT * from transaction t WHERE t.creationDate LIKE '");
             sqlBuilder.append(strDate);
             sqlBuilder.append("%'");
+        
+            if (params.containsKey(QueryConstants.PARAM_STATUS_SOURCE_ID)) {
+                sqlBuilder.append(" AND t.transactionSourceId = ").append(params.get(QueryConstants.PARAM_STATUS_SOURCE_ID));
+            }       
+
             Query query = entityManager.createNativeQuery(sqlBuilder.toString(), Transaction.class);
             transactionsList = (List<Transaction>) query.setHint("toplink.refresh", "true").getResultList();
-
+        
         } catch (Exception e) {
             throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), e.getMessage()), null);
         }
         if (transactionsList.isEmpty()) {
             throw new EmptyListException(logger, sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName()), null);
         }
+        
         return transactionsList;
     }
     
-    public List<Transaction> getTransactionByDatesAndOrigin(Date beginningDate, Date endingDate, Long transactionSourceId) throws RegisterNotFoundException, NullParameterException, GeneralException, EmptyListException {
+    public List<Transaction> getTransactionByDatesAndOrigin(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException, EmptyListException {
         List<Transaction> transactionsList = new ArrayList<Transaction>();
 
         try {
+            Map<String, Object> params = request.getParams();
             String pattern = "yyyy-MM-dd";
             SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
-
-            if (beginningDate == null || endingDate == null) {
-                throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "beginningDate & endingDate"), null);
-            }
-            
-            if (transactionSourceId == null) {
-                throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "beginningDate & origin"), null);
-            }
-            
-            String strDate1 = (simpleDateFormat.format(beginningDate));
-            String strDate2 = (simpleDateFormat.format(endingDate));
-
-            StringBuilder sqlBuilder = new StringBuilder("select * from transaction t where t.transactionSourceId = "); 
-            sqlBuilder.append(transactionSourceId);
-            sqlBuilder.append(" and t.creationDate BETWEEN '");
+            String strDate1 = (simpleDateFormat.format(EjbUtils.getBeginningDate((Date) params.get(QueryConstants.PARAM_BEGINNING_DATE))));
+            String strDate2 = (simpleDateFormat.format(EjbUtils.getEndingDate((Date) params.get(QueryConstants.PARAM_ENDING_DATE))));
+        
+            StringBuilder sqlBuilder = new StringBuilder("select * from transaction t where t.creationDate BETWEEN '");
             sqlBuilder.append(strDate1);
             sqlBuilder.append("' and '");
             sqlBuilder.append(strDate2);
             sqlBuilder.append("'");
+            
+            if (params.containsKey(QueryConstants.PARAM_STATUS_SOURCE_ID)) {
+            sqlBuilder.append(" AND t.transactionSourceId = ").append(params.get(QueryConstants.PARAM_STATUS_SOURCE_ID));
+            } 
+            
             Query query = entityManager.createNativeQuery(sqlBuilder.toString(), Transaction.class);
             transactionsList = (List<Transaction>) query.setHint("toplink.refresh", "true").getResultList();
-
+        
         } catch (Exception e) {
             throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), e.getMessage()), null);
         }
