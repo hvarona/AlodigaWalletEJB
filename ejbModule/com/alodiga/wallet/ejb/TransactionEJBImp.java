@@ -5,7 +5,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionManagement;
@@ -13,9 +12,7 @@ import javax.ejb.TransactionManagementType;
 import javax.interceptor.Interceptors;
 import javax.persistence.NoResultException;
 import javax.persistence.Query;
-
 import org.apache.log4j.Logger;
-
 import com.alodiga.wallet.common.ejb.TransactionEJB;
 import com.alodiga.wallet.common.ejb.TransactionEJBLocal;
 import com.alodiga.wallet.common.ejb.UtilsEJBLocal;
@@ -26,9 +23,7 @@ import com.alodiga.wallet.common.genericEJB.AbstractWalletEJB;
 import com.alodiga.wallet.common.genericEJB.EJBRequest;
 import com.alodiga.wallet.common.genericEJB.WalletContextInterceptor;
 import com.alodiga.wallet.common.genericEJB.WalletLoggerInterceptor;
-import com.alodiga.wallet.common.model.AccountBank;
 import com.alodiga.wallet.common.model.CalendarDays;
-import com.alodiga.wallet.common.model.Country;
 import com.alodiga.wallet.common.model.DailyClosing;
 import com.alodiga.wallet.common.model.OriginApplication;
 import com.alodiga.wallet.common.utils.Constants;
@@ -52,7 +47,7 @@ public class TransactionEJBImp extends AbstractWalletEJB implements TransactionE
 	    	dailyClosing.setClosingDate(new Date());// corresponde a la Fecha del Cierre
 	    	dailyClosing.setClosingStartTime(new Date());//es la hora en que comienza el proceso de cierre.
 	        Map<String, Object> params = new HashMap<String, Object>();
-	        params.put(Constants.PARAM_CODE, Constants.ORIGIN_APPLICATION_PORTAL_NEGOCIOS_CODE);
+	        params.put(Constants.PARAM_CODE, Constants.ORIGIN_APPLICATION_WALLET_ADMIN_WEB_CODE);
 	    	EJBRequest request = new EJBRequest();
 	        request.setParams(params);
 			OriginApplication originApplicationId = utilsEJB.loadOriginApplicationByCode(request);
