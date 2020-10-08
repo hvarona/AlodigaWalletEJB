@@ -90,8 +90,8 @@ public class TransactionTimerEJBImp extends AbstractWalletEJB implements Transac
     }
 
     public void forceExecution() throws Exception {
-        logger.info("Ejecutó forceExecution!!!!!!!!");
-        //System.out.println("Ejecutó forceExecution!!!!!!!!");
+        logger.info("Ejecuta forceExecution!!!!!!!!");
+        //System.out.println("Ejecuta forceExecution!!!!!!!!");
     }
 
     public void forceTimeout() throws Exception {
@@ -136,7 +136,7 @@ public class TransactionTimerEJBImp extends AbstractWalletEJB implements Transac
         initialExpiration.set(Calendar.AM_PM, Calendar.PM);
         Long secondsInDay = 86400L;
         //secondsInDay = secondsInDay * 15;//Cada quince dias
-        initialExpiration.add(Calendar.DAY_OF_MONTH, 0);//El timer comienza un día despues que se inicializa.
+        initialExpiration.add(Calendar.DAY_OF_MONTH, 0);//El timer comienza un dia despues que se inicializa.
         timeoutInterval = secondsInDay * 1000L;//Milisegundos
     }
 

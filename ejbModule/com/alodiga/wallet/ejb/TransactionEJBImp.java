@@ -51,7 +51,7 @@ public class TransactionEJBImp extends AbstractWalletEJB implements TransactionE
 	    	EJBRequest request = new EJBRequest();
 	        request.setParams(params);
 			OriginApplication originApplicationId = utilsEJB.loadOriginApplicationByCode(request);
-		    dailyClosing.setOriginApplicationId(originApplicationId);//Origen de Cierre: Billetera Móvil, Portal de Negocios, Alodiga Wallet Web
+		    dailyClosing.setOriginApplicationId(originApplicationId);//Origen de Cierre: Billetera Movil, Portal de Negocios, Alodiga Wallet Web
 		    Date oldClosingDate = OldClosingDate(closingDate);
 		    int totalTrasactions = TotalTransactionsCurrentDate(oldClosingDate,closingDate);
 		    Float transactionsAmount = TotalAmountCurrentDate(oldClosingDate,closingDate).floatValue();
