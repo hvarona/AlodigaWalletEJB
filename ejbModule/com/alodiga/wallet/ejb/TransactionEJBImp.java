@@ -25,10 +25,13 @@ import com.alodiga.wallet.common.genericEJB.WalletContextInterceptor;
 import com.alodiga.wallet.common.genericEJB.WalletLoggerInterceptor;
 import com.alodiga.wallet.common.model.CalendarDays;
 import com.alodiga.wallet.common.model.DailyClosing;
+import com.alodiga.wallet.common.model.Enterprise;
 import com.alodiga.wallet.common.model.OriginApplication;
 import com.alodiga.wallet.common.utils.Constants;
 import com.alodiga.wallet.common.utils.EjbConstants;
 import com.alodiga.wallet.common.utils.EjbUtils;
+import com.alodiga.wallet.common.utils.SendMailTherad;
+
 import javax.persistence.EntityTransaction;
 
 
@@ -43,24 +46,31 @@ public class TransactionEJBImp extends AbstractWalletEJB implements TransactionE
     @Override
     public DailyClosing closingDailyTransactionWallet(Date closingDate) throws GeneralException, NullParameterException {
     	DailyClosing dailyClosing = new DailyClosing();
-    	try {
-	    	dailyClosing.setClosingDate(new Date());// corresponde a la Fecha del Cierre
-	    	dailyClosing.setClosingStartTime(new Date());//es la hora en que comienza el proceso de cierre.
-	        Map<String, Object> params = new HashMap<String, Object>();
-	        params.put(Constants.PARAM_CODE, Constants.ORIGIN_APPLICATION_WALLET_ADMIN_WEB_CODE);
-	    	EJBRequest request = new EJBRequest();
-	        request.setParams(params);
-			OriginApplication originApplicationId = utilsEJB.loadOriginApplicationByCode(request);
-		    dailyClosing.setOriginApplicationId(originApplicationId);//Origen de Cierre: Billetera Móvil, Portal de Negocios, Alodiga Wallet Web
-		    Date oldClosingDate = OldClosingDate(closingDate);
-		    int totalTrasactions = TotalTransactionsCurrentDate(oldClosingDate,closingDate);
-		    Float transactionsAmount = TotalAmountCurrentDate(oldClosingDate,closingDate).floatValue();
-			dailyClosing.setTotalTransactions(totalTrasactions);//cantidad total de transacciones del cierre diario
-			dailyClosing.setTransactionsAmount(transactionsAmount);//Monto Total de las transacciones del cierre diario
-			dailyClosing = saveDailyClosing(dailyClosing);
-			addDailyClosingInTransaction(oldClosingDate,closingDate,dailyClosing);
-			dailyClosing.setClosingEndTime(new Date());//es la hora en que finaliza el proceso de cierre
-			dailyClosing = saveDailyClosing(dailyClosing);//actualizo el cierre con la hora de finalizacion
+		try {
+			if (!isHoliday(closingDate) && !EjbUtils.isWeekEnd(closingDate)) {
+				dailyClosing.setClosingDate(new Date());// corresponde a la Fecha del Cierre
+				dailyClosing.setClosingStartTime(new Date());// es la hora en que comienza el proceso de cierre.
+				Map<String, Object> params = new HashMap<String, Object>();
+				params.put(Constants.PARAM_CODE, Constants.ORIGIN_APPLICATION_WALLET_ADMIN_WEB_CODE);
+				EJBRequest request = new EJBRequest();
+				request.setParams(params);
+				OriginApplication originApplicationId = utilsEJB.loadOriginApplicationByCode(request);
+				dailyClosing.setOriginApplicationId(originApplicationId);// Origen de Cierre: Billetera Móvil, Portal de
+																			// Negocios, Alodiga Wallet Web
+				Date oldClosingDate = OldClosingDate(closingDate);
+				int totalTrasactions = TotalTransactionsCurrentDate(oldClosingDate, closingDate);
+				Float transactionsAmount = TotalAmountCurrentDate(oldClosingDate, closingDate).floatValue();
+				dailyClosing.setTotalTransactions(totalTrasactions);// cantidad total de transacciones del cierre diario
+				dailyClosing.setTransactionsAmount(transactionsAmount);// Monto Total de las transacciones del cierre
+																		// diario
+				dailyClosing = saveDailyClosing(dailyClosing);
+				addDailyClosingInTransaction(oldClosingDate, closingDate, dailyClosing);
+				dailyClosing.setClosingEndTime(new Date());// es la hora en que finaliza el proceso de cierre
+				dailyClosing = saveDailyClosing(dailyClosing);// actualizo el cierre con la hora de finalizacion
+				Enterprise enterprise = utilsEJB.loadEnterprisebyId(Constants.ENTERPRISE_ID_USA);
+				SendMailTherad sendMailTherad = new SendMailTherad("ES", transactionsAmount, totalTrasactions,enterprise.getName(), enterprise.getEmail(), Constants.SEND_TYPE_EMAIL_DAILY_CLOSING_WALLET);
+				sendMailTherad.run();
+			}
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
