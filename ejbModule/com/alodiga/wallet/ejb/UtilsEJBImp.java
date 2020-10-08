@@ -773,6 +773,10 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         if (!params.containsKey(EjbConstants.TRANSACTION_TYPE_KEY)) {
             throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.TRANSACTION_TYPE_KEY), null);
         }
+        
+        if (!params.containsKey(EjbConstants.PARAM_APPLICATION_COMISSION)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_APPLICATION_COMISSION), null);
+        }
 
         commissionByProductAndTranssactionType = (List<Commission>) getNamedQueryResult(Commission.class, QueryConstants.COMMISSION_BY_TRANSACTIONTYPE_AND_PRODUCT, request, getMethodName(), logger, "comissionByTransactionTypeAndProduct");
         return commissionByProductAndTranssactionType;
@@ -1046,9 +1050,7 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
     public List<TransactionApproveRequest> getTransactionApproveRequestByStatus(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
         List<TransactionApproveRequest> transactionApproveRequestByStatusList = null;
         Map<String, Object> params = request.getParams();
-        if (!params.containsKey(EjbConstants.PARAM_STATUS_TRANSACTION_APPROVE_REQUEST_ID)) {
-            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_STATUS_TRANSACTION_APPROVE_REQUEST_ID), null);
-        }
+        
         if (!params.containsKey(EjbConstants.PARAM_REQUEST_NUMBER)) {
             throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_REQUEST_NUMBER), null);
         }
