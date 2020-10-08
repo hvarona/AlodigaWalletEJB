@@ -322,7 +322,6 @@ public class ProductEJBImp extends AbstractWalletEJB implements ProductEJB, Prod
         List<TransactionApproveRequest> operations = new ArrayList<TransactionApproveRequest>();
 
         Map<String, Object> params = request.getParams();
-
 	        StringBuilder sqlBuilder = new StringBuilder("SELECT t FROM TransactionApproveRequest t WHERE t.createDate BETWEEN ?1 AND ?2 and t.requestNumber like '%"+DocumentTypeEnum.MRAR.getDocumentType()+"%'");
 	        if (!params.containsKey(QueryConstants.PARAM_BEGINNING_DATE) || !params.containsKey(QueryConstants.PARAM_ENDING_DATE)) {
 	            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "beginningDate & endingDate"), null);
@@ -419,8 +418,8 @@ public class ProductEJBImp extends AbstractWalletEJB implements ProductEJB, Prod
                         balancehistory.setTransactionId(transactionApproveRequest.getTransactionId());
                         saveBalanceHistory(balancehistory);
                         try {
-                            SendSmsThread sendMailTherad = new SendSmsThread("584142063128",transactionApproveRequest.getTransactionId().getTotalAmount(), 
-                            transactionApproveRequest.getRequestNumber(), Constants.SEND_TYPE_SMS_RECHARGE,transactionApproveRequest.getUnifiedRegistryUserId().longValue(),entityManager);
+                            SendSmsThread sendMailTherad = new SendSmsThread("584142063128",rechargeAmount,transactionApproveRequest.getRequestNumber(),
+                            Constants.SEND_TYPE_SMS_RECHARGE,transactionApproveRequest.getUnifiedRegistryUserId().longValue(),entityManager);
                             sendMailTherad.run();
                         } catch (Exception ex) {
                             ex.printStackTrace();
