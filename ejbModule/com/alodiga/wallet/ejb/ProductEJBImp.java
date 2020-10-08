@@ -40,7 +40,7 @@ import com.alodiga.wallet.common.model.ProductData;
 import com.alodiga.wallet.common.model.ProductIntegrationType;
 import com.alodiga.wallet.common.model.Provider;
 import com.alodiga.wallet.common.model.StatusTransactionApproveRequest;
-import com.alodiga.wallet.common.model.StatusTransactionApproveRequestEnum;
+import com.alodiga.wallet.common.enumeraciones.StatusTransactionApproveRequestE;
 import com.alodiga.wallet.common.model.TransactionApproveRequest;
 import com.alodiga.wallet.common.utils.Constants;
 import com.alodiga.wallet.common.utils.EJBServiceLocator;
@@ -406,7 +406,7 @@ public class ProductEJBImp extends AbstractWalletEJB implements ProductEJB, Prod
         Map params = new HashMap<String, Object>();
         if (transactionApproveRequest.getIndApproveRequest()) {
         	try {
-	            params.put(QueryConstants.PARAM_CODE, StatusTransactionApproveRequestEnum.APPR.getStatusTransactionApproveRequest());
+	            params.put(QueryConstants.PARAM_CODE, StatusTransactionApproveRequestE.APROBA.getStatusTransactionApproveRequestCode());
 	            request.setParams(params);
 	            statusTransactionApproveRequestId = loadStatusTransactionApproveRequestbyCode(request);
 	            transactionApproveRequest.setStatusTransactionApproveRequestId(statusTransactionApproveRequestId);
@@ -439,7 +439,7 @@ public class ProductEJBImp extends AbstractWalletEJB implements ProductEJB, Prod
 	        }
         } else {
 	        try {
-	            params.put(QueryConstants.PARAM_CODE, StatusTransactionApproveRequestEnum.REJE.getStatusTransactionApproveRequest());
+	            params.put(QueryConstants.PARAM_CODE, StatusTransactionApproveRequestE.RECHAZ.getStatusTransactionApproveRequestCode());
 	            request.setParams(params);
 	            statusTransactionApproveRequestId = loadStatusTransactionApproveRequestbyCode(request);
 	            transactionApproveRequest.setStatusTransactionApproveRequestId(statusTransactionApproveRequestId);
