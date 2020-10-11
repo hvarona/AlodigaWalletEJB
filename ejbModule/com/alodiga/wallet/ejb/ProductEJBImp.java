@@ -20,6 +20,7 @@ import com.alodiga.wallet.common.ejb.ProductEJB;
 import com.alodiga.wallet.common.ejb.ProductEJBLocal;
 import com.alodiga.wallet.common.ejb.UtilsEJB;
 import com.alodiga.wallet.common.ejb.UtilsEJBLocal;
+import com.alodiga.wallet.common.enumeraciones.DocumentTypeE;
 import com.alodiga.wallet.common.exception.EmptyListException;
 import com.alodiga.wallet.common.exception.GeneralException;
 import com.alodiga.wallet.common.exception.NegativeBalanceException;
@@ -323,6 +324,45 @@ public class ProductEJBImp extends AbstractWalletEJB implements ProductEJB, Prod
 
         Map<String, Object> params = request.getParams();
 	        StringBuilder sqlBuilder = new StringBuilder("SELECT t FROM TransactionApproveRequest t WHERE t.createDate BETWEEN ?1 AND ?2 and t.requestNumber like '%"+DocumentTypeEnum.MRAR.getDocumentType()+"%'");
+	        if (!params.containsKey(QueryConstants.PARAM_BEGINNING_DATE) || !params.containsKey(QueryConstants.PARAM_ENDING_DATE)) {
+	            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "beginningDate & endingDate"), null);
+	        }
+	        if (params.containsKey(QueryConstants.PARAM_STATUS_TRANSACTION_APPROVE_REQUEST_ID)) {
+	            sqlBuilder.append(" AND t.statusTransactionApproveRequestId.id=").append(params.get(QueryConstants.PARAM_STATUS_TRANSACTION_APPROVE_REQUEST_ID));
+	        }
+	        if (params.containsKey(QueryConstants.PARAM_PRODUCT_ID)) {
+	            sqlBuilder.append(" AND t.productId.id=").append(params.get(QueryConstants.PARAM_PRODUCT_ID));
+	        }
+	        if (params.containsKey(QueryConstants.PARAM_REQUEST_NUMBER)) {
+	            sqlBuilder.append(" AND t.requestNumber='").append(params.get(QueryConstants.PARAM_REQUEST_NUMBER)).append("'");
+	        }
+	        Query query = null;
+	        try {
+	            System.out.println("query:********"+sqlBuilder.toString());
+	            query = createQuery(sqlBuilder.toString());
+	            query.setParameter("1", EjbUtils.getBeginningDate((Date) params.get(QueryConstants.PARAM_BEGINNING_DATE)));
+	            query.setParameter("2", EjbUtils.getEndingDate((Date) params.get(QueryConstants.PARAM_ENDING_DATE)));
+	            if (request.getLimit() != null && request.getLimit() > 0) {
+	                query.setMaxResults(request.getLimit());
+	            }
+	            operations = query.setHint("toplink.refresh", "true").getResultList();
+	        } catch (Exception e) {
+	            e.printStackTrace();
+	            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), e.getMessage()), null);
+	        }
+	        if (operations.isEmpty()) {
+	            throw new EmptyListException(logger, sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName()), null);
+	        }
+	        return operations;
+	}
+    
+
+    public List<TransactionApproveRequest> searchTransactionApproveRequestByParamsMWAR(EJBRequest request) throws GeneralException, NullParameterException, EmptyListException {
+        List<TransactionApproveRequest> operations = new ArrayList<TransactionApproveRequest>();
+
+        Map<String, Object> params = request.getParams();
+
+	        StringBuilder sqlBuilder = new StringBuilder("SELECT t FROM TransactionApproveRequest t WHERE t.createDate BETWEEN ?1 AND ?2 and t.requestNumber like '%"+DocumentTypeE.MWAR.getDocumentTypeAcronym()+"%'");
 	        if (!params.containsKey(QueryConstants.PARAM_BEGINNING_DATE) || !params.containsKey(QueryConstants.PARAM_ENDING_DATE)) {
 	            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "beginningDate & endingDate"), null);
 	        }

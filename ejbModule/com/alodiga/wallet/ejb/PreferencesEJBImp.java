@@ -75,6 +75,14 @@ public class PreferencesEJBImp extends AbstractWalletEJB implements PreferencesE
     public List<Preference> getPreference(EJBRequest request) throws GeneralException, RegisterNotFoundException, NullParameterException, EmptyListException {
         return (List<Preference>) listEntities(Preference.class, request, logger, getMethodName());
     }
+    
+    @Override
+    public Preference savePreference(Preference preference) throws RegisterNotFoundException, NullParameterException, GeneralException {
+        if (preference== null) {
+            throw new NullParameterException("preference", null);
+        }
+        return (Preference) saveEntity(preference);
+    }
 
 
     public Map<Long, String> getLastPreferenceValues(EJBRequest request) throws GeneralException, RegisterNotFoundException, NullParameterException, EmptyListException {
@@ -196,6 +204,14 @@ public class PreferencesEJBImp extends AbstractWalletEJB implements PreferencesE
     
     public PreferenceType savePreferenceType(EJBRequest request) throws GeneralException, NullParameterException {
         return (PreferenceType) saveEntity(request, logger, getMethodName());
+    }
+    
+    @Override
+    public PreferenceType savePreferencesType(PreferenceType preferenceType) throws RegisterNotFoundException, NullParameterException, GeneralException {
+        if (preferenceType== null) {
+            throw new NullParameterException("preferenceType", null);
+        }
+        return (PreferenceType) saveEntity(preferenceType);
     }
 
     
