@@ -35,6 +35,7 @@ import com.alodiga.wallet.common.model.Address;
 import com.alodiga.wallet.common.model.AddressType;
 import com.alodiga.wallet.common.model.Bank;
 import com.alodiga.wallet.common.model.BusinessAffiliationRequest;
+import com.alodiga.wallet.common.model.BusinessCategory;
 import com.alodiga.wallet.common.model.City;
 import com.alodiga.wallet.common.model.CivilStatus;
 import com.alodiga.wallet.common.model.CollectionType;
@@ -422,7 +423,11 @@ public class BusinessPortalEJBImp extends AbstractWalletEJB implements BusinessP
             request.setParams(params);
             OriginApplication originApplication = utilsEJB.loadOriginApplicationByCode(request);
             params = new HashMap<String, Object>();
-            params.put(EjbConstants.PARAM_DOCUMENT_TYPE_ID, naturalPerson.getDocumentsPersonTypeId().getId());
+            if (person.getPersonTypeId().getIndNaturalPerson()) {
+            	params.put(EjbConstants.PARAM_DOCUMENT_TYPE_ID, naturalPerson.getDocumentsPersonTypeId().getId());
+            }else {
+            	params.put(EjbConstants.PARAM_DOCUMENT_TYPE_ID, legalPerson.getDocumentsPersonTypeId().getId());	
+            }
             request = new EJBRequest();
             request.setParams(params);
 
@@ -441,6 +446,7 @@ public class BusinessPortalEJBImp extends AbstractWalletEJB implements BusinessP
             affiliatinRequest.setStatusBusinessAffiliationRequestId(status);
             affiliatinRequest = (BusinessAffiliationRequest) saveEntity(affiliatinRequest);
         } catch (Exception e) {
+        	e.printStackTrace();
             throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), e.getMessage()), null);
 
         }
@@ -593,5 +599,17 @@ public class BusinessPortalEJBImp extends AbstractWalletEJB implements BusinessP
     public StatusAccountBank loadStatusAccountBank(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException{
     	StatusAccountBank currency = (StatusAccountBank) loadEntity(StatusAccountBank.class, request, logger, getMethodName());
     	return currency;
+    }
+    
+    @SuppressWarnings("unchecked")
+    @Override
+    public List<BusinessCategory> getBusinessCategories(EJBRequest request)throws EmptyListException, GeneralException, NullParameterException{
+        return (List<BusinessCategory>) listEntities(BusinessCategory.class, request, logger, getMethodName());
+    }
+    
+    @Override
+    public BusinessCategory loadBusinessCategory(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException{
+    	BusinessCategory category = (BusinessCategory) loadEntity(BusinessCategory.class, request, logger, getMethodName());
+    	return category;
     }
 }
