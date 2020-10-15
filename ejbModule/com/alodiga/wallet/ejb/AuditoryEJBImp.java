@@ -167,35 +167,26 @@ public class AuditoryEJBImp extends AbstractWalletEJB implements AuditoryEJB, Au
         return audits;
     }
      
-     public List<AuditAction> searchAuditActionTest(Long userId, Long permissionId, Date beginningDate, Date endingDate) throws GeneralException, NullParameterException, EmptyListException {
+     public List<AuditAction> searchAuditActions(EJBRequest request) throws GeneralException, NullParameterException, EmptyListException {
         List<AuditAction> audits = new ArrayList<AuditAction>();
         try {
+            Map<String, Object> params = request.getParams();
             String pattern = "yyyy-MM-dd";
             SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
-
-            if (beginningDate == null || endingDate == null) {
-                throw new NullParameterException( sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "beginningDate & endingDate"), null);
-            }
-
-            if (userId == null) {
-                    throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "beginningDate & origin"), null);
-            }
-
-            if (permissionId == null) {
-                    throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "beginningDate & origin"), null);
-            }
-
-            String strDate1 = (simpleDateFormat.format(beginningDate));
-            String strDate2 = (simpleDateFormat.format(endingDate));
-            StringBuilder sqlBuilder = new StringBuilder("SELECT * FROM audit_action a WHERE a.userId = ");
-            sqlBuilder.append(userId);
-            sqlBuilder.append(" and a.permissionId = ");
-            sqlBuilder.append(permissionId);
+            String strDate1 = (simpleDateFormat.format(EjbUtils.getBeginningDate((Date) params.get(QueryConstants.PARAM_BEGINNING_DATE))));
+            String strDate2 = (simpleDateFormat.format(EjbUtils.getEndingDate((Date) params.get(QueryConstants.PARAM_ENDING_DATE))));
+            
+            StringBuilder sqlBuilder = new StringBuilder("SELECT * FROM audit_action a WHERE a.userId =").append(params.get(QueryConstants.PARAM_USER_ID));
             sqlBuilder.append(" and a.date BETWEEN '");
             sqlBuilder.append(strDate1);
             sqlBuilder.append("' and '");
             sqlBuilder.append(strDate2);
             sqlBuilder.append("'");
+            
+            if (params.containsKey(QueryConstants.PARAM_PERMISSION_ID)) {
+            sqlBuilder.append(" and a.permissionId = ").append(params.get(QueryConstants.PARAM_PERMISSION_ID));
+            } 
+            
             Query query = entityManager.createNativeQuery(sqlBuilder.toString(), AuditAction.class);
             audits = (List<AuditAction>) query.setHint("toplink.refresh", "true").getResultList();
         
