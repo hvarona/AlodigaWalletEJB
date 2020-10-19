@@ -31,6 +31,7 @@ import com.alodiga.wallet.common.model.PreferenceControl;
 import com.alodiga.wallet.common.model.PreferenceField;
 import com.alodiga.wallet.common.model.PreferenceType;
 import com.alodiga.wallet.common.model.PreferenceValue;
+import com.alodiga.wallet.common.model.PreferenceFieldData;
 import com.alodiga.wallet.common.model.TransactionType;
 import com.alodiga.wallet.common.utils.EjbConstants;
 import com.alodiga.wallet.common.utils.QueryConstants;
@@ -215,8 +216,11 @@ public class PreferencesEJBImp extends AbstractWalletEJB implements PreferencesE
     }
 
     
-    public PreferenceValue savePreferenceValue(EJBRequest request) throws GeneralException, NullParameterException {
-        return (PreferenceValue) saveEntity(request, logger, getMethodName());
+    public PreferenceValue savePreferenceValue(PreferenceValue preferenceValue) throws GeneralException, NullParameterException {
+        if (preferenceValue == null) {
+            throw new NullParameterException("preferenceValue", null);
+        }
+        return (PreferenceValue) saveEntity(preferenceValue);
     }
 
     
@@ -234,6 +238,11 @@ public class PreferencesEJBImp extends AbstractWalletEJB implements PreferencesE
     
     public List<PreferenceClassification> getPreferenceClassifications(EJBRequest request) throws GeneralException, RegisterNotFoundException, NullParameterException, EmptyListException{
         return (List<PreferenceClassification>) listEntities(PreferenceClassification.class, request, logger, getMethodName());
+    }
+    
+    public PreferenceClassification loadPreferenceClassification(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
+        PreferenceClassification preferenceClassification = (PreferenceClassification) loadEntity(PreferenceClassification.class, request, logger, getMethodName());
+        return preferenceClassification;
     }
     
     public List<PreferenceValue> getPreferenceValuesGroupByBussinessId(EJBRequest request) throws GeneralException, NullParameterException, EmptyListException{
@@ -400,5 +409,23 @@ public class PreferencesEJBImp extends AbstractWalletEJB implements PreferencesE
             e.printStackTrace();
         }
         return preferenceValue;
+    }
+    
+    @Override
+    public List<PreferenceFieldData> getPreferenceFieldDataByPreference(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        List<PreferenceFieldData> preferenceFieldDataList = null;
+        Map<String, Object> params = request.getParams();
+        if (!params.containsKey(EjbConstants.PARAM_PREFERENCE_FIELD_ID)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_PREFERENCE_FIELD_ID), null);
+        }
+        preferenceFieldDataList = (List<PreferenceFieldData>) getNamedQueryResult(PreferenceFieldData.class, QueryConstants.PREFERENCE_FIELD_DATA_BY_PREFERENCE, request, getMethodName(), logger, "preferenceFieldDataList");
+        return preferenceFieldDataList;
+    }
+    
+    public PreferenceFieldData savePreferenceFieldData(PreferenceFieldData preferenceFieldData) throws GeneralException, NullParameterException {
+        if (preferenceFieldData== null) {
+            throw new NullParameterException("preferenceFieldData", null);
+        }
+        return (PreferenceFieldData) saveEntity(preferenceFieldData);
     }
 }
