@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <persistence version="2.0" xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
   <persistence-unit name="AlodigaWalletPU" transaction-type="JTA">
-     <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+    <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
     <jta-data-source>jdbc/AlodigaWallet</jta-data-source>
     <class>com.alodiga.wallet.common.model.Address</class>
     <class>com.alodiga.wallet.common.model.BalanceHistory</class>
@@ -121,7 +121,16 @@
     <class>com.alodiga.wallet.common.model.PasswordChangeRequest</class>
     <class>com.alodiga.wallet.common.model.Employee</class>
     <class>com.alodiga.wallet.common.model.ComercialAgency</class>
-    <exclude-unlisted-classes>true</exclude-unlisted-classes>
+    <class>com.alodiga.wallet.common.model.CalendarDays</class>
+    <class>com.alodiga.wallet.common.model.CodeErrorTransactionLog</class>
+    <class>com.alodiga.wallet.common.model.DailyClosing</class>
+    <class>com.alodiga.wallet.common.model.StatusTransactionLog</class>
+    <class>com.alodiga.wallet.common.model.TransactionLog</class>
+    <class>com.alodiga.wallet.common.model.DailyClosingType</class>
+    <class>com.alodiga.wallet.common.model.BusinessHasProduct</class>
+    <class>com.alodiga.wallet.common.model.ReportHasProfile</class>
+    <exclude-unlisted-classes>false</exclude-unlisted-classes>
+    <validation-mode>NONE</validation-mode>
     <properties>
       <property name="eclipselink.logging.timestamp" value="true"/>
       <property name="toplink.cache.type.default" value="Full"/>

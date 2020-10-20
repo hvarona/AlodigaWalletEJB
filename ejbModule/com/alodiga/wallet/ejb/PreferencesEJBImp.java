@@ -25,14 +25,17 @@ import com.alodiga.wallet.common.genericEJB.EJBRequest;
 import com.alodiga.wallet.common.genericEJB.WalletContextInterceptor;
 import com.alodiga.wallet.common.genericEJB.WalletLoggerInterceptor;
 import com.alodiga.wallet.common.model.DocumentTypeEnum;
+import com.alodiga.wallet.common.model.Preference;
 import com.alodiga.wallet.common.model.PreferenceClassification;
 import com.alodiga.wallet.common.model.PreferenceControl;
 import com.alodiga.wallet.common.model.PreferenceField;
 import com.alodiga.wallet.common.model.PreferenceType;
 import com.alodiga.wallet.common.model.PreferenceValue;
+import com.alodiga.wallet.common.model.PreferenceFieldData;
 import com.alodiga.wallet.common.model.TransactionType;
 import com.alodiga.wallet.common.utils.EjbConstants;
 import com.alodiga.wallet.common.utils.QueryConstants;
+import javax.persistence.NoResultException;
 
 @Interceptors({WalletLoggerInterceptor.class, WalletContextInterceptor.class})
 @Stateless(name = EjbConstants.PREFERENCES_EJB, mappedName = EjbConstants.PREFERENCES_EJB)
@@ -57,20 +60,29 @@ public class PreferencesEJBImp extends AbstractWalletEJB implements PreferencesE
 
     private PreferenceValue getLastPreferenceValueByPreferenceField(Long preferenceFieldId, Long classificationId) throws GeneralException, NullParameterException, EmptyListException {
 
-        Map<String, Object> params = new HashMap<String, Object>();
-        params.put("preferenceFieldId", preferenceFieldId);
-        params.put("classificationId", classificationId);
-        EJBRequest request = new EJBRequest();
-        request.setParams(params);
-        request.setLimit(1);
-        List<PreferenceValue> preferences = new ArrayList<PreferenceValue>();
+    	PreferenceValue preferenceValue = null;
+        Query query = null;
         try {
-            preferences = (List<PreferenceValue>) getNamedQueryResult(PreferencesEJBImp.class, "PreferenceValue.findByPreferenceFieldId", request, getMethodName(), logger, "preferenceValue");
-            return preferences.get(0);
+        	 query = createQuery("SELECT p FROM PreferenceValue p WHERE p.preferenceFieldId.id=?1 and p.preferenceClassficationId.id= ?2 and p.productId is null and p.transactionTypeId is null and p.preferenceValueParentId is null and p.bussinessId is null");
+             query.setParameter("1", preferenceFieldId);
+             query.setParameter("2", classificationId);
+             preferenceValue = (PreferenceValue) query.setHint("toplink.refresh", "true").getSingleResult();
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return null;
+        return preferenceValue;
+    }
+
+    public List<Preference> getPreference(EJBRequest request) throws GeneralException, RegisterNotFoundException, NullParameterException, EmptyListException {
+        return (List<Preference>) listEntities(Preference.class, request, logger, getMethodName());
+    }
+    
+    @Override
+    public Preference savePreference(Preference preference) throws RegisterNotFoundException, NullParameterException, GeneralException {
+        if (preference== null) {
+            throw new NullParameterException("preference", null);
+        }
+        return (Preference) saveEntity(preference);
     }
 
 
@@ -79,7 +91,7 @@ public class PreferencesEJBImp extends AbstractWalletEJB implements PreferencesE
         Map<String, Object> params = request.getParams();
         List<PreferenceField> fields = this.getPreferenceFields(request);
         for (PreferenceField field : fields) {
-            PreferenceValue pv = getLastPreferenceValueByPreferenceField(field.getId(), Long.valueOf("" + params.get("enterpriseId")));
+            PreferenceValue pv = getLastPreferenceValueByPreferenceField(field.getId(), Long.valueOf("" + params.get("classificationId")));
             if (pv != null) {
                 currentValues.put(field.getId(), pv.getValue());
             }
@@ -87,11 +99,39 @@ public class PreferencesEJBImp extends AbstractWalletEJB implements PreferencesE
         return currentValues;
     }
 
-    
-    public List<PreferenceField> getPreferenceFields(EJBRequest request) throws GeneralException, RegisterNotFoundException, NullParameterException, EmptyListException {
+    public List<PreferenceField> getPreferenceFields(EJBRequest request) throws GeneralException, EmptyListException, NullParameterException {
         return (List<PreferenceField>) listEntities(PreferenceField.class, request, logger, getMethodName());
     }
+    
+    public List<PreferenceField> getPreferenceFieldsByCode(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        List<PreferenceField> preferenceFieldList = null;
+        Map<String, Object> params = request.getParams();
+        if (!params.containsKey(EjbConstants.PARAM_CODE)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_CODE), null);
+        }       
+        preferenceFieldList = (List<PreferenceField>) getNamedQueryResult(PreferenceField.class, QueryConstants.CODE_EXIST_IN_BD_PREFERENCE_FIELD, request, getMethodName(), logger, "preferenceFieldList");
+        return preferenceFieldList;
+    }
+    
+    public List<PreferenceField> searchPreferenceField(String name) throws EmptyListException, GeneralException, NullParameterException {
+        List<PreferenceField> preferenceFieldList = null;
+        if (name == null) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "name"), null);
+        }
+        try {
+            StringBuilder sqlBuilder = new StringBuilder("SELECT DISTINCT p FROM PreferenceField p ");
+            sqlBuilder.append("WHERE p.name LIKE '").append(name).append("%'");
 
+            Query query = entityManager.createQuery(sqlBuilder.toString());
+            preferenceFieldList= query.setHint("toplink.refresh", "true").getResultList();
+
+        } catch (NoResultException ex) {
+            throw new EmptyListException("No distributions found");
+        } catch (Exception e) {
+            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), e.getMessage()), null);
+        }
+        return preferenceFieldList;
+    }
     
     public List<PreferenceType> getPreferenceTypes(EJBRequest request) throws GeneralException, RegisterNotFoundException, NullParameterException, EmptyListException {
         return (List<PreferenceType>) listEntities(PreferenceType.class, request, logger, getMethodName());
@@ -166,10 +206,21 @@ public class PreferencesEJBImp extends AbstractWalletEJB implements PreferencesE
     public PreferenceType savePreferenceType(EJBRequest request) throws GeneralException, NullParameterException {
         return (PreferenceType) saveEntity(request, logger, getMethodName());
     }
+    
+    @Override
+    public PreferenceType savePreferencesType(PreferenceType preferenceType) throws RegisterNotFoundException, NullParameterException, GeneralException {
+        if (preferenceType== null) {
+            throw new NullParameterException("preferenceType", null);
+        }
+        return (PreferenceType) saveEntity(preferenceType);
+    }
 
     
-    public PreferenceValue savePreferenceValue(EJBRequest request) throws GeneralException, NullParameterException {
-        return (PreferenceValue) saveEntity(request, logger, getMethodName());
+    public PreferenceValue savePreferenceValue(PreferenceValue preferenceValue) throws GeneralException, NullParameterException {
+        if (preferenceValue == null) {
+            throw new NullParameterException("preferenceValue", null);
+        }
+        return (PreferenceValue) saveEntity(preferenceValue);
     }
 
     
@@ -187,6 +238,11 @@ public class PreferencesEJBImp extends AbstractWalletEJB implements PreferencesE
     
     public List<PreferenceClassification> getPreferenceClassifications(EJBRequest request) throws GeneralException, RegisterNotFoundException, NullParameterException, EmptyListException{
         return (List<PreferenceClassification>) listEntities(PreferenceClassification.class, request, logger, getMethodName());
+    }
+    
+    public PreferenceClassification loadPreferenceClassification(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
+        PreferenceClassification preferenceClassification = (PreferenceClassification) loadEntity(PreferenceClassification.class, request, logger, getMethodName());
+        return preferenceClassification;
     }
     
     public List<PreferenceValue> getPreferenceValuesGroupByBussinessId(EJBRequest request) throws GeneralException, NullParameterException, EmptyListException{
@@ -226,6 +282,41 @@ public class PreferencesEJBImp extends AbstractWalletEJB implements PreferencesE
         return (List<TransactionType>) listEntities(TransactionType.class, request, logger, getMethodName());
     }
     
+    public TransactionType saveTransactionType(EJBRequest request) throws GeneralException, NullParameterException {
+        return (TransactionType) saveEntity(request, logger, getMethodName());
+    }
+    
+    public List<TransactionType> getTransactionTypeByCode(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        List<TransactionType> transactionTypeList = null;
+        Map<String, Object> params = request.getParams();
+        if (!params.containsKey(EjbConstants.PARAM_CODE)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_CODE), null);
+        }       
+        transactionTypeList = (List<TransactionType>) getNamedQueryResult(TransactionType.class, QueryConstants.CODE_EXIST_IN_BD_TRANSACTION_TYPE, request, getMethodName(), logger, "transactionTypeList");
+        return transactionTypeList;
+    }
+    
+    public List<TransactionType> searchTransactionType(String name) throws EmptyListException, GeneralException, NullParameterException {
+        List<TransactionType> transactionTypeList = null;
+        if (name == null) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "name"), null);
+        }
+        try {
+            StringBuilder sqlBuilder = new StringBuilder("SELECT DISTINCT t FROM TransactionType t ");
+            sqlBuilder.append("WHERE t.code LIKE '").append(name).append("%'");
+
+            Query query = entityManager.createQuery(sqlBuilder.toString());
+            transactionTypeList= query.setHint("toplink.refresh", "true").getResultList();
+
+        } catch (NoResultException ex) {
+            throw new EmptyListException("No distributions found");
+        } catch (Exception e) {
+            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), e.getMessage()), null);
+        }
+        return transactionTypeList;
+    }
+    
+   
     public List<PreferenceValue> getPreferenceValuesByParam(Long classificationId, Long productId, Long transactionTypeId, Long bussinessId) throws GeneralException, NullParameterException, EmptyListException {
         List<PreferenceValue> preferenceValues = new ArrayList<PreferenceValue>();
 
@@ -286,5 +377,55 @@ public class PreferencesEJBImp extends AbstractWalletEJB implements PreferencesE
 			valid = true;
 		}
 		return valid;
+    }
+    
+    public Map<Long, String> getLastPreferenceValuesByBusiness(EJBRequest request) throws GeneralException, RegisterNotFoundException, NullParameterException, EmptyListException {
+        Map<Long, String> currentValues = new HashMap<Long, String>();
+        Map<String, Object> params = request.getParams();
+        List<PreferenceField> fields = this.getPreferenceFields(request);
+        for (PreferenceField field : fields) {
+            PreferenceValue pv = getLastPreferenceValueByPreferenceFieldByBusiness(field.getId(), Long.valueOf("" + params.get("classificationId")), Long.valueOf("" + params.get("productId")), Long.valueOf("" + params.get("transactionTypeId")), Long.valueOf("" + params.get("bussinessId")));
+            if (pv != null) {
+                currentValues.put(field.getId(), pv.getValue());
+            }
+        }
+        return currentValues;
+    }
+    
+    private PreferenceValue getLastPreferenceValueByPreferenceFieldByBusiness(Long preferenceFieldId, Long classificationId, Long productId,Long transactionTypeId, Long bussinessId ) throws GeneralException, NullParameterException, EmptyListException {
+
+    	PreferenceValue preferenceValue = null;
+        Query query = null;
+        try {
+        	 query = createQuery("SELECT p FROM PreferenceValue p WHERE p.preferenceFieldId.id=?1 and p.preferenceClassficationId.id= ?2 and p.productId.id=?3 AND p.transactionTypeId.id=?4 AND p.bussinessId=?5");
+             query.setParameter("1", preferenceFieldId);
+             query.setParameter("2", classificationId);
+             query.setParameter("3", productId);
+             query.setParameter("4", transactionTypeId);
+             query.setParameter("5", bussinessId);
+           
+             preferenceValue = (PreferenceValue) query.setHint("toplink.refresh", "true").getSingleResult();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return preferenceValue;
+    }
+    
+    @Override
+    public List<PreferenceFieldData> getPreferenceFieldDataByPreference(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        List<PreferenceFieldData> preferenceFieldDataList = null;
+        Map<String, Object> params = request.getParams();
+        if (!params.containsKey(EjbConstants.PARAM_PREFERENCE_FIELD_ID)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_PREFERENCE_FIELD_ID), null);
+        }
+        preferenceFieldDataList = (List<PreferenceFieldData>) getNamedQueryResult(PreferenceFieldData.class, QueryConstants.PREFERENCE_FIELD_DATA_BY_PREFERENCE, request, getMethodName(), logger, "preferenceFieldDataList");
+        return preferenceFieldDataList;
+    }
+    
+    public PreferenceFieldData savePreferenceFieldData(PreferenceFieldData preferenceFieldData) throws GeneralException, NullParameterException {
+        if (preferenceFieldData== null) {
+            throw new NullParameterException("preferenceFieldData", null);
+        }
+        return (PreferenceFieldData) saveEntity(preferenceFieldData);
     }
 }

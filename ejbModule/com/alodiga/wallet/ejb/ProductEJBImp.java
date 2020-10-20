@@ -16,14 +16,11 @@ import javax.persistence.EntityTransaction;
 import javax.persistence.NoResultException;
 import javax.persistence.Query;
 import org.apache.log4j.Logger;
-
-//import com.alodiga.businessportal.ws.BPBusinessWSProxy;
-//import com.alodiga.businessportal.ws.BpBusiness;
-//import com.alodiga.businessportal.ws.BusinessSearchType;
 import com.alodiga.wallet.common.ejb.ProductEJB;
 import com.alodiga.wallet.common.ejb.ProductEJBLocal;
 import com.alodiga.wallet.common.ejb.UtilsEJB;
 import com.alodiga.wallet.common.ejb.UtilsEJBLocal;
+import com.alodiga.wallet.common.enumeraciones.DocumentTypeE;
 import com.alodiga.wallet.common.exception.EmptyListException;
 import com.alodiga.wallet.common.exception.GeneralException;
 import com.alodiga.wallet.common.exception.NegativeBalanceException;
@@ -44,7 +41,7 @@ import com.alodiga.wallet.common.model.ProductData;
 import com.alodiga.wallet.common.model.ProductIntegrationType;
 import com.alodiga.wallet.common.model.Provider;
 import com.alodiga.wallet.common.model.StatusTransactionApproveRequest;
-import com.alodiga.wallet.common.model.StatusTransactionApproveRequestEnum;
+import com.alodiga.wallet.common.enumeraciones.StatusTransactionApproveRequestE;
 import com.alodiga.wallet.common.model.TransactionApproveRequest;
 import com.alodiga.wallet.common.utils.Constants;
 import com.alodiga.wallet.common.utils.EJBServiceLocator;
@@ -62,6 +59,7 @@ public class ProductEJBImp extends AbstractWalletEJB implements ProductEJB, Prod
     private static final Logger logger = Logger.getLogger(ProductEJBImp.class);
     @EJB
     private UtilsEJBLocal utilsEJB;
+    private ProductEJB productEJB;
 
     //Category
     public List<Category> getCategories(EJBRequest request) throws GeneralException, EmptyListException, NullParameterException {
@@ -277,22 +275,13 @@ public class ProductEJBImp extends AbstractWalletEJB implements ProductEJB, Prod
 
     //BankHasProduct
     @Override
-    public List<BankHasProduct> getBankHasProduct(EJBRequest request) throws GeneralException, EmptyListException, NullParameterException {
+    public List<BankHasProduct> getBankHasProduct(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
         List<BankHasProduct> bankHasProductList = null;
-        Product product = (Product) request.getParam();
-        try {
-            if (product == null) {
-                throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "product"), null);
-            }      //To change body of generated methods, choose Tools | Templates.
-
-            StringBuilder sqlBuilder = new StringBuilder("SELECT * FROM bank_has_product where productId=");
-            sqlBuilder.append(product.getId());
-            Query query = entityManager.createNativeQuery(sqlBuilder.toString(), BankHasProduct.class);
-            bankHasProductList = (List<BankHasProduct>) query.setHint("toplink.refresh", "true").getResultList();
-
-        } catch (Exception ex) {
-            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), ex.getMessage()), ex);
+        Map<String, Object> params = request.getParams();
+        if (!params.containsKey(EjbConstants.PARAM_PRODUCT_ID)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_PRODUCT_ID), null);
         }
+        bankHasProductList = (List<BankHasProduct>) getNamedQueryResult(BankHasProduct.class, QueryConstants.BANK_BY_PRODUCT, request, getMethodName(), logger, "bankHasProductList");
         return bankHasProductList;
     }
 
@@ -334,8 +323,46 @@ public class ProductEJBImp extends AbstractWalletEJB implements ProductEJB, Prod
         List<TransactionApproveRequest> operations = new ArrayList<TransactionApproveRequest>();
 
         Map<String, Object> params = request.getParams();
-
 	        StringBuilder sqlBuilder = new StringBuilder("SELECT t FROM TransactionApproveRequest t WHERE t.createDate BETWEEN ?1 AND ?2 and t.requestNumber like '%"+DocumentTypeEnum.MRAR.getDocumentType()+"%'");
+	        if (!params.containsKey(QueryConstants.PARAM_BEGINNING_DATE) || !params.containsKey(QueryConstants.PARAM_ENDING_DATE)) {
+	            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "beginningDate & endingDate"), null);
+	        }
+	        if (params.containsKey(QueryConstants.PARAM_STATUS_TRANSACTION_APPROVE_REQUEST_ID)) {
+	            sqlBuilder.append(" AND t.statusTransactionApproveRequestId.id=").append(params.get(QueryConstants.PARAM_STATUS_TRANSACTION_APPROVE_REQUEST_ID));
+	        }
+	        if (params.containsKey(QueryConstants.PARAM_PRODUCT_ID)) {
+	            sqlBuilder.append(" AND t.productId.id=").append(params.get(QueryConstants.PARAM_PRODUCT_ID));
+	        }
+	        if (params.containsKey(QueryConstants.PARAM_REQUEST_NUMBER)) {
+	            sqlBuilder.append(" AND t.requestNumber='").append(params.get(QueryConstants.PARAM_REQUEST_NUMBER)).append("'");
+	        }
+	        Query query = null;
+	        try {
+	            System.out.println("query:********"+sqlBuilder.toString());
+	            query = createQuery(sqlBuilder.toString());
+	            query.setParameter("1", EjbUtils.getBeginningDate((Date) params.get(QueryConstants.PARAM_BEGINNING_DATE)));
+	            query.setParameter("2", EjbUtils.getEndingDate((Date) params.get(QueryConstants.PARAM_ENDING_DATE)));
+	            if (request.getLimit() != null && request.getLimit() > 0) {
+	                query.setMaxResults(request.getLimit());
+	            }
+	            operations = query.setHint("toplink.refresh", "true").getResultList();
+	        } catch (Exception e) {
+	            e.printStackTrace();
+	            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), e.getMessage()), null);
+	        }
+	        if (operations.isEmpty()) {
+	            throw new EmptyListException(logger, sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName()), null);
+	        }
+	        return operations;
+	}
+    
+
+    public List<TransactionApproveRequest> searchTransactionApproveRequestByParamsMWAR(EJBRequest request) throws GeneralException, NullParameterException, EmptyListException {
+        List<TransactionApproveRequest> operations = new ArrayList<TransactionApproveRequest>();
+
+        Map<String, Object> params = request.getParams();
+
+	        StringBuilder sqlBuilder = new StringBuilder("SELECT t FROM TransactionApproveRequest t WHERE t.createDate BETWEEN ?1 AND ?2 and t.requestNumber like '%"+DocumentTypeE.MWAR.getDocumentTypeAcronym()+"%'");
 	        if (!params.containsKey(QueryConstants.PARAM_BEGINNING_DATE) || !params.containsKey(QueryConstants.PARAM_ENDING_DATE)) {
 	            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "beginningDate & endingDate"), null);
 	        }
@@ -409,6 +436,7 @@ public class ProductEJBImp extends AbstractWalletEJB implements ProductEJB, Prod
 
     @Override
     public TransactionApproveRequest updateTransactionApproveRequest(TransactionApproveRequest transactionApproveRequest) throws RegisterNotFoundException, NullParameterException, GeneralException, NegativeBalanceException {
+        productEJB = (ProductEJB) EJBServiceLocator.getInstance().get(EjbConstants.PRODUCT_EJB);
         if (transactionApproveRequest == null) {
             throw new NullParameterException("transactionApproveRequest", null);
         }
@@ -418,51 +446,48 @@ public class ProductEJBImp extends AbstractWalletEJB implements ProductEJB, Prod
         Map params = new HashMap<String, Object>();
         if (transactionApproveRequest.getIndApproveRequest()) {
         	try {
-	            params.put(QueryConstants.PARAM_CODE, StatusTransactionApproveRequestEnum.APPR.getStatusTransactionApproveRequest());
+	            params.put(QueryConstants.PARAM_CODE, StatusTransactionApproveRequestE.APROBA.getStatusTransactionApproveRequestCode());
 	            request.setParams(params);
 	            statusTransactionApproveRequestId = loadStatusTransactionApproveRequestbyCode(request);
 	            transactionApproveRequest.setStatusTransactionApproveRequestId(statusTransactionApproveRequestId);
-					List<CommissionItem> commissionItems = utilsEJB.getCommissionItems(transactionApproveRequest.getTransactionId().getId());
-					if (!commissionItems.isEmpty()) {
-						rechargeAmount = calculateAmountRecharge(commissionItems.get(0),transactionApproveRequest.getTransactionId().getAmount());
-						saveTransactionApproveRequest(transactionApproveRequest);	
-						BalanceHistory balancehistory = createBalanceHistory(transactionApproveRequest.getUnifiedRegistryUserId(),transactionApproveRequest.getProductId(), rechargeAmount,2);
-						balancehistory.setTransactionId(transactionApproveRequest.getTransactionId());
-//						saveBalanceHistory(balancehistory);
-			            try {
-//			            	BPBusinessWSProxy proxy = new BPBusinessWSProxy();
-//			            	BpBusiness bpBussiness = proxy.getBusiness(BusinessSearchType.ID, String.valueOf(transactionApproveRequest.getUnifiedRegistryUserId()));
-//			            	bpBussiness.getPhoneNumber();
-							SendSmsThread sendMailTherad = new SendSmsThread("584160136793",transactionApproveRequest.getTransactionId().getTotalAmount(), 
-							transactionApproveRequest.getRequestNumber(), Constants.SEND_TYPE_SMS_RECHARGE,transactionApproveRequest.getUnifiedRegistryUserId(),entityManager);
-				            sendMailTherad.run();
-				        } catch (Exception ex) {
-				            ex.printStackTrace();
-				        }
-					}
-			}  catch (RegisterNotFoundException e) {
-				e.printStackTrace();
-				 throw new RegisterNotFoundException(logger, sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName(), "transactionApproveRequest"), null);
-			} catch (EmptyListException e) {
-				e.printStackTrace();
-				 throw new RegisterNotFoundException(logger, sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName(), "transactionApproveRequest"), null);
-			} catch (NegativeBalanceException e) {
+                    List<CommissionItem> commissionItems = utilsEJB.getCommissionItems(transactionApproveRequest.getTransactionId().getId());
+                    if (!commissionItems.isEmpty()) {
+                        rechargeAmount = calculateAmountRecharge(commissionItems.get(0),transactionApproveRequest.getTransactionId().getAmount());
+                        productEJB.saveTransactionApproveRequest(transactionApproveRequest);	
+                        BalanceHistory balancehistory = createBalanceHistory(transactionApproveRequest.getUnifiedRegistryUserId().longValue(),transactionApproveRequest.getProductId(), rechargeAmount,2);
+                        balancehistory.setTransactionId(transactionApproveRequest.getTransactionId());
+                        saveBalanceHistory(balancehistory);
+                        try {
+                            SendSmsThread sendMailTherad = new SendSmsThread("584142063128",rechargeAmount,transactionApproveRequest.getRequestNumber(),
+                            Constants.SEND_TYPE_SMS_RECHARGE,transactionApproveRequest.getUnifiedRegistryUserId().longValue(),entityManager);
+                            sendMailTherad.run();
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+                        }
+                    }
+                }  catch (RegisterNotFoundException e) {
+                        e.printStackTrace();
+                         throw new RegisterNotFoundException(logger, sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName(), "transactionApproveRequest"), null);
+                } catch (EmptyListException e) {
+                        e.printStackTrace();
+                        throw new RegisterNotFoundException(logger, sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName(), "transactionApproveRequest"), null);
+                } catch (NegativeBalanceException e) {
 				 throw new NegativeBalanceException("Current amount can not be negative");
-			} catch (Exception e) {
+                } catch (Exception e) {
 	            e.printStackTrace();
 	            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), e.getMessage()), null);
 	        }
         } else {
 	        try {
-	            params.put(QueryConstants.PARAM_CODE, StatusTransactionApproveRequestEnum.REJE.getStatusTransactionApproveRequest());
+	            params.put(QueryConstants.PARAM_CODE, StatusTransactionApproveRequestE.RECHAZ.getStatusTransactionApproveRequestCode());
 	            request.setParams(params);
 	            statusTransactionApproveRequestId = loadStatusTransactionApproveRequestbyCode(request);
 	            transactionApproveRequest.setStatusTransactionApproveRequestId(statusTransactionApproveRequestId);
 	            saveTransactionApproveRequest(transactionApproveRequest);
 	        } catch (RegisterNotFoundException e) {
-				e.printStackTrace();
-				 throw new RegisterNotFoundException(logger, sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName(), "transactionApproveRequest"), null);
-			}  catch (Exception e) {
+                    e.printStackTrace();
+                    throw new RegisterNotFoundException(logger, sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName(), "transactionApproveRequest"), null);
+                }  catch (Exception e) {
 	            e.printStackTrace();
 	            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), e.getMessage()), null);
 	        }

@@ -17,18 +17,31 @@ import com.alodiga.wallet.common.genericEJB.AbstractWalletEJB;
 import com.alodiga.wallet.common.genericEJB.EJBRequest;
 import com.alodiga.wallet.common.genericEJB.WalletContextInterceptor;
 import com.alodiga.wallet.common.genericEJB.WalletLoggerInterceptor;
+import com.alodiga.wallet.common.model.AddressType;
+import com.alodiga.wallet.common.model.CivilStatus;
+import com.alodiga.wallet.common.model.ComercialAgency;
 import com.alodiga.wallet.common.model.DocumentsPersonType;
+import com.alodiga.wallet.common.model.EdificationType;
+import com.alodiga.wallet.common.model.EmployedPosition;
+import com.alodiga.wallet.common.model.Employee;
 import com.alodiga.wallet.common.model.LegalPerson;
 import com.alodiga.wallet.common.model.LegalRepresentative;
 import com.alodiga.wallet.common.model.NaturalPerson;
+import com.alodiga.wallet.common.model.PasswordChangeRequest;
 import com.alodiga.wallet.common.model.Person;
+import com.alodiga.wallet.common.model.PersonClassification;
 import com.alodiga.wallet.common.model.PersonHasAddress;
 import com.alodiga.wallet.common.model.PersonType;
 import com.alodiga.wallet.common.model.PhonePerson;
+import com.alodiga.wallet.common.model.PhoneType;
+import com.alodiga.wallet.common.model.Profession;
 import com.alodiga.wallet.common.model.StatusApplicant;
+import com.alodiga.wallet.common.model.StreetType;
 import com.alodiga.wallet.common.utils.EjbConstants;
 import com.alodiga.wallet.common.utils.QueryConstants;
 import java.util.Map;
+import javax.persistence.NoResultException;
+import javax.persistence.Query;
 
 @Interceptors({WalletLoggerInterceptor.class, WalletContextInterceptor.class})
 @Stateless(name = EjbConstants.PERSON_EJB, mappedName = EjbConstants.PERSON_EJB)
@@ -52,6 +65,23 @@ public class PersonEJBImp extends AbstractWalletEJB implements PersonEJB, Person
             throw new NullParameterException("documentsPersonType", null);
         }
         return (DocumentsPersonType) saveEntity(documentsPersonType);
+    }
+    
+    @Override
+    public List<DocumentsPersonType> getDocumentsPersonByCountry(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        List<DocumentsPersonType> documentsPersonType = null;
+        Map<String, Object> params = request.getParams();
+        if (!params.containsKey(EjbConstants.PARAM_COUNTRY_ID)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_COUNTRY_ID), null);
+        }
+        if (!params.containsKey(EjbConstants.PARAM_IND_NATURAL_PERSON)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_IND_NATURAL_PERSON), null);
+        }
+        if (!params.containsKey(EjbConstants.PARAM_ORIGIN_APPLICATION_ID)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_ORIGIN_APPLICATION_ID), null);
+        }
+        documentsPersonType = (List<DocumentsPersonType>) getNamedQueryResult(DocumentsPersonType.class, QueryConstants.DOCUMENTS_BY_COUNTRY, request, getMethodName(), logger, "documentsPersonType");
+        return documentsPersonType;
     }
 
     //PersonType
@@ -85,9 +115,10 @@ public class PersonEJBImp extends AbstractWalletEJB implements PersonEJB, Person
 //        if (!params.containsKey(EjbConstants.PARAM_ORIGIN_APPLICATION_ID)) {
 //            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_ORIGIN_APPLICATION_ID), null);
 //        }
-        personTypes = (List<PersonType>) getNamedQueryResult(PersonType.class, QueryConstants.PERSON_TYPE_BY_COUNTRY, request, getMethodName(), logger, "personTypes");
+        personTypes = (List<PersonType>) getNamedQueryResult(PersonType.class, QueryConstants.PERSON_TYPE_BY_COUNTRY_BY_ORIGIN_APPLICATION_PORTAL, request, getMethodName(), logger, "personTypes");
         return personTypes;
     }
+
 
     //Tabla de PhonePerson
     public List<PhonePerson> getPhonePerson(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
@@ -115,6 +146,16 @@ public class PersonEJBImp extends AbstractWalletEJB implements PersonEJB, Person
             throw new NullParameterException("phonePerson", null);
         }
         return (PhonePerson) saveEntity(phonePerson);
+    }
+    
+    public List<PhonePerson> getValidateMainPhone(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        List<PhonePerson> phonePersonList = null;
+        Map<String, Object> params = request.getParams();
+        if (!params.containsKey(EjbConstants.PARAM_PERSON_ID)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_PERSON_ID), null);
+        }       
+        phonePersonList = (List<PhonePerson>) getNamedQueryResult(PhonePerson.class, QueryConstants.PHONES_BY_MAIN , request, getMethodName(), logger, "phonePersonList");
+        return phonePersonList;
     }
 
     //PersonHasAddress
@@ -243,4 +284,226 @@ public class PersonEJBImp extends AbstractWalletEJB implements PersonEJB, Person
         return (StatusApplicant) saveEntity(statusApplicant);
     }
 
+    @SuppressWarnings("unchecked")
+    //PasswordChangeRequest
+    public List<PasswordChangeRequest> getPasswordChangeRequest(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException{
+        return (List<PasswordChangeRequest>) listEntities(PasswordChangeRequest.class, request, logger, getMethodName());
+    }
+    
+    public PasswordChangeRequest loadPasswordChangeRequest(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException{
+        PasswordChangeRequest passwordChangeRequest = (PasswordChangeRequest) loadEntity(PasswordChangeRequest.class, request, logger, getMethodName());
+        return passwordChangeRequest;
+    }
+    
+    public PasswordChangeRequest savePasswordChangeRequest(PasswordChangeRequest passwordChangeRequest) throws RegisterNotFoundException, NullParameterException, GeneralException{
+        if (passwordChangeRequest == null) {
+            throw new NullParameterException("passwordChangeRequest", null);
+        }
+        return (PasswordChangeRequest) saveEntity(passwordChangeRequest);
+    }
+    
+    public List<PasswordChangeRequest> getSearchPasswordChangeRequest(String name) throws EmptyListException, GeneralException, NullParameterException {
+        List<PasswordChangeRequest> passwordChangeRequestList = null;
+        if (name == null) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "name"), null);
+        }
+        try {
+            StringBuilder sqlBuilder = new StringBuilder("SELECT DISTINCT p FROM PasswordChangeRequest p ");
+            sqlBuilder.append("WHERE p.requestNumber LIKE '").append(name).append("%'");
+
+            Query query = entityManager.createQuery(sqlBuilder.toString());
+            passwordChangeRequestList = query.setHint("toplink.refresh", "true").getResultList();
+
+        } catch (NoResultException ex) {
+            throw new EmptyListException("No distributions found");
+        } catch (Exception e) {
+            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), e.getMessage()), null);
+        }
+        return passwordChangeRequestList;
+    }
+
+    
+    @Override
+    public List<Employee> getEmployee(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        List<Employee> employee = (List<Employee>) listEntities(Employee.class, request, logger, getMethodName());
+        return employee;
+
+    }
+
+    @Override
+    public Employee saveEmployee(Employee employee) throws RegisterNotFoundException, NullParameterException, GeneralException {
+        if (employee == null) {
+            throw new NullParameterException("employee", null);
+        }
+        return (Employee) saveEntity(employee);
+    }
+    
+    public List<Employee> searchEmployee(String name) throws EmptyListException, GeneralException, NullParameterException {
+        List<Employee> employeeList = null;
+        if (name == null) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "name"), null);
+        }
+        try {
+            StringBuilder sqlBuilder = new StringBuilder("SELECT DISTINCT e FROM Employee e ");
+            sqlBuilder.append("WHERE e.firstNames LIKE '").append(name).append("%'");
+
+            Query query = entityManager.createQuery(sqlBuilder.toString());
+            employeeList = query.setHint("toplink.refresh", "true").getResultList();
+
+        } catch (NoResultException ex) {
+            throw new EmptyListException("No distributions found");
+        } catch (Exception e) {
+            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), e.getMessage()), null);
+        }
+        return employeeList;
+    }
+    
+    @Override
+    public PersonClassification loadPersonClassification(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
+    	PersonClassification personClassification = (PersonClassification) loadEntity(PersonClassification.class, request, logger, getMethodName());
+        return personClassification;
+    }
+    
+
+	@Override
+    public CivilStatus loadCivilStatus(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
+    	CivilStatus civilStatus = (CivilStatus) loadEntity(CivilStatus.class, request, logger, getMethodName());
+        return civilStatus;
+    }
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<CivilStatus> getCivilStatus(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+		 return (List<CivilStatus>) listEntities(CivilStatus.class, request, logger, getMethodName());
+	}
+
+	@Override
+	public CivilStatus saveCivilStatus(CivilStatus civilStatus)throws RegisterNotFoundException, NullParameterException, GeneralException {
+		if (civilStatus == null) {
+			throw new NullParameterException("civilStatus", null);
+		}
+		return (CivilStatus) saveEntity(civilStatus);
+	}
+
+	@Override
+	public Profession loadProfession(EJBRequest request)throws RegisterNotFoundException, NullParameterException, GeneralException {
+		Profession profession = (Profession) loadEntity(Profession.class, request, logger, getMethodName());
+        return profession;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<Profession> getProfession(EJBRequest request)throws EmptyListException, GeneralException, NullParameterException {
+		 return (List<Profession>) listEntities(Profession.class, request, logger, getMethodName());
+	}
+
+	@Override
+	public Profession saveProfession(Profession profession)throws RegisterNotFoundException, NullParameterException, GeneralException {
+		if (profession == null) {
+			throw new NullParameterException("profession", null);
+		}
+		return (Profession) saveEntity(profession);
+	}
+
+	@Override
+	public PhoneType loadPhoneType(EJBRequest request)throws RegisterNotFoundException, NullParameterException, GeneralException {
+		PhoneType phoneType = (PhoneType) loadEntity(PhoneType.class, request, logger, getMethodName());
+        return phoneType;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<PhoneType> getPhoneType(EJBRequest request)throws EmptyListException, GeneralException, NullParameterException {
+		return (List<PhoneType>) listEntities(PhoneType.class, request, logger, getMethodName());
+	}
+
+	@Override
+	public PhoneType savePhoneType(PhoneType phoneType)throws RegisterNotFoundException, NullParameterException, GeneralException {
+		if (phoneType == null) {
+			throw new NullParameterException("phoneType", null);
+		}
+		return (PhoneType) saveEntity(phoneType);
+	}
+
+	@Override
+	public AddressType loadAddressType(EJBRequest request)throws RegisterNotFoundException, NullParameterException, GeneralException {
+		AddressType addressType = (AddressType) loadEntity(AddressType.class, request, logger, getMethodName());
+        return addressType;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<AddressType> getAddressType(EJBRequest request)throws EmptyListException, GeneralException, NullParameterException {
+		return (List<AddressType>) listEntities(AddressType.class, request, logger, getMethodName());
+	}
+
+	@Override
+	public AddressType saveAddressType(AddressType addressType)throws RegisterNotFoundException, NullParameterException, GeneralException {
+		if (addressType == null) {
+			throw new NullParameterException("addressType", null);
+		}
+		return (AddressType) saveEntity(addressType);
+	}
+	
+	@Override
+	public EdificationType loadEdificationType(EJBRequest request)throws RegisterNotFoundException, NullParameterException, GeneralException {
+		EdificationType edificationType = (EdificationType) loadEntity(EdificationType.class, request, logger, getMethodName());
+        return edificationType;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<EdificationType> getEdificationType(EJBRequest request)throws EmptyListException, GeneralException, NullParameterException {
+		return (List<EdificationType>) listEntities(EdificationType.class, request, logger, getMethodName());
+	}
+
+	@Override
+	public EdificationType saveEdificationType(EdificationType edificationType)throws RegisterNotFoundException, NullParameterException, GeneralException {
+		if (edificationType == null) {
+			throw new NullParameterException("edificationType", null);
+		}
+		return (EdificationType) saveEntity(edificationType);
+	}
+
+	@Override
+	public StreetType loadStreetType(EJBRequest request)throws RegisterNotFoundException, NullParameterException, GeneralException {
+		StreetType streetType = (StreetType) loadEntity(StreetType.class, request, logger, getMethodName());
+        return streetType;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<StreetType> getStreetType(EJBRequest request)throws EmptyListException, GeneralException, NullParameterException {
+		return (List<StreetType>) listEntities(StreetType.class, request, logger, getMethodName());
+	}
+
+	@Override
+	public StreetType saveStreetType(StreetType streetType)throws RegisterNotFoundException, NullParameterException, GeneralException {
+		if (streetType == null) {
+			throw new NullParameterException("streetType", null);
+		}
+		return (StreetType) saveEntity(streetType);
+	}
+
+    //ComercialAgency
+    @Override
+    public List<ComercialAgency> getComercialAgency(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        List<ComercialAgency> comercialAgency = (List<ComercialAgency>) listEntities(ComercialAgency.class, request, logger, getMethodName());
+        return comercialAgency;
+    }
+    
+    @Override
+    public ComercialAgency loadComercialAgency(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
+        ComercialAgency comercialAgency = (ComercialAgency) loadEntity(ComercialAgency.class, request, logger, getMethodName());
+        return comercialAgency;
+    }
+    
+    //EmployedPosition
+        @Override
+        public List<EmployedPosition> getEmployedPosition(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        List<EmployedPosition> employedPosition = (List<EmployedPosition>) listEntities(EmployedPosition.class, request, logger, getMethodName());
+        return employedPosition;
+    }
+        
+    
 }
