@@ -691,7 +691,7 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
             sqlBuilder.append(" AND o.bankOperationTypeId.id=").append(params.get(QueryConstants.PARAM_BANK_OPERATION_TYPE_ID));
         }
         if (params.containsKey(QueryConstants.PARAM_BANK_OPERATION_MODE_ID)) {
-            sqlBuilder.append(" AND o.bankOperationTypeId.id=").append(params.get(QueryConstants.PARAM_BANK_OPERATION_MODE_ID));
+            sqlBuilder.append(" AND o.bankOperationModeId.id=").append(params.get(QueryConstants.PARAM_BANK_OPERATION_MODE_ID));
         }
         if (params.containsKey(QueryConstants.PARAM_PRODUCT_ID)) {
             sqlBuilder.append(" AND o.productId.id=").append(params.get(QueryConstants.PARAM_PRODUCT_ID));
