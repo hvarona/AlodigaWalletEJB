@@ -236,6 +236,10 @@ public class PreferencesEJBImp extends AbstractWalletEJB implements PreferencesE
         return (List<PreferenceClassification>) listEntities(PreferenceClassification.class, request, logger, getMethodName());
     }
     
+    public PreferenceClassification loadPreferenceClassification(EJBRequest request) throws GeneralException, RegisterNotFoundException, NullParameterException{
+    	 return (PreferenceClassification) loadEntity(PreferenceClassification.class, request, logger, getMethodName());
+    }
+    
     public List<PreferenceValue> getPreferenceValuesGroupByBussinessId(EJBRequest request) throws GeneralException, NullParameterException, EmptyListException{
     	 List<PreferenceValue> preferenceValues = new ArrayList<PreferenceValue>();
     	 Map<String, Object> params = request.getParams();
@@ -401,4 +405,48 @@ public class PreferencesEJBImp extends AbstractWalletEJB implements PreferencesE
         }
         return preferenceValue;
     }
+    
+    public List<PreferenceField> getPreferenceFieldsByPreferenceId(Long preferenceId) throws GeneralException, RegisterNotFoundException, NullParameterException, EmptyListException{
+    	  List<PreferenceField> preferenceFields = new ArrayList<PreferenceField>();
+          Query query = null;
+          try {
+              query = createQuery("SELECT p FROM PreferenceField p WHERE p.preferenceId.id=?1");
+              query.setParameter("1", preferenceId);
+              preferenceFields = query.setHint("toplink.refresh", "true").getResultList();
+
+          } catch (Exception e) {
+              throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), e.getMessage()), null);
+          }
+          if (preferenceFields.isEmpty()) {
+              throw new EmptyListException(logger, sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName()), null);
+          }
+          return preferenceFields;
+    }
+
+
+	@Override
+	public PreferenceValue getPreferenceValuesByParamAndBussiness(Long classificationId, Long productId,Long transactionTypeId, Long bussinessId, Long preferenceFieldId) throws GeneralException, NullParameterException, RegisterNotFoundException {
+		List<PreferenceValue> preferenceValues = new ArrayList<PreferenceValue>();
+
+	        Query query = null;
+	        try {
+	            query = createQuery("SELECT p FROM PreferenceValue p WHERE p.preferenceClassficationId.id= ?1 AND p.productId.id= ?2 AND p.transactionTypeId.id= ?3 AND p.bussinessId= ?4 AND p.preferenceFieldId.id=?5");
+	            query.setParameter("1", classificationId);
+	            query.setParameter("2", productId);
+	            query.setParameter("3", transactionTypeId);
+	            query.setParameter("4", bussinessId);
+	            query.setParameter("5", preferenceFieldId);
+	            preferenceValues = query.setHint("toplink.refresh", "true").getResultList();
+
+	        } catch (Exception e) {
+	            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), e.getMessage()), null);
+	        }
+	        
+	        if (preferenceValues.isEmpty()) {
+	        	 throw new RegisterNotFoundException("No PreferenceValue found");
+	        }
+	        return preferenceValues.get(0);
+	}
+
+
 }
