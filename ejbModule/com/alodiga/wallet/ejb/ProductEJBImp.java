@@ -42,6 +42,7 @@ import com.alodiga.wallet.common.model.ProductIntegrationType;
 import com.alodiga.wallet.common.model.Provider;
 import com.alodiga.wallet.common.model.StatusTransactionApproveRequest;
 import com.alodiga.wallet.common.enumeraciones.StatusTransactionApproveRequestE;
+import com.alodiga.wallet.common.enumeraciones.TransactionSourceE;
 import com.alodiga.wallet.common.model.TransactionApproveRequest;
 import com.alodiga.wallet.common.utils.Constants;
 import com.alodiga.wallet.common.utils.EJBServiceLocator;
@@ -157,7 +158,6 @@ public class ProductEJBImp extends AbstractWalletEJB implements ProductEJB, Prod
         try {
             EntityTransaction transaction = entityManager.getTransaction();
             transaction.begin();
-            //String sql = "DELETE FROM ProductHasProvider php WHERE php.product.id=" + productId;
             StringBuilder sqlBuilder = new StringBuilder("DELETE FROM ProductHasProvider php WHERE php.product.id=?1");
             Query query = createQuery(sqlBuilder.toString());
             query.setParameter("1", productId);
@@ -303,7 +303,7 @@ public class ProductEJBImp extends AbstractWalletEJB implements ProductEJB, Prod
         try {
             if (bankHasProduct == null) {
                 throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "bankHasProduct"), null);
-            }      //To change body of generated methods, choose Tools | Templates.
+            }  
 
             StringBuilder sqlBuilder = new StringBuilder("SELECT * FROM bank_has_product where productId=");
             sqlBuilder.append(bankHasProduct.getProductId().getId());
@@ -321,40 +321,51 @@ public class ProductEJBImp extends AbstractWalletEJB implements ProductEJB, Prod
     @Override
     public List<TransactionApproveRequest> getTransactionApproveRequestByParams(EJBRequest request) throws GeneralException, NullParameterException, EmptyListException {
         List<TransactionApproveRequest> operations = new ArrayList<TransactionApproveRequest>();
-
+        List<TransactionApproveRequest> results = new ArrayList<TransactionApproveRequest>();
+        TransactionApproveRequest transactionApproveRequestParam = null;
         Map<String, Object> params = request.getParams();
-	        StringBuilder sqlBuilder = new StringBuilder("SELECT t FROM TransactionApproveRequest t WHERE t.createDate BETWEEN ?1 AND ?2 and t.requestNumber like '%"+DocumentTypeEnum.MRAR.getDocumentType()+"%'");
-	        if (!params.containsKey(QueryConstants.PARAM_BEGINNING_DATE) || !params.containsKey(QueryConstants.PARAM_ENDING_DATE)) {
-	            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "beginningDate & endingDate"), null);
-	        }
-	        if (params.containsKey(QueryConstants.PARAM_STATUS_TRANSACTION_APPROVE_REQUEST_ID)) {
-	            sqlBuilder.append(" AND t.statusTransactionApproveRequestId.id=").append(params.get(QueryConstants.PARAM_STATUS_TRANSACTION_APPROVE_REQUEST_ID));
-	        }
-	        if (params.containsKey(QueryConstants.PARAM_PRODUCT_ID)) {
-	            sqlBuilder.append(" AND t.productId.id=").append(params.get(QueryConstants.PARAM_PRODUCT_ID));
-	        }
-	        if (params.containsKey(QueryConstants.PARAM_REQUEST_NUMBER)) {
-	            sqlBuilder.append(" AND t.requestNumber='").append(params.get(QueryConstants.PARAM_REQUEST_NUMBER)).append("'");
-	        }
-	        Query query = null;
-	        try {
-	            System.out.println("query:********"+sqlBuilder.toString());
-	            query = createQuery(sqlBuilder.toString());
-	            query.setParameter("1", EjbUtils.getBeginningDate((Date) params.get(QueryConstants.PARAM_BEGINNING_DATE)));
-	            query.setParameter("2", EjbUtils.getEndingDate((Date) params.get(QueryConstants.PARAM_ENDING_DATE)));
-	            if (request.getLimit() != null && request.getLimit() > 0) {
-	                query.setMaxResults(request.getLimit());
-	            }
-	            operations = query.setHint("toplink.refresh", "true").getResultList();
-	        } catch (Exception e) {
-	            e.printStackTrace();
-	            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), e.getMessage()), null);
-	        }
-	        if (operations.isEmpty()) {
-	            throw new EmptyListException(logger, sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName()), null);
-	        }
-	        return operations;
-	}
+            StringBuilder sqlBuilder = new StringBuilder("SELECT * FROM transaction_approve_request t WHERE t.createDate BETWEEN ?1 AND ?2 and t.requestNumber like '%"+DocumentTypeEnum.MRAR.getDocumentType()+"%'");
+            if (!params.containsKey(QueryConstants.PARAM_BEGINNING_DATE) || !params.containsKey(QueryConstants.PARAM_ENDING_DATE)) {
+                throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "beginningDate & endingDate"), null);
+            }
+            if (params.containsKey(QueryConstants.PARAM_STATUS_TRANSACTION_APPROVE_REQUEST_ID)) {
+                sqlBuilder.append(" AND t.statusTransactionApproveRequestId=").append(params.get(QueryConstants.PARAM_STATUS_TRANSACTION_APPROVE_REQUEST_ID));
+            }
+            if (params.containsKey(QueryConstants.PARAM_PRODUCT_ID)) {
+                sqlBuilder.append(" AND t.productId=").append(params.get(QueryConstants.PARAM_PRODUCT_ID));
+            }
+            if (params.containsKey(QueryConstants.PARAM_REQUEST_NUMBER)) {
+                sqlBuilder.append(" AND t.requestNumber='").append(params.get(QueryConstants.PARAM_REQUEST_NUMBER)).append("'");
+            }
+            if (params.containsKey(QueryConstants.PARAM_TRANSACTION_APPROVE_REQUEST)) {
+                transactionApproveRequestParam = (TransactionApproveRequest) params.get(QueryConstants.PARAM_TRANSACTION_APPROVE_REQUEST);
+            }            
+            Query query = null;
+            try {
+                System.out.println("query:********"+sqlBuilder.toString());
+                query = entityManager.createNativeQuery(sqlBuilder.toString(), TransactionApproveRequest.class);
+                query.setParameter("1", EjbUtils.getBeginningDate((Date) params.get(QueryConstants.PARAM_BEGINNING_DATE)));
+                query.setParameter("2", EjbUtils.getEndingDate((Date) params.get(QueryConstants.PARAM_ENDING_DATE)));
+                if (request.getLimit() != null && request.getLimit() > 0) {
+                    query.setMaxResults(request.getLimit());
+                }
+                results = (List<TransactionApproveRequest>) query.setHint("toplink.refresh", "true").getResultList();
+                for (TransactionApproveRequest transactionApproveRequest : results) {
+                    if (transactionApproveRequestParam != null && transactionApproveRequestParam.getId().longValue() == transactionApproveRequest.getId().longValue()) {
+                        operations.add(transactionApproveRequestParam);
+                    } else {
+                        operations.add(transactionApproveRequest);
+                    }                    
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), e.getMessage()), null);
+            }
+            if (operations.isEmpty()) {
+                throw new EmptyListException(logger, sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName()), null);
+            }
+            return operations;
+    }
     
 
     public List<TransactionApproveRequest> searchTransactionApproveRequestByParamsMWAR(EJBRequest request) throws GeneralException, NullParameterException, EmptyListException {
@@ -436,31 +447,42 @@ public class ProductEJBImp extends AbstractWalletEJB implements ProductEJB, Prod
 
     @Override
     public TransactionApproveRequest updateTransactionApproveRequest(TransactionApproveRequest transactionApproveRequest) throws RegisterNotFoundException, NullParameterException, GeneralException, NegativeBalanceException {
+        BalanceHistory balancehistory = null;
         productEJB = (ProductEJB) EJBServiceLocator.getInstance().get(EjbConstants.PRODUCT_EJB);
         if (transactionApproveRequest == null) {
             throw new NullParameterException("transactionApproveRequest", null);
         }
-        Float rechargeAmount;
+        Float totalTransactionAmount;
         EJBRequest request = new EJBRequest();
         StatusTransactionApproveRequest statusTransactionApproveRequestId = null;
         Map params = new HashMap<String, Object>();
         if (transactionApproveRequest.getIndApproveRequest()) {
-        	try {
-	            params.put(QueryConstants.PARAM_CODE, StatusTransactionApproveRequestE.APROBA.getStatusTransactionApproveRequestCode());
-	            request.setParams(params);
-	            statusTransactionApproveRequestId = loadStatusTransactionApproveRequestbyCode(request);
-	            transactionApproveRequest.setStatusTransactionApproveRequestId(statusTransactionApproveRequestId);
+                try {
+                    params.put(QueryConstants.PARAM_CODE, StatusTransactionApproveRequestE.APROBA.getStatusTransactionApproveRequestCode());
+                    request.setParams(params);
+                    statusTransactionApproveRequestId = loadStatusTransactionApproveRequestbyCode(request);
+                    transactionApproveRequest.setStatusTransactionApproveRequestId(statusTransactionApproveRequestId);
                     List<CommissionItem> commissionItems = utilsEJB.getCommissionItems(transactionApproveRequest.getTransactionId().getId());
                     if (!commissionItems.isEmpty()) {
-                        rechargeAmount = calculateAmountRecharge(commissionItems.get(0),transactionApproveRequest.getTransactionId().getAmount());
-                        productEJB.saveTransactionApproveRequest(transactionApproveRequest);	
-                        BalanceHistory balancehistory = createBalanceHistory(transactionApproveRequest.getUnifiedRegistryUserId().longValue(),transactionApproveRequest.getProductId(), rechargeAmount,2);
+                        totalTransactionAmount = calculateTotalTransactionAmount(commissionItems.get(0),transactionApproveRequest.getTransactionId().getAmount());
+                        productEJB.saveTransactionApproveRequest(transactionApproveRequest);
+                        if (transactionApproveRequest.getTransactionId().getTransactionSourceId().getCode().equals(TransactionSourceE.APPBIL.getTransactionSourceCode())) {
+                            balancehistory = createBalanceHistory(transactionApproveRequest.getUnifiedRegistryUserId().longValue(),null,transactionApproveRequest.getProductId(),totalTransactionAmount,transactionApproveRequest.getTransactionId().getTransactionTypeId().getId().intValue());
+                        } else {
+                            balancehistory = createBalanceHistory(null,transactionApproveRequest.getBusinessId().longValue(),transactionApproveRequest.getProductId(),totalTransactionAmount,transactionApproveRequest.getTransactionId().getTransactionTypeId().getId().intValue());
+                        }                        
                         balancehistory.setTransactionId(transactionApproveRequest.getTransactionId());
                         saveBalanceHistory(balancehistory);
                         try {
-                            SendSmsThread sendMailTherad = new SendSmsThread("584142063128",rechargeAmount,transactionApproveRequest.getRequestNumber(),
-                            Constants.SEND_TYPE_SMS_RECHARGE,transactionApproveRequest.getUnifiedRegistryUserId().longValue(),entityManager);
-                            sendMailTherad.run();
+                            if (transactionApproveRequest.getTransactionId().getTransactionTypeId().getId().longValue() == 1) {
+                                SendSmsThread sendMailTherad = new SendSmsThread("584142063128",totalTransactionAmount,transactionApproveRequest.getRequestNumber(),
+                                Constants.SEND_TYPE_SMS_RECHARGE,transactionApproveRequest.getUnifiedRegistryUserId().longValue(),entityManager);
+                                sendMailTherad.run();
+                            } else {
+                                SendSmsThread sendMailTherad = new SendSmsThread("584142063128",totalTransactionAmount,transactionApproveRequest.getRequestNumber(),
+                                Constants.SEND_TYPE_SMS_WITHDRAWALS,transactionApproveRequest.getUnifiedRegistryUserId().longValue(),entityManager);
+                                sendMailTherad.run();
+                            }                            
                         } catch (Exception ex) {
                             ex.printStackTrace();
                         }
@@ -472,45 +494,49 @@ public class ProductEJBImp extends AbstractWalletEJB implements ProductEJB, Prod
                         e.printStackTrace();
                         throw new RegisterNotFoundException(logger, sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName(), "transactionApproveRequest"), null);
                 } catch (NegativeBalanceException e) {
-				 throw new NegativeBalanceException("Current amount can not be negative");
+                                 throw new NegativeBalanceException("Current amount can not be negative");
                 } catch (Exception e) {
-	            e.printStackTrace();
-	            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), e.getMessage()), null);
-	        }
+                    e.printStackTrace();
+                    throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), e.getMessage()), null);
+                }
         } else {
-	        try {
-	            params.put(QueryConstants.PARAM_CODE, StatusTransactionApproveRequestE.RECHAZ.getStatusTransactionApproveRequestCode());
-	            request.setParams(params);
-	            statusTransactionApproveRequestId = loadStatusTransactionApproveRequestbyCode(request);
-	            transactionApproveRequest.setStatusTransactionApproveRequestId(statusTransactionApproveRequestId);
-	            saveTransactionApproveRequest(transactionApproveRequest);
-	        } catch (RegisterNotFoundException e) {
+                try {
+                    params.put(QueryConstants.PARAM_CODE, StatusTransactionApproveRequestE.RECHAZ.getStatusTransactionApproveRequestCode());
+                    request.setParams(params);
+                    statusTransactionApproveRequestId = loadStatusTransactionApproveRequestbyCode(request);
+                    transactionApproveRequest.setStatusTransactionApproveRequestId(statusTransactionApproveRequestId);
+                    saveTransactionApproveRequest(transactionApproveRequest);
+                } catch (RegisterNotFoundException e) {
                     e.printStackTrace();
                     throw new RegisterNotFoundException(logger, sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName(), "transactionApproveRequest"), null);
                 }  catch (Exception e) {
-	            e.printStackTrace();
-	            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), e.getMessage()), null);
-	        }
+                    e.printStackTrace();
+                    throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), e.getMessage()), null);
+                }
         }
         return transactionApproveRequest;
     }
 
-    private BalanceHistory createBalanceHistory(Long userId, Product productId, float transferAmount, int transactionType) throws GeneralException, NullParameterException, NegativeBalanceException, RegisterNotFoundException {
-        BalanceHistory currentBalanceHistory = loadLastBalanceHistoryByUserId(userId, productId.getId());
+    private BalanceHistory createBalanceHistory(Long userId, Long businessId, Product productId, float totalTransactionAmount, int transactionType) throws GeneralException, NullParameterException, NegativeBalanceException, RegisterNotFoundException {
+        BalanceHistory currentBalanceHistory = loadLastBalanceHistoryByUserId(userId, businessId, productId.getId());
         float currentAmount = currentBalanceHistory != null ? currentBalanceHistory.getCurrentAmount() : 0f;
         BalanceHistory balanceHistory = new BalanceHistory();
-        balanceHistory.setUserId(userId);
+        if (userId != null) {
+            balanceHistory.setUserId(userId);
+        } else {
+            balanceHistory.setBusinessId(businessId);
+        }
         balanceHistory.setDate(new Timestamp(new java.util.Date().getTime()));
         balanceHistory.setOldAmount(currentAmount);
         balanceHistory.setVersion(currentBalanceHistory!=null?currentBalanceHistory.getId():null);
         balanceHistory.setProductId(productId);
         float newCurrentAmount = 0.0f;
         switch (transactionType) {
-            case 1: //descontar el saldo
-                newCurrentAmount = currentAmount - transferAmount;
+            case 1: //incrementar el saldo
+                newCurrentAmount = currentAmount + totalTransactionAmount;//SUMO AL MONTO ACTUAL (EL DESTINO)
                 break;
-            case 2://incrementar el saldo
-                newCurrentAmount = currentAmount + transferAmount;//SUMO AL MONTO ACTUAL (EL DESTINO)
+            case 5: //descontar el saldo
+                newCurrentAmount = currentAmount - totalTransactionAmount;
                 break;
         }
         if (newCurrentAmount < 0) {
@@ -520,18 +546,20 @@ public class ProductEJBImp extends AbstractWalletEJB implements ProductEJB, Prod
         return balanceHistory;
     }
 
-    public BalanceHistory loadLastBalanceHistoryByUserId(Long userId, Long productId) throws GeneralException, RegisterNotFoundException, NullParameterException {
-        if (userId == null) {
-            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "accountId"), null);
-        }
+    public BalanceHistory loadLastBalanceHistoryByUserId(Long userId, Long businessId, Long productId) throws GeneralException, RegisterNotFoundException, NullParameterException {
         BalanceHistory balanceHistory = null;
+        StringBuilder sqlBuilder = new StringBuilder("SELECT b FROM BalanceHistory b WHERE b.date = :maxDate AND b.productId.id= "+ productId);
+        if (userId != null) {
+            sqlBuilder.append(" AND b.userId = " + userId);
+        }
+        if (businessId != null) {
+            sqlBuilder.append(" AND b.businessId = " + businessId);
+        }        
         try {
             Date maxDate = (Date) entityManager.createQuery("SELECT MAX(b.date) FROM BalanceHistory b WHERE b.userId = " + userId + " and b.productId.id= "+ productId).getSingleResult();
-            Query query = entityManager.createQuery("SELECT b FROM BalanceHistory b WHERE b.date = :maxDate AND b.userId = " + userId+ " and b.productId.id= "+ productId);
+            Query query = entityManager.createQuery(sqlBuilder.toString());
             query.setParameter("maxDate", maxDate);
-
             List result = (List) query.setHint("toplink.refresh", "true").getResultList();
-
             if (!result.isEmpty()) {
                 balanceHistory = ((BalanceHistory) result.get(0));
             }
@@ -544,20 +572,20 @@ public class ProductEJBImp extends AbstractWalletEJB implements ProductEJB, Prod
         return balanceHistory;
     }
     
-	private float calculateAmountRecharge(CommissionItem commisionItem, float amountTransaction) {
-		float amountRecharge = 0;
+	private float calculateTotalTransactionAmount(CommissionItem commisionItem, float amountTransaction) {
+		float totalTransactionAmount = 0;
 		switch (commisionItem.getCommissionId().getIndApplicationCommission()) {
 		case 1:
-			amountRecharge = amountTransaction - commisionItem.getAmount();
+			totalTransactionAmount = amountTransaction - commisionItem.getAmount();
 			break;
 		case 2:
-			amountRecharge = amountTransaction;
+			totalTransactionAmount = amountTransaction;
 			break;
 		default:
-			amountRecharge = amountTransaction - commisionItem.getAmount();
+			totalTransactionAmount = amountTransaction - commisionItem.getAmount();
             break;
 		}
-		return amountRecharge;
+		return totalTransactionAmount;
 	}
 	
 	@Override
@@ -566,6 +594,11 @@ public class ProductEJBImp extends AbstractWalletEJB implements ProductEJB, Prod
 	            throw new NullParameterException("balancehistory", null);
 	    }
 		return (BalanceHistory) saveEntity(balancehistory);
+    }
+
+    @Override
+    public List<TransactionApproveRequest> getTransactionApproveRequest(EJBRequest request) throws GeneralException, EmptyListException, NullParameterException {
+        return (List<TransactionApproveRequest>) listEntities(TransactionApproveRequest.class, request, logger, getMethodName());
     }
 
 }
