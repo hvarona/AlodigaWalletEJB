@@ -213,7 +213,16 @@ public class PreferencesEJBImp extends AbstractWalletEJB implements PreferencesE
         }
         return (PreferenceType) saveEntity(preferenceType);
     }
-
+    
+    public List<PreferenceType> getPreferenceTypeByType(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        List<PreferenceType> preferenceType = null;
+        Map<String, Object> params = request.getParams();
+        if (!params.containsKey(EjbConstants.PARAM_TYPE)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_TYPE), null);
+        }
+        preferenceType = (List<PreferenceType>) getNamedQueryResult(PreferenceType.class, QueryConstants.PREFERENCE_TYPE_BY_TYPE, request, getMethodName(), logger, "preferenceType");
+        return preferenceType;
+    }
     
     public PreferenceValue savePreferenceValue(PreferenceValue preferenceValue) throws GeneralException, NullParameterException {
         if (preferenceValue == null) {
