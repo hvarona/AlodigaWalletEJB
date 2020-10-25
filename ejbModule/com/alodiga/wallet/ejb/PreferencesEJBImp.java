@@ -167,7 +167,6 @@ public class PreferencesEJBImp extends AbstractWalletEJB implements PreferencesE
         PreferenceValue preferenceValue = null;
         try {
             Query query = null;
-
             query = createQuery("SELECT p FROM PreferenceValue p WHERE p.preferenceFieldId.id=?1 and p.preferenceClassficationId.id= ?2 and p.productId is null and p.transactionTypeId is null and p.preferenceValueParentId is null and p.bussinessId is null");
             query.setParameter("1", fieldId);
             query.setParameter("2", classificationId);
@@ -258,7 +257,6 @@ public class PreferencesEJBImp extends AbstractWalletEJB implements PreferencesE
     	 Map<String, Object> params = request.getParams();
          Query query = null;
          try {
-//             query = createQuery("SELECT p FROM PreferenceValue p WHERE p.bussinessId is not null GROUP BY p.productId.id,p.transactionTypeId.id, p.preferenceClassficationId.id,p.bussinessId");
             StringBuilder sqlBuilder = new StringBuilder("SELECT p FROM PreferenceValue p WHERE p.bussinessId is not null");
             if (params.containsKey(QueryConstants.PARAM_BUSSINESS_ID)) {
 	            sqlBuilder.append(" AND p.bussinessId=").append(params.get(QueryConstants.PARAM_BUSSINESS_ID));
