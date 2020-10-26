@@ -119,11 +119,10 @@ public class PreferencesEJBImp extends AbstractWalletEJB implements PreferencesE
             throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "name"), null);
         }
         try {
-            StringBuilder sqlBuilder = new StringBuilder("SELECT DISTINCT p FROM PreferenceField p ");
-            sqlBuilder.append("WHERE p.name LIKE '").append(name).append("%'");
-
-            Query query = entityManager.createQuery(sqlBuilder.toString());
-            preferenceFieldList= query.setHint("toplink.refresh", "true").getResultList();
+            StringBuilder sqlBuilder = new StringBuilder("SELECT * FROM preference_field p ");
+            sqlBuilder.append("WHERE p.preferenceId IN (SELECT p.id FROM preference p WHERE p.name LIKE '").append(name).append("%')");
+            Query query = entityManager.createNativeQuery(sqlBuilder.toString(), PreferenceField.class);
+            preferenceFieldList = query.setHint("toplink.refresh", "true").getResultList();
 
         } catch (NoResultException ex) {
             throw new EmptyListException("No distributions found");
@@ -167,7 +166,6 @@ public class PreferencesEJBImp extends AbstractWalletEJB implements PreferencesE
         PreferenceValue preferenceValue = null;
         try {
             Query query = null;
-
             query = createQuery("SELECT p FROM PreferenceValue p WHERE p.preferenceFieldId.id=?1 and p.preferenceClassficationId.id= ?2 and p.productId is null and p.transactionTypeId is null and p.preferenceValueParentId is null and p.bussinessId is null");
             query.setParameter("1", fieldId);
             query.setParameter("2", classificationId);
@@ -214,7 +212,16 @@ public class PreferencesEJBImp extends AbstractWalletEJB implements PreferencesE
         }
         return (PreferenceType) saveEntity(preferenceType);
     }
-
+    
+    public List<PreferenceType> getPreferenceTypeByType(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        List<PreferenceType> preferenceType = null;
+        Map<String, Object> params = request.getParams();
+        if (!params.containsKey(EjbConstants.PARAM_TYPE)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_TYPE), null);
+        }
+        preferenceType = (List<PreferenceType>) getNamedQueryResult(PreferenceType.class, QueryConstants.PREFERENCE_TYPE_BY_TYPE, request, getMethodName(), logger, "preferenceType");
+        return preferenceType;
+    }
     
     public PreferenceValue savePreferenceValue(PreferenceValue preferenceValue) throws GeneralException, NullParameterException {
         if (preferenceValue == null) {
@@ -249,7 +256,6 @@ public class PreferencesEJBImp extends AbstractWalletEJB implements PreferencesE
     	 Map<String, Object> params = request.getParams();
          Query query = null;
          try {
-//             query = createQuery("SELECT p FROM PreferenceValue p WHERE p.bussinessId is not null GROUP BY p.productId.id,p.transactionTypeId.id, p.preferenceClassficationId.id,p.bussinessId");
             StringBuilder sqlBuilder = new StringBuilder("SELECT p FROM PreferenceValue p WHERE p.bussinessId is not null");
             if (params.containsKey(QueryConstants.PARAM_BUSSINESS_ID)) {
 	            sqlBuilder.append(" AND p.bussinessId=").append(params.get(QueryConstants.PARAM_BUSSINESS_ID));

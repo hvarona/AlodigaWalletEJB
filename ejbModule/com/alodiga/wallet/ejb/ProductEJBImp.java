@@ -38,7 +38,6 @@ import com.alodiga.wallet.common.model.DocumentTypeEnum;
 import com.alodiga.wallet.common.model.Period;
 import com.alodiga.wallet.common.model.Product;
 import com.alodiga.wallet.common.model.ProductData;
-import com.alodiga.wallet.common.model.ProductIntegrationType;
 import com.alodiga.wallet.common.model.Provider;
 import com.alodiga.wallet.common.model.StatusTransactionApproveRequest;
 import com.alodiga.wallet.common.enumeraciones.StatusTransactionApproveRequestE;
@@ -268,11 +267,6 @@ public class ProductEJBImp extends AbstractWalletEJB implements ProductEJB, Prod
         return (List<Period>) listEntities(Period.class, request, logger, getMethodName());
     }
 
-    @Override
-    public List<ProductIntegrationType> getProductIntegrationType(EJBRequest request) throws GeneralException, EmptyListException, NullParameterException {
-        return (List<ProductIntegrationType>) listEntities(ProductIntegrationType.class, request, logger, getMethodName());
-    }
-
     //BankHasProduct
     @Override
     public List<BankHasProduct> getBankHasProduct(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
@@ -448,24 +442,17 @@ public class ProductEJBImp extends AbstractWalletEJB implements ProductEJB, Prod
     @Override
     public TransactionApproveRequest updateTransactionApproveRequest(TransactionApproveRequest transactionApproveRequest) throws RegisterNotFoundException, NullParameterException, GeneralException, NegativeBalanceException {
         BalanceHistory balancehistory = null;
+       Float totalTransactionAmount;
         productEJB = (ProductEJB) EJBServiceLocator.getInstance().get(EjbConstants.PRODUCT_EJB);
         if (transactionApproveRequest == null) {
             throw new NullParameterException("transactionApproveRequest", null);
-        }
-        Float totalTransactionAmount;
-        EJBRequest request = new EJBRequest();
-        StatusTransactionApproveRequest statusTransactionApproveRequestId = null;
-        Map params = new HashMap<String, Object>();
+        } 
         if (transactionApproveRequest.getIndApproveRequest()) {
                 try {
-                    params.put(QueryConstants.PARAM_CODE, StatusTransactionApproveRequestE.APROBA.getStatusTransactionApproveRequestCode());
-                    request.setParams(params);
-                    statusTransactionApproveRequestId = loadStatusTransactionApproveRequestbyCode(request);
-                    transactionApproveRequest.setStatusTransactionApproveRequestId(statusTransactionApproveRequestId);
                     List<CommissionItem> commissionItems = utilsEJB.getCommissionItems(transactionApproveRequest.getTransactionId().getId());
                     if (!commissionItems.isEmpty()) {
                         totalTransactionAmount = calculateTotalTransactionAmount(commissionItems.get(0),transactionApproveRequest.getTransactionId().getAmount());
-                        productEJB.saveTransactionApproveRequest(transactionApproveRequest);
+                        transactionApproveRequest = saveTransactionApproveRequest(transactionApproveRequest);
                         if (transactionApproveRequest.getTransactionId().getTransactionSourceId().getCode().equals(TransactionSourceE.APPBIL.getTransactionSourceCode())) {
                             balancehistory = createBalanceHistory(transactionApproveRequest.getUnifiedRegistryUserId().longValue(),null,transactionApproveRequest.getProductId(),totalTransactionAmount,transactionApproveRequest.getTransactionId().getTransactionTypeId().getId().intValue());
                         } else {
@@ -475,36 +462,38 @@ public class ProductEJBImp extends AbstractWalletEJB implements ProductEJB, Prod
                         saveBalanceHistory(balancehistory);
                         try {
                             if (transactionApproveRequest.getTransactionId().getTransactionTypeId().getId().longValue() == 1) {
-                                SendSmsThread sendMailTherad = new SendSmsThread("584142063128",totalTransactionAmount,transactionApproveRequest.getRequestNumber(),
+                                SendSmsThread sendMailTherad = new SendSmsThread("584166229052",totalTransactionAmount,transactionApproveRequest.getRequestNumber(),
                                 Constants.SEND_TYPE_SMS_RECHARGE,transactionApproveRequest.getUnifiedRegistryUserId().longValue(),entityManager);
                                 sendMailTherad.run();
                             } else {
-                                SendSmsThread sendMailTherad = new SendSmsThread("584142063128",totalTransactionAmount,transactionApproveRequest.getRequestNumber(),
-                                Constants.SEND_TYPE_SMS_WITHDRAWALS,transactionApproveRequest.getUnifiedRegistryUserId().longValue(),entityManager);
-                                sendMailTherad.run();
+                                if (transactionApproveRequest.getTransactionId().getTransactionSourceId().getCode().equals(TransactionSourceE.APPBIL.getTransactionSourceCode())) {
+                                    SendSmsThread sendMailTherad = new SendSmsThread("584166229052",totalTransactionAmount,transactionApproveRequest.getRequestNumber(),
+                                    Constants.SEND_TYPE_SMS_WITHDRAWALS,transactionApproveRequest.getUnifiedRegistryUserId().longValue(),entityManager);
+                                    sendMailTherad.run();
+                                } else {
+                                    SendSmsThread sendMailTherad = new SendSmsThread("584166229052",totalTransactionAmount,transactionApproveRequest.getRequestNumber(),
+                                    Constants.SEND_TYPE_SMS_WITHDRAWALS,transactionApproveRequest.getBusinessId().longValue(),entityManager);
+                                    sendMailTherad.run();
+                                }                               
                             }                            
                         } catch (Exception ex) {
                             ex.printStackTrace();
                         }
                     }
                 }  catch (RegisterNotFoundException e) {
-                        e.printStackTrace();
-                         throw new RegisterNotFoundException(logger, sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName(), "transactionApproveRequest"), null);
+                    e.printStackTrace();
+                    throw new RegisterNotFoundException(logger, sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName(), "transactionApproveRequest"), null);
                 } catch (EmptyListException e) {
-                        e.printStackTrace();
-                        throw new RegisterNotFoundException(logger, sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName(), "transactionApproveRequest"), null);
+                    e.printStackTrace();
+                    throw new RegisterNotFoundException(logger, sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName(), "transactionApproveRequest"), null);
                 } catch (NegativeBalanceException e) {
-                                 throw new NegativeBalanceException("Current amount can not be negative");
+                    throw new NegativeBalanceException("Current amount can not be negative");
                 } catch (Exception e) {
                     e.printStackTrace();
                     throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), e.getMessage()), null);
                 }
         } else {
                 try {
-                    params.put(QueryConstants.PARAM_CODE, StatusTransactionApproveRequestE.RECHAZ.getStatusTransactionApproveRequestCode());
-                    request.setParams(params);
-                    statusTransactionApproveRequestId = loadStatusTransactionApproveRequestbyCode(request);
-                    transactionApproveRequest.setStatusTransactionApproveRequestId(statusTransactionApproveRequestId);
                     saveTransactionApproveRequest(transactionApproveRequest);
                 } catch (RegisterNotFoundException e) {
                     e.printStackTrace();
@@ -599,6 +588,18 @@ public class ProductEJBImp extends AbstractWalletEJB implements ProductEJB, Prod
     @Override
     public List<TransactionApproveRequest> getTransactionApproveRequest(EJBRequest request) throws GeneralException, EmptyListException, NullParameterException {
         return (List<TransactionApproveRequest>) listEntities(TransactionApproveRequest.class, request, logger, getMethodName());
+    }
+    
+    @Override
+    public List<TransactionApproveRequest> getTransactionApproveRequestByStatus(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        List<TransactionApproveRequest> transactionApproveRequestByStatusList = null;
+        Map<String, Object> params = request.getParams();
+        
+        if (!params.containsKey(EjbConstants.PARAM_REQUEST_NUMBER)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_REQUEST_NUMBER), null);
+        }
+        transactionApproveRequestByStatusList = (List<TransactionApproveRequest>) getNamedQueryResult(TransactionApproveRequest.class, QueryConstants.TRANSACTION_APPROVE_REQUEST_BY_STATUS, request, getMethodName(), logger, "transactionApproveRequestByStatusList");
+        return transactionApproveRequestByStatusList;
     }
 
 }
