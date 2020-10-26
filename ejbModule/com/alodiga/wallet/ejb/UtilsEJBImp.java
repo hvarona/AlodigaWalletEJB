@@ -46,7 +46,6 @@ import com.alodiga.wallet.common.model.Country;
 import com.alodiga.wallet.common.model.County;
 import com.alodiga.wallet.common.model.Currency;
 import com.alodiga.wallet.common.model.DailyClosing;
-import com.alodiga.wallet.common.model.Enterprise;
 import com.alodiga.wallet.common.model.ExchangeRate;
 import com.alodiga.wallet.common.model.Language;
 import com.alodiga.wallet.common.model.OriginApplication;
@@ -273,46 +272,6 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         }
         countryList = (List<Country>) getNamedQueryResult(Country.class, QueryConstants.NAME_EXIST_IN_BD_COUNTRY, request, getMethodName(), logger, "countryList");
         return countryList;
-    }
-
-    //Enterprise
-    public List<Enterprise> getEnterprises(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
-        List<Enterprise> enterprise = (List<Enterprise>) listEntities(Enterprise.class, request, logger, getMethodName());
-        return enterprise;
-    }
-
-    public List<Enterprise> getEnterprises() throws EmptyListException, GeneralException, NullParameterException {
-        EJBRequest request = new EJBRequest();
-        List<Enterprise> enterprises = (List<Enterprise>) listEntities(Enterprise.class, request, logger, getMethodName());
-
-        return enterprises;
-    }
-
-    public Enterprise loadEnterprise(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
-        Enterprise enterprise = (Enterprise) loadEntity(Enterprise.class, request, logger, getMethodName());
-        return enterprise;
-    }
-
-    public Enterprise loadEnterprisebyId(Long enterpriseId) throws GeneralException {
-        List<Enterprise> list = new ArrayList();
-
-        try {
-            list = entityManager.createQuery("SELECT c FROM Enterprise c WHERE c.id='" + enterpriseId + "'").getResultList();
-        } catch (Exception e) {
-
-            logger.error("Exception in method loadEnterprise: Exception text: ", e);
-            throw new GeneralException("Exception in method loadEnterprise: Exception text: " + e.getMessage(), e.getStackTrace());
-        }
-        if (list.isEmpty()) {
-            logger.error("Not Enterprise found in method loadEnterprise");
-            //throw new EnterpriseNotFoundException("Not Enterprise found in method loadEnterprise");
-        }
-
-        return list.get(0);
-    }
-
-    public Enterprise saveEnterprise(EJBRequest request) throws NullParameterException, GeneralException {
-        return (Enterprise) saveEntity(request, logger, getMethodName());
     }
 
     public void deleteEnterpriseHasTinType(Long enterpriseId) throws NullParameterException, GeneralException {
