@@ -25,7 +25,6 @@ import com.alodiga.wallet.common.genericEJB.WalletContextInterceptor;
 import com.alodiga.wallet.common.genericEJB.WalletLoggerInterceptor;
 import com.alodiga.wallet.common.model.CalendarDays;
 import com.alodiga.wallet.common.model.DailyClosing;
-import com.alodiga.wallet.common.model.Enterprise;
 import com.alodiga.wallet.common.model.OriginApplication;
 import com.alodiga.wallet.common.utils.Constants;
 import com.alodiga.wallet.common.utils.EjbConstants;
@@ -65,8 +64,7 @@ public class TransactionEJBImp extends AbstractWalletEJB implements TransactionE
                     addDailyClosingInTransaction(oldClosingDate, closingDate, dailyClosing);
                     dailyClosing.setClosingEndTime(new Date());// es la hora en que finaliza el proceso de cierre
                     dailyClosing = saveDailyClosing(dailyClosing);// actualizo el cierre con la hora de finalizacion
-                    Enterprise enterprise = utilsEJB.loadEnterprisebyId(Constants.ENTERPRISE_ID_USA);
-                    SendMailTherad sendMailTherad = new SendMailTherad("ES", transactionsAmount, totalTrasactions,enterprise.getName(), enterprise.getEmail(), Constants.SEND_TYPE_EMAIL_DAILY_CLOSING_WALLET);
+                    SendMailTherad sendMailTherad = new SendMailTherad("ES", transactionsAmount, totalTrasactions,"", "", Constants.SEND_TYPE_EMAIL_DAILY_CLOSING_WALLET);
                     sendMailTherad.run();
             }
         } catch (Exception e) {

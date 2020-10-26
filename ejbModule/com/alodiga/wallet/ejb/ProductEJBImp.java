@@ -38,7 +38,6 @@ import com.alodiga.wallet.common.model.DocumentTypeEnum;
 import com.alodiga.wallet.common.model.Period;
 import com.alodiga.wallet.common.model.Product;
 import com.alodiga.wallet.common.model.ProductData;
-import com.alodiga.wallet.common.model.ProductIntegrationType;
 import com.alodiga.wallet.common.model.Provider;
 import com.alodiga.wallet.common.model.StatusTransactionApproveRequest;
 import com.alodiga.wallet.common.enumeraciones.StatusTransactionApproveRequestE;
@@ -266,11 +265,6 @@ public class ProductEJBImp extends AbstractWalletEJB implements ProductEJB, Prod
     //Period
     public List<Period> getPeriods(EJBRequest request) throws GeneralException, EmptyListException, NullParameterException {
         return (List<Period>) listEntities(Period.class, request, logger, getMethodName());
-    }
-
-    @Override
-    public List<ProductIntegrationType> getProductIntegrationType(EJBRequest request) throws GeneralException, EmptyListException, NullParameterException {
-        return (List<ProductIntegrationType>) listEntities(ProductIntegrationType.class, request, logger, getMethodName());
     }
 
     //BankHasProduct
