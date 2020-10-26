@@ -119,11 +119,10 @@ public class PreferencesEJBImp extends AbstractWalletEJB implements PreferencesE
             throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "name"), null);
         }
         try {
-            StringBuilder sqlBuilder = new StringBuilder("SELECT DISTINCT p FROM PreferenceField p ");
-            sqlBuilder.append("WHERE p.name LIKE '").append(name).append("%'");
-
-            Query query = entityManager.createQuery(sqlBuilder.toString());
-            preferenceFieldList= query.setHint("toplink.refresh", "true").getResultList();
+            StringBuilder sqlBuilder = new StringBuilder("SELECT * FROM preference_field p ");
+            sqlBuilder.append("WHERE p.preferenceId IN (SELECT p.id FROM preference p WHERE p.name LIKE '").append(name).append("%')");
+            Query query = entityManager.createNativeQuery(sqlBuilder.toString(), PreferenceField.class);
+            preferenceFieldList = query.setHint("toplink.refresh", "true").getResultList();
 
         } catch (NoResultException ex) {
             throw new EmptyListException("No distributions found");
