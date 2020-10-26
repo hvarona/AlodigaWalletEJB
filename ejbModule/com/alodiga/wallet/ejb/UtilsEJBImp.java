@@ -37,7 +37,6 @@ import com.alodiga.wallet.common.model.BusinessType;
 import com.alodiga.wallet.common.model.BusinessServiceType;
 import com.alodiga.wallet.common.model.CalendarDays;
 import com.alodiga.wallet.common.model.City;
-import com.alodiga.wallet.common.model.Close;
 import com.alodiga.wallet.common.model.CollectionType;
 import com.alodiga.wallet.common.model.CollectionsRequest;
 import com.alodiga.wallet.common.model.Commission;
@@ -81,6 +80,7 @@ import java.util.logging.Level;
 @Interceptors({WalletLoggerInterceptor.class, WalletContextInterceptor.class})
 @Stateless(name = EjbConstants.UTILS_EJB, mappedName = EjbConstants.UTILS_EJB)
 @TransactionManagement(TransactionManagementType.BEAN)
+
 public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJBLocal {
 
     private static final Logger logger = Logger.getLogger(UtilsEJBImp.class);
@@ -272,23 +272,6 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         }
         countryList = (List<Country>) getNamedQueryResult(Country.class, QueryConstants.NAME_EXIST_IN_BD_COUNTRY, request, getMethodName(), logger, "countryList");
         return countryList;
-    }
-
-    public void deleteEnterpriseHasTinType(Long enterpriseId) throws NullParameterException, GeneralException {
-        if (enterpriseId == null) {
-            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "enterpriseId"), null);
-        }
-
-        try {
-            EntityTransaction transaction = entityManager.getTransaction();
-            transaction.begin();
-            Query query = createQuery("DELETE FROM EnterpriseHasTinType ehhtt WHERE ehhtt.enterprise.id=?1");
-            query.setParameter("1", enterpriseId);
-            query.executeUpdate();
-            transaction.commit();
-        } catch (Exception e) {
-            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), e.getMessage()), null);
-        }
     }
 
     //Language
@@ -618,23 +601,6 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
             throw new NullParameterException("transaction", null);
         }
         return (Transaction) saveEntity(transaction);
-    }
-
-    //Close
-    public List<Close> getClose(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
-        return (List<Close>) listEntities(Close.class, request, logger, getMethodName());
-    }
-
-    public Close loadClose(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
-        Close close = (Close) loadEntity(Close.class, request, logger, getMethodName());
-        return close;
-    }
-
-    public Close saveClose(Close close) throws RegisterNotFoundException, NullParameterException, GeneralException {
-        if (close == null) {
-            throw new NullParameterException("close", null);
-        }
-        return (Close) saveEntity(close);
     }
 
     public List<BankOperation> getBankOperationsByParams(EJBRequest request) throws NullParameterException, GeneralException, EmptyListException {
