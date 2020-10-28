@@ -53,6 +53,7 @@ import com.alodiga.wallet.common.model.PersonType;
 import com.alodiga.wallet.common.model.PreferenceValue;
 import com.alodiga.wallet.common.model.Product;
 import com.alodiga.wallet.common.model.RequestHasCollectionRequest;
+import com.alodiga.wallet.common.model.RequestType;
 import com.alodiga.wallet.common.model.ReviewAffiliationRequest;
 import com.alodiga.wallet.common.model.ReviewOfac;
 import com.alodiga.wallet.common.model.ReviewType;
@@ -1719,5 +1720,10 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         calendarDaysList = (List<CalendarDays>) getNamedQueryResult(CalendarDays.class, QueryConstants.HOLI_DAY_EXIST_IN_BD_CALENDAR_DAYS, request, getMethodName(), logger, "calendarDaysList");
         return calendarDaysList;
     }
-
+    
+    //RequestType
+    public List<RequestType> getRequestType(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        List<RequestType> requestType = (List<RequestType>) listEntities(RequestType.class, request, logger, getMethodName());
+        return requestType;
+    }
 }
