@@ -257,7 +257,7 @@ public class BusinessPortalEJBImp extends AbstractWalletEJB implements BusinessP
     }
 
     @Override
-    public AffiliationRequest saveAffiliationRequest(Person person, NaturalPerson naturalPerson, LegalPerson legalPerson, PhonePerson phonePerson, Address address) throws NullParameterException, GeneralException {
+    public AffiliationRequest saveBusinessAffiliationRequest(Person person, NaturalPerson naturalPerson, LegalPerson legalPerson, PhonePerson phonePerson, Address address) throws NullParameterException, GeneralException {
         AffiliationRequest affiliatinRequest = new AffiliationRequest();
         try {
             if (person.getPersonTypeId().getIndNaturalPerson()) {
