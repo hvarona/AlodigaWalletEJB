@@ -53,6 +53,7 @@ import com.alodiga.wallet.common.model.PersonType;
 import com.alodiga.wallet.common.model.PreferenceValue;
 import com.alodiga.wallet.common.model.Product;
 import com.alodiga.wallet.common.model.RequestHasCollectionRequest;
+import com.alodiga.wallet.common.model.RequestType;
 import com.alodiga.wallet.common.model.ReviewAffiliationRequest;
 import com.alodiga.wallet.common.model.ReviewOfac;
 import com.alodiga.wallet.common.model.ReviewType;
@@ -824,8 +825,8 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
             throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "name"), null);
         }
         try {
-            StringBuilder sqlBuilder = new StringBuilder("SELECT * FROM collectionType c ");
-            sqlBuilder.append("WHERE c.description LIKE '%").append(name).append("%'");
+            StringBuilder sqlBuilder = new StringBuilder("SELECT * FROM collection_type c ");
+            sqlBuilder.append("WHERE c.countryId IN (SELECT c.id FROM country c WHERE c.name LIKE '").append(name).append("%')");
             Query query = entityManager.createNativeQuery(sqlBuilder.toString(), CollectionType.class);
             collectionTypeList = query.setHint("toplink.refresh", "true").getResultList();
 
@@ -1169,6 +1170,23 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
             throw new NullParameterException("businessAffiliationRequest", null);
         }
         return (AffiliationRequest) saveEntity(affiliationRequest);
+    }
+    
+    public List<AffiliationRequest> searchAffiliationRequestByParams(EJBRequest request) throws GeneralException, NullParameterException, EmptyListException {
+        List<AffiliationRequest> operations = new ArrayList<AffiliationRequest>();
+
+             Map<String, Object> params = request.getParams();
+            StringBuilder sqlBuilder = new StringBuilder("SELECT * FROM affiliation_request t WHERE t.requestTypeId=").append(params.get(QueryConstants.PARAM_REQUEST_TYPE));
+            
+            if (params.containsKey(QueryConstants.PARAM_NUMBER_REQUEST)) {
+                sqlBuilder.append(" AND t.numberRequest LIKE '").append(params.get(QueryConstants.PARAM_NUMBER_REQUEST)).append("%'");
+            }
+            Query query = entityManager.createNativeQuery(sqlBuilder.toString(), AffiliationRequest.class);
+            operations = (List<AffiliationRequest>) query.setHint("toplink.refresh", "true").getResultList();
+            if (operations.isEmpty()) {
+                throw new EmptyListException(logger, sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName()), null);
+            }
+            return operations;
     }
 
     @Override
@@ -1719,5 +1737,10 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         calendarDaysList = (List<CalendarDays>) getNamedQueryResult(CalendarDays.class, QueryConstants.HOLI_DAY_EXIST_IN_BD_CALENDAR_DAYS, request, getMethodName(), logger, "calendarDaysList");
         return calendarDaysList;
     }
-
+    
+    //RequestType
+    public List<RequestType> getRequestType(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        List<RequestType> requestType = (List<RequestType>) listEntities(RequestType.class, request, logger, getMethodName());
+        return requestType;
+    }
 }
