@@ -1033,7 +1033,7 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         }
         return (BankOperation) saveEntity(bankOperation);
     }
-
+    
     //CollectionsRequest
     public List<CollectionsRequest> getCollectionsRequest(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
         return (List<CollectionsRequest>) listEntities(CollectionsRequest.class, request, logger, getMethodName());
@@ -1188,6 +1188,17 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
             }
             return operations;
     }
+    
+    public List<AffiliationRequest> getTransactionApproveRequestByType(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        List<AffiliationRequest> affiliationRequestList = null;
+        Map<String, Object> params = request.getParams();
+        
+        if (!params.containsKey(EjbConstants.PARAM_REQUEST_TYPE)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_REQUEST_TYPE), null);
+        }
+        affiliationRequestList = (List<AffiliationRequest>) getNamedQueryResult(AffiliationRequest.class, QueryConstants.AFFILIATION_REQUEST_BY_REQUEST_TYPE_ID, request, getMethodName(), logger, "transactionApproveRequestByStatusList");
+        return affiliationRequestList;
+    }
 
     @Override
     public boolean validateStatusBusinessAffiliationHasFinalState(Integer statusId, Integer finalId) throws GeneralException, NullParameterException {
@@ -1224,7 +1235,7 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
     public List<ReviewAffiliationRequest> getReviewRequestByRequest(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
         List<ReviewAffiliationRequest> reviewRequest = null;
         Map<String, Object> params = request.getParams();
-        if (!params.containsKey(EjbConstants.PARAM_BUSINESS_AFFILIATION_REQUEST)) {
+        if (!params.containsKey(EjbConstants.PARAM_AFFILIATION_REQUEST)) {
             throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_REQUEST_ID), null);
         }
         if (!params.containsKey(EjbConstants.PARAM_REVIEW_REQUEST_TYPE_ID)) {
@@ -1266,8 +1277,8 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
     public List<RequestHasCollectionRequest> getRequestsHasCollectionsRequestByRequestByCollectionRequest(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
         List<RequestHasCollectionRequest> requestHasCollectionsRequestList = null;
         Map<String, Object> params = request.getParams();
-        if (!params.containsKey(EjbConstants.PARAM_BUSINESS_AFFILIATION_REQUEST)) {
-            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_BUSINESS_AFFILIATION_REQUEST), null);
+        if (!params.containsKey(EjbConstants.PARAM_AFFILIATION_REQUEST)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_AFFILIATION_REQUEST), null);
         }
         if (!params.containsKey(EjbConstants.PARAM_COLLECTION_REQUEST_ID)) {
             throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_COLLECTION_REQUEST_ID), null);
@@ -1280,10 +1291,10 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
     public List<RequestHasCollectionRequest> getRequestsHasCollectionsRequestByBusinessAffiliationRequest(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
         List<RequestHasCollectionRequest> requestHasCollectionsRequestList = null;
         Map<String, Object> params = request.getParams();
-        if (!params.containsKey(EjbConstants.PARAM_BUSINESS_AFFILIATION_REQUEST)) {
-            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_BUSINESS_AFFILIATION_REQUEST), null);
+        if (!params.containsKey(EjbConstants.PARAM_AFFILIATION_REQUEST)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_AFFILIATION_REQUEST), null);
         }
-        requestHasCollectionsRequestList = (List<RequestHasCollectionRequest>) getNamedQueryResult(RequestHasCollectionRequest.class, QueryConstants.REQUEST_HAS_COLLECTION_REQUEST_BY_BUSINESS_AFFILIATON_REQUEST, request, getMethodName(), logger, "requestHasCollectionsRequestList");
+        requestHasCollectionsRequestList = (List<RequestHasCollectionRequest>) getNamedQueryResult(RequestHasCollectionRequest.class, QueryConstants.REQUEST_HAS_COLLECTION_REQUEST_BY_AFFILIATON_REQUEST, request, getMethodName(), logger, "requestHasCollectionsRequestList");
         return requestHasCollectionsRequestList;
     }
 
@@ -1292,12 +1303,12 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         List<RequestHasCollectionRequest> requestHasCollectionsRequestList = new ArrayList<RequestHasCollectionRequest>();
         boolean complet = false;
         Map<String, Object> params = request.getParams();
-        if (!params.containsKey(EjbConstants.PARAM_BUSINESS_AFFILIATION_REQUEST)) {
-            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_BUSINESS_AFFILIATION_REQUEST), null);
+        if (!params.containsKey(EjbConstants.PARAM_AFFILIATION_REQUEST)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_AFFILIATION_REQUEST), null);
         }
-        Long businessAffiliationRequestId = (Long) params.get(EjbConstants.PARAM_BUSINESS_AFFILIATION_REQUEST);
+        Long businessAffiliationRequestId = (Long) params.get(EjbConstants.PARAM_AFFILIATION_REQUEST);
         try {
-            requestHasCollectionsRequestList = (List<RequestHasCollectionRequest>) getNamedQueryResult(RequestHasCollectionRequest.class, QueryConstants.REQUEST_HAS_COLLECTION_REQUEST_BY_BUSINESS_AFFILIATON_REQUEST_COMPLET, request, getMethodName(), logger, "requestHasCollectionsRequestList");
+            requestHasCollectionsRequestList = (List<RequestHasCollectionRequest>) getNamedQueryResult(RequestHasCollectionRequest.class, QueryConstants.REQUEST_HAS_COLLECTION_REQUEST_BY_AFFILIATON_REQUEST_COMPLET, request, getMethodName(), logger, "requestHasCollectionsRequestList");
         } catch (EmptyListException e) {
 
         }
@@ -1319,7 +1330,7 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         } else {
             try {
                 requestHasCollectionsRequestList = new ArrayList<RequestHasCollectionRequest>();
-                requestHasCollectionsRequestList = (List<RequestHasCollectionRequest>) getNamedQueryResult(RequestHasCollectionRequest.class, QueryConstants.REQUEST_HAS_COLLECTION_REQUEST_BY_BUSINESS_AFFILIATON_REQUEST_INCOMPLET, request, getMethodName(), logger, "requestHasCollectionsRequestList");
+                requestHasCollectionsRequestList = (List<RequestHasCollectionRequest>) getNamedQueryResult(RequestHasCollectionRequest.class, QueryConstants.REQUEST_HAS_COLLECTION_REQUEST_BY_AFFILIATON_REQUEST_INCOMPLET, request, getMethodName(), logger, "requestHasCollectionsRequestList");
             } catch (EmptyListException e) {
 
             }
@@ -1486,8 +1497,8 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         if (!params.containsKey(EjbConstants.PARAM_PERSON_ID)) {
             throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_PERSON_ID), null);
         }
-        if (!params.containsKey(EjbConstants.PARAM_BUSINESS_AFFILIATION_REQUEST)) {
-            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_BUSINESS_AFFILIATION_REQUEST), null);
+        if (!params.containsKey(EjbConstants.PARAM_AFFILIATION_REQUEST)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_AFFILIATION_REQUEST), null);
         }
         reviewOfacList = (List<ReviewOfac>) getNamedQueryResult(ReviewOfac.class, QueryConstants.REVIEW_OFAC_BY_REQUEST, request, getMethodName(), logger, "reviewOfacList");
         return reviewOfacList;
