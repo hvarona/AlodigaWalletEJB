@@ -953,6 +953,43 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         }
         return (BusinessType) saveEntity(businessType);
     }
+    
+    public BusinessType saveNewBusinessType(BusinessType businessType) throws RegisterNotFoundException, NullParameterException, GeneralException, DuplicateEntryException {
+        try {
+            BusinessType businessTypeResponse = new BusinessType();
+            businessTypeResponse = loadBussinesTypeByCode(businessType.getCode());
+            if (businessTypeResponse != null) {
+                throw new DuplicateEntryException("DuplicateEntryException");                
+            }
+        } catch (RegisterNotFoundException e) {
+            businessType = (BusinessType) saveEntity(businessType);
+            return businessType;
+        }catch (GeneralException e) {
+            throw new GeneralException(e.getMessage());
+        }
+           return businessType;
+    }  
+    
+    
+    public BusinessType loadBussinesTypeByCode(String referenceCode) throws RegisterNotFoundException, NullParameterException, GeneralException {
+        BusinessType businessType = new BusinessType();
+        try {
+            if (referenceCode == null) {
+                throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "referenceCode"), null);
+            }
+
+            Query query = createQuery("SELECT b FROM BusinessType b WHERE b.code = ?1");
+            query.setParameter("1", referenceCode);
+            businessType = (BusinessType) query.setHint("toplink.refresh", "true").getSingleResult();
+        } catch (NoResultException ex) {
+            System.out.println("code: " + referenceCode);
+            throw new RegisterNotFoundException(logger, sysError.format(EjbConstants.ERR_REGISTER_NOT_FOUND_EXCEPTION, Country.class.getSimpleName(), "loadCountryByShortName", Country.class.getSimpleName(), null), ex);
+        } catch (Exception ex) {
+            System.out.println("code: " + referenceCode);
+            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), ex.getMessage()), ex);
+        }
+        return businessType;
+    }
 
     //BusinessServiceType
     public List<BusinessServiceType> getBusinessServiceType(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
