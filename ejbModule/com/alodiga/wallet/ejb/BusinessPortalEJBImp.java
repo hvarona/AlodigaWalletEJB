@@ -34,7 +34,7 @@ import com.alodiga.wallet.common.model.AccountTypeBank;
 import com.alodiga.wallet.common.model.Address;
 import com.alodiga.wallet.common.model.AddressType;
 import com.alodiga.wallet.common.model.Bank;
-import com.alodiga.wallet.common.model.BusinessAffiliationRequest;
+import com.alodiga.wallet.common.model.AffiliationRequest;
 import com.alodiga.wallet.common.model.BusinessCategory;
 import com.alodiga.wallet.common.model.City;
 import com.alodiga.wallet.common.model.CivilStatus;
@@ -60,7 +60,7 @@ import com.alodiga.wallet.common.model.Sequences;
 import com.alodiga.wallet.common.model.State;
 import com.alodiga.wallet.common.model.StatusAccountBank;
 import com.alodiga.wallet.common.model.StatusApplicant;
-import com.alodiga.wallet.common.model.StatusBusinessAffiliationRequest;
+import com.alodiga.wallet.common.model.StatusRequest;
 import com.alodiga.wallet.common.model.StreetType;
 import com.alodiga.wallet.common.utils.Constants;
 import com.alodiga.wallet.common.utils.EjbConstants;
@@ -257,8 +257,8 @@ public class BusinessPortalEJBImp extends AbstractWalletEJB implements BusinessP
     }
 
     @Override
-    public BusinessAffiliationRequest saveBusinessAffiliationRequest(Person person, NaturalPerson naturalPerson, LegalPerson legalPerson, PhonePerson phonePerson, Address address) throws NullParameterException, GeneralException {
-        BusinessAffiliationRequest affiliatinRequest = new BusinessAffiliationRequest();
+    public AffiliationRequest saveBusinessAffiliationRequest(Person person, NaturalPerson naturalPerson, LegalPerson legalPerson, PhonePerson phonePerson, Address address) throws NullParameterException, GeneralException {
+        AffiliationRequest affiliatinRequest = new AffiliationRequest();
         try {
             if (person.getPersonTypeId().getIndNaturalPerson()) {
                 //Se obtiene la Clasificacion del Solicitante Natural
@@ -417,6 +417,7 @@ public class BusinessPortalEJBImp extends AbstractWalletEJB implements BusinessP
             personHasAddress.setPersonId(person);
             personHasAddress.setCreateDate(new Timestamp(new Date().getTime()));
             saveEntity(personHasAddress);
+            
             Map<String, Object> params = new HashMap<String, Object>();
             params.put(Constants.PARAM_CODE, Constants.ORIGIN_APPLICATION_PORTAL_NEGOCIOS_CODE);
             EJBRequest request = new EJBRequest();
@@ -442,9 +443,9 @@ public class BusinessPortalEJBImp extends AbstractWalletEJB implements BusinessP
             request = new EJBRequest();
             request.setParams(params);
             affiliatinRequest.setNumberRequest(numberSequence);
-            StatusBusinessAffiliationRequest status = utilsEJB.loadStatusBusinessAffiliationRequestByCode(request);
-            affiliatinRequest.setStatusBusinessAffiliationRequestId(status);
-            affiliatinRequest = (BusinessAffiliationRequest) saveEntity(affiliatinRequest);
+            StatusRequest status = utilsEJB.loadStatusBusinessAffiliationRequestByCode(request);
+            affiliatinRequest.setStatusRequestId(status);
+            affiliatinRequest = (AffiliationRequest) saveEntity(affiliatinRequest);
         } catch (Exception e) {
         	e.printStackTrace();
             throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), e.getMessage()), null);
@@ -528,9 +529,9 @@ public class BusinessPortalEJBImp extends AbstractWalletEJB implements BusinessP
     }
     
     @Override
-    public BusinessAffiliationRequest loadBusinessAffiliationRequest(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
-    	BusinessAffiliationRequest businessAffiliationRequest = (BusinessAffiliationRequest) loadEntity(BusinessAffiliationRequest.class, request, logger, getMethodName());
-    	return businessAffiliationRequest;
+    public AffiliationRequest loadAffiliationRequest(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
+    	AffiliationRequest affiliationRequest = (AffiliationRequest) loadEntity(AffiliationRequest.class, request, logger, getMethodName());
+    	return affiliationRequest;
     }
     
     @Override

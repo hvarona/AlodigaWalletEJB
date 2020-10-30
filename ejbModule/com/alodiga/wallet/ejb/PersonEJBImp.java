@@ -83,6 +83,28 @@ public class PersonEJBImp extends AbstractWalletEJB implements PersonEJB, Person
         documentsPersonType = (List<DocumentsPersonType>) getNamedQueryResult(DocumentsPersonType.class, QueryConstants.DOCUMENTS_BY_COUNTRY, request, getMethodName(), logger, "documentsPersonType");
         return documentsPersonType;
     }
+    
+    public List<DocumentsPersonType> searchDocumentsPersonTypeByCountry(String name) throws EmptyListException, GeneralException, NullParameterException {
+        List<DocumentsPersonType> documentsPersonType = null;
+        try {
+            if (name == null) {
+                throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "name"), null);
+            }
+      
+            StringBuilder sqlBuilder = new StringBuilder("SELECT * FROM documents_person_type cp ");
+            sqlBuilder.append("WHERE cp.personTypeId IN (SELECT p.id FROM person_type p WHERE p.countryId ");
+            sqlBuilder.append("IN (SELECT c.id FROM country c WHERE c.name LIKE '").append(name).append("%'))");
+            Query query = entityManager.createNativeQuery(sqlBuilder.toString(), DocumentsPersonType.class);
+            documentsPersonType = query.setHint("toplink.refresh", "true").getResultList();
+            
+        
+        } catch (NoResultException ex) {
+            throw new EmptyListException("No distributions found");
+        } catch (Exception ex) {
+            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), ex.getMessage()), ex);
+        }
+        return documentsPersonType;
+    }
 
     //PersonType
     @Override

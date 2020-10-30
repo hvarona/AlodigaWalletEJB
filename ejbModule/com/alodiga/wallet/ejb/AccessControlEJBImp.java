@@ -87,6 +87,22 @@ public class AccessControlEJBImp extends AbstractWalletEJB implements AccessCont
         List<Permission> permissions = (List<Permission>) listEntities(Permission.class, request, logger, getMethodName());
         return permissions;
     }
+    
+    public List<Permission> getPermissionOrderByAsc(EJBRequest request) throws EmptyListException, NullParameterException, GeneralException {
+        List<Permission> permission = new ArrayList<Permission>();
+        Query query = null;
+        try {
+            query = createQuery("SELECT p FROM Permission p ORDER BY p.action ASC");
+            permission = query.setHint("toplink.refresh", "true").getResultList();
+        } catch (Exception e) {
+            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), e.getMessage()), null);
+        }
+        if (permission.isEmpty()) {
+            throw new EmptyListException(logger, sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName()), null);
+        }
+        return permission;
+
+    }
 
     public List<Profile> getProfiles(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
         List<Profile> profiles = (List<Profile>) listEntities(Profile.class, request, logger, getMethodName());

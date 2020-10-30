@@ -18,7 +18,6 @@ import com.alodiga.wallet.common.genericEJB.WalletContextInterceptor;
 import com.alodiga.wallet.common.genericEJB.WalletLoggerInterceptor;
 import com.alodiga.wallet.common.model.ParameterType;
 import com.alodiga.wallet.common.model.Report;
-import com.alodiga.wallet.common.model.Enterprise;
 import com.alodiga.wallet.common.model.ReportHasProfile;
 import com.alodiga.wallet.common.model.ReportParameter;
 import com.alodiga.wallet.common.model.ReportType;
