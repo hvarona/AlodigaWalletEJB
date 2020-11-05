@@ -362,6 +362,7 @@ public class BusinessPortalEJBImp extends AbstractWalletEJB implements BusinessP
             phonePerson.setIndMainPhone(phonePerson.getIndMainPhone());
             phonePerson.setCreateDate(new Timestamp(new Date().getTime()));
             saveEntity(phonePerson);
+            
             //Guardo Address
             address.setCountryId(address.getCountryId());
             address.setCityId(address.getCityId());
@@ -411,6 +412,7 @@ public class BusinessPortalEJBImp extends AbstractWalletEJB implements BusinessP
             address.setAddressTypeId(address.getAddressTypeId());
             address.setIndMainAddress(address.getIndMainAddress());
             address = (Address) saveEntity(address);
+            
             //Guardo Person_has_addres
             PersonHasAddress personHasAddress = new PersonHasAddress();
             personHasAddress.setAddressId(address);
@@ -418,6 +420,7 @@ public class BusinessPortalEJBImp extends AbstractWalletEJB implements BusinessP
             personHasAddress.setCreateDate(new Timestamp(new Date().getTime()));
             saveEntity(personHasAddress);
             
+            //Guardar la Solicitud de Afiliación
             Map<String, Object> params = new HashMap<String, Object>();
             params.put(Constants.PARAM_CODE, Constants.ORIGIN_APPLICATION_PORTAL_NEGOCIOS_CODE);
             EJBRequest request = new EJBRequest();
