@@ -56,6 +56,7 @@ import com.alodiga.wallet.common.model.PersonHasAddress;
 import com.alodiga.wallet.common.model.PersonType;
 import com.alodiga.wallet.common.model.PhonePerson;
 import com.alodiga.wallet.common.model.PhoneType;
+import com.alodiga.wallet.common.model.PreferenceValue;
 import com.alodiga.wallet.common.model.Profession;
 import com.alodiga.wallet.common.model.RequestHasCollectionRequest;
 import com.alodiga.wallet.common.model.RequestType;
@@ -68,6 +69,8 @@ import com.alodiga.wallet.common.model.StreetType;
 import com.alodiga.wallet.common.utils.Constants;
 import com.alodiga.wallet.common.utils.EjbConstants;
 import com.alodiga.wallet.common.utils.QueryConstants;
+import java.text.SimpleDateFormat;
+import javax.persistence.NoResultException;
 
 @Interceptors({WalletLoggerInterceptor.class, WalletContextInterceptor.class})
 @Stateless(name = EjbConstants.BUSINESS_PORTAL_EJB, mappedName = EjbConstants.BUSINESS_PORTAL_EJB)
@@ -138,6 +141,22 @@ public class BusinessPortalEJBImp extends AbstractWalletEJB implements BusinessP
         List<CollectionsRequest> collectionsRequests = new ArrayList<CollectionsRequest>();
         try {
             collectionsRequests = (List<CollectionsRequest>) entityManager.createNamedQuery("CollectionsRequest.findBycollectionTypeId", CollectionsRequest.class).setParameter("collectionTypeId", collectionTypeId).getResultList();
+        } catch (Exception e) {
+            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), e.getMessage()), null);
+        }
+        if (collectionsRequests.isEmpty()) {
+            throw new EmptyListException(logger, sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName()), null);
+        }
+        return collectionsRequests;
+    }
+    
+    public List<CollectionsRequest> getCollectionRequestsByPersonTypeId(Long personTypeId) throws EmptyListException, GeneralException, NullParameterException {
+        if (personTypeId == null) {
+            throw new NullParameterException("personTypeId", null);
+        }
+        List<CollectionsRequest> collectionsRequests = new ArrayList<CollectionsRequest>();
+        try {
+            collectionsRequests = (List<CollectionsRequest>) entityManager.createNamedQuery("CollectionsRequest.findBypersonTypeId", CollectionsRequest.class).setParameter("personTypeId", personTypeId).getResultList();
         } catch (Exception e) {
             throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), e.getMessage()), null);
         }
@@ -618,6 +637,60 @@ public class BusinessPortalEJBImp extends AbstractWalletEJB implements BusinessP
     	BusinessCategory category = (BusinessCategory) loadEntity(BusinessCategory.class, request, logger, getMethodName());
     	return category;
     }
-
-   
+    
+    public List<PreferenceValue> getValueByBusinessId(Long businessId) throws EmptyListException, GeneralException, NullParameterException {
+        List<PreferenceValue> preferenceValue = new ArrayList<PreferenceValue>();
+        
+        if (businessId == null) {
+            throw new NullParameterException("businessId", null);
+        }
+        try{
+            
+            StringBuilder sqlBuilder = new StringBuilder("SELECT * FROM preference_value p ");
+            sqlBuilder.append("WHERE p.bussinessId = ").append(businessId);
+            Query query = entityManager.createNativeQuery(sqlBuilder.toString(), PreferenceValue.class);
+            preferenceValue = query.setHint("toplink.refresh", "true").getResultList();
+            
+        } catch (NoResultException ex) {
+            throw new EmptyListException("No distributions found");
+        } catch (Exception e) {
+            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), e.getMessage()), null);
+        }
+        
+        return preferenceValue;
+    }
+    
+    public List<PreferenceValue> getValueByBusinessIdAndDate(Long businessId, Date createDate) throws EmptyListException, GeneralException, NullParameterException {
+        List<PreferenceValue> preferenceValue = new ArrayList<PreferenceValue>();
+        
+        if (businessId == null) {
+            throw new NullParameterException("businessId", null);
+        }
+        
+        if (createDate == null) {
+            throw new NullParameterException("createDate", null);
+        }
+        
+        String pattern = "yyyy-MM-dd HH:mm:ss";
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
+        String strDate1 = simpleDateFormat.format(createDate);
+        
+        try{
+            
+            StringBuilder sqlBuilder = new StringBuilder("SELECT * FROM preference_value p ");
+            sqlBuilder.append("WHERE p.bussinessId = ").append(businessId);
+            sqlBuilder.append(" AND p.createDate = '").append(strDate1).append("'");
+            Query query = entityManager.createNativeQuery(sqlBuilder.toString(), PreferenceValue.class);
+            preferenceValue = query.setHint("toplink.refresh", "true").getResultList();
+            
+        } catch (NoResultException ex) {
+            throw new EmptyListException("No distributions found");
+        } catch (Exception e) {
+            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), e.getMessage()), null);
+        }
+        
+        return preferenceValue;
+    }
+    
+    
 }
