@@ -45,6 +45,7 @@ import com.alodiga.wallet.common.model.Country;
 import com.alodiga.wallet.common.model.County;
 import com.alodiga.wallet.common.model.Currency;
 import com.alodiga.wallet.common.model.DailyClosing;
+import com.alodiga.wallet.common.model.DocumentType;
 import com.alodiga.wallet.common.model.ExchangeRate;
 import com.alodiga.wallet.common.model.Language;
 import com.alodiga.wallet.common.model.OriginApplication;
@@ -1578,7 +1579,7 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         return originApplications;
     }
     
-    @SuppressWarnings("unchecked")
+   
     @Override
     public OriginApplication loadOriginApplicationByCode(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException, EmptyListException {
         List<OriginApplication> status = null;
@@ -1588,6 +1589,37 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         }
         status = (List<OriginApplication>) getNamedQueryResult(OriginApplication.class, "OriginApplication.findByCode", request, getMethodName(), logger, "code");
         return status.get(0);
+    }
+    
+  
+//    @Override
+//    public DocumentType getDocumentTypeByCode(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException, EmptyListException {
+//         List<DocumentType> documentTypes = null;
+//        Map<String, Object> params = request.getParams();
+//        if (!params.containsKey(EjbConstants.PARAM_ACRONYM)) {
+//            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_ACRONYM), null);
+//        }
+//        documentTypes = (List<DocumentType>) getNamedQueryResult(DocumentType.class, "DocumentType.findByAcronym", request, getMethodName(), logger, "acronym");
+//        return documentTypes.get(0);
+//    }
+    
+    @Override
+    public Integer getDocumentTypeByCode(String code) throws RegisterNotFoundException, NullParameterException, GeneralException, EmptyListException {
+        DocumentType documentType = new DocumentType();
+        try {
+            if (code == null) {
+                throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "code"), null);
+            }
+
+            Query query = createQuery("SELECT d FROM DocumentType d WHERE d.acronym = ?1");
+            query.setParameter("1", code);
+            documentType = (DocumentType) query.setHint("toplink.refresh", "true").getSingleResult();
+        } catch (NoResultException ex) {            
+            throw new RegisterNotFoundException(logger, sysError.format(EjbConstants.ERR_REGISTER_NOT_FOUND_EXCEPTION, DocumentType.class.getSimpleName(), "getDocumentTypeByCode", DocumentType.class.getSimpleName(), null), ex);
+        } catch (Exception ex) {            
+            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), ex.getMessage()), ex);
+        }
+        return documentType.getId();
     }
 
     //Sequences
@@ -1791,4 +1823,6 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         List<RequestType> requestType = (List<RequestType>) listEntities(RequestType.class, request, logger, getMethodName());
         return requestType;
     }
+
+    
 }
