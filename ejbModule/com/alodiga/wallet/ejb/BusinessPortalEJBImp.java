@@ -633,6 +633,7 @@ public class BusinessPortalEJBImp extends AbstractWalletEJB implements BusinessP
     	return category;
     }
     
+    
     public List<PreferenceValue> getValueByBusinessId(Long businessId) throws EmptyListException, GeneralException, NullParameterException {
         List<PreferenceValue> preferenceValue = new ArrayList<PreferenceValue>();
         
@@ -643,9 +644,9 @@ public class BusinessPortalEJBImp extends AbstractWalletEJB implements BusinessP
             
             StringBuilder sqlBuilder = new StringBuilder("SELECT * FROM preference_value p ");
             sqlBuilder.append("WHERE p.bussinessId = ").append(businessId);
+            sqlBuilder.append(" AND p.enabled = 1 AND p.endingDate is null");
             Query query = entityManager.createNativeQuery(sqlBuilder.toString(), PreferenceValue.class);
             preferenceValue = query.setHint("toplink.refresh", "true").getResultList();
-            
         } catch (NoResultException ex) {
             throw new EmptyListException("No distributions found");
         } catch (Exception e) {
@@ -655,26 +656,27 @@ public class BusinessPortalEJBImp extends AbstractWalletEJB implements BusinessP
         return preferenceValue;
     }
     
-    public List<PreferenceValue> getValueByBusinessIdAndDate(Long businessId, Date createDate) throws EmptyListException, GeneralException, NullParameterException {
+    public List<PreferenceValue> getValueByBusinessIdAndDate(Long businessId, Date discountRateDate) throws EmptyListException, GeneralException, NullParameterException {
         List<PreferenceValue> preferenceValue = new ArrayList<PreferenceValue>();
         
         if (businessId == null) {
             throw new NullParameterException("businessId", null);
         }
         
-        if (createDate == null) {
+        if (discountRateDate == null) {
             throw new NullParameterException("createDate", null);
         }
         
         String pattern = "yyyy-MM-dd HH:mm:ss";
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
-        String strDate1 = simpleDateFormat.format(createDate);
+        String strDate1 = simpleDateFormat.format(discountRateDate);
         
         try{
             
             StringBuilder sqlBuilder = new StringBuilder("SELECT * FROM preference_value p ");
-            sqlBuilder.append("WHERE p.bussinessId = ").append(businessId);
-            sqlBuilder.append(" AND p.createDate = '").append(strDate1).append("'");
+            sqlBuilder.append("WHERE  p.beginningDate <= '").append(strDate1).append("'");
+            sqlBuilder.append(" AND p.endingDate >= '").append(strDate1).append("'");
+            sqlBuilder.append(" AND p.bussinessId = ").append(businessId);
             Query query = entityManager.createNativeQuery(sqlBuilder.toString(), PreferenceValue.class);
             preferenceValue = query.setHint("toplink.refresh", "true").getResultList();
             
