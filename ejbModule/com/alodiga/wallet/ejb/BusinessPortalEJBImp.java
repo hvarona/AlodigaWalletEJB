@@ -20,7 +20,9 @@ import org.apache.log4j.Logger;
 import com.alodiga.wallet.common.ejb.BusinessPortalEJB;
 import com.alodiga.wallet.common.ejb.UtilsEJB;
 import com.alodiga.wallet.common.ejb.UtilsEJBLocal;
+import com.alodiga.wallet.common.enumeraciones.DocumentTypeE;
 import com.alodiga.wallet.common.enumeraciones.PersonClassificationE;
+import com.alodiga.wallet.common.enumeraciones.RequestTypeE;
 import com.alodiga.wallet.common.exception.EmptyListException;
 import com.alodiga.wallet.common.exception.GeneralException;
 import com.alodiga.wallet.common.exception.NullParameterException;
@@ -54,8 +56,10 @@ import com.alodiga.wallet.common.model.PersonHasAddress;
 import com.alodiga.wallet.common.model.PersonType;
 import com.alodiga.wallet.common.model.PhonePerson;
 import com.alodiga.wallet.common.model.PhoneType;
+import com.alodiga.wallet.common.model.PreferenceValue;
 import com.alodiga.wallet.common.model.Profession;
 import com.alodiga.wallet.common.model.RequestHasCollectionRequest;
+import com.alodiga.wallet.common.model.RequestType;
 import com.alodiga.wallet.common.model.Sequences;
 import com.alodiga.wallet.common.model.State;
 import com.alodiga.wallet.common.model.StatusAccountBank;
@@ -65,6 +69,8 @@ import com.alodiga.wallet.common.model.StreetType;
 import com.alodiga.wallet.common.utils.Constants;
 import com.alodiga.wallet.common.utils.EjbConstants;
 import com.alodiga.wallet.common.utils.QueryConstants;
+import java.text.SimpleDateFormat;
+import javax.persistence.NoResultException;
 
 @Interceptors({WalletLoggerInterceptor.class, WalletContextInterceptor.class})
 @Stateless(name = EjbConstants.BUSINESS_PORTAL_EJB, mappedName = EjbConstants.BUSINESS_PORTAL_EJB)
@@ -74,6 +80,7 @@ public class BusinessPortalEJBImp extends AbstractWalletEJB implements BusinessP
     private static final Logger logger = Logger.getLogger(BusinessPortalEJBImp.class);
     @EJB
     private UtilsEJBLocal utilsEJB;
+    
 
     @Override
     public List<PersonType> getPersonTypesBycountryId(Long countryId) throws EmptyListException, GeneralException, NullParameterException {
@@ -134,6 +141,22 @@ public class BusinessPortalEJBImp extends AbstractWalletEJB implements BusinessP
         List<CollectionsRequest> collectionsRequests = new ArrayList<CollectionsRequest>();
         try {
             collectionsRequests = (List<CollectionsRequest>) entityManager.createNamedQuery("CollectionsRequest.findBycollectionTypeId", CollectionsRequest.class).setParameter("collectionTypeId", collectionTypeId).getResultList();
+        } catch (Exception e) {
+            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), e.getMessage()), null);
+        }
+        if (collectionsRequests.isEmpty()) {
+            throw new EmptyListException(logger, sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName()), null);
+        }
+        return collectionsRequests;
+    }
+    
+    public List<CollectionsRequest> getCollectionRequestsByPersonTypeId(Long personTypeId) throws EmptyListException, GeneralException, NullParameterException {
+        if (personTypeId == null) {
+            throw new NullParameterException("personTypeId", null);
+        }
+        List<CollectionsRequest> collectionsRequests = new ArrayList<CollectionsRequest>();
+        try {
+            collectionsRequests = (List<CollectionsRequest>) entityManager.createNamedQuery("CollectionsRequest.findBypersonTypeId", CollectionsRequest.class).setParameter("personTypeId", personTypeId).getResultList();
         } catch (Exception e) {
             throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), e.getMessage()), null);
         }
@@ -257,10 +280,12 @@ public class BusinessPortalEJBImp extends AbstractWalletEJB implements BusinessP
     }
 
     @Override
-    public AffiliationRequest saveBusinessAffiliationRequest(Person person, NaturalPerson naturalPerson, LegalPerson legalPerson, PhonePerson phonePerson, Address address) throws NullParameterException, GeneralException {
+    public AffiliationRequest saveNaturalPersonAffiliationRequest(Person person, NaturalPerson naturalPerson, RequestType requestType, PhonePerson phonePerson, Address address) throws NullParameterException, GeneralException {
         AffiliationRequest affiliatinRequest = new AffiliationRequest();
         try {
-            if (person.getPersonTypeId().getIndNaturalPerson()) {
+            String requestTypeBussines = RequestTypeE.SOAFNE.getRequestTypeCode();
+            System.out.println("REQUEST TYPE " + requestTypeBussines);
+            if (requestType.getCode().equals(requestTypeBussines)) {
                 //Se obtiene la Clasificacion del Solicitante Natural
                 String personClassificationCode = PersonClassificationE.NABUAP.getPersonClassificationCode();
                 PersonClassification personClassification = (PersonClassification) entityManager.createNamedQuery(QueryConstants.PERSON_CLASSIFICATION_BY_CODE, PersonClassification.class).setParameter(Constants.PARAM_CODE, personClassificationCode).getSingleResult();
@@ -310,9 +335,12 @@ public class BusinessPortalEJBImp extends AbstractWalletEJB implements BusinessP
                 }
                 naturalPerson.setCreateDate(new Timestamp(new Date().getTime()));
                 saveEntity(naturalPerson);
-            } else {
-                String personClassificationCode = PersonClassificationE.LEBUAP.getPersonClassificationCode();
-                //Guardo person
+            }else {
+                //Se obtiene la Clasificacion de la persona 
+                String personClassificationCode = PersonClassificationE.REUNUS.getPersonClassificationCode();
+                PersonClassification personClassification = (PersonClassification) entityManager.createNamedQuery(QueryConstants.PERSON_CLASSIFICATION_BY_CODE, PersonClassification.class).setParameter(Constants.PARAM_CODE, personClassificationCode).getSingleResult();
+
+                //Se guarda el objeto person en la BD
                 person.setCreateDate(new Timestamp(new Date().getTime()));
                 if (person.getEmail() != null) {
                     person.setEmail(person.getEmail());
@@ -320,8 +348,6 @@ public class BusinessPortalEJBImp extends AbstractWalletEJB implements BusinessP
                     person.setEmail(null);
                 }
                 person.setPersonTypeId(person.getPersonTypeId());
-                //person.setPersonClassificationId(person.getPersonClassificationId());
-                PersonClassification personClassification = (PersonClassification) entityManager.createNamedQuery(QueryConstants.PERSON_CLASSIFICATION_BY_CODE, PersonClassification.class).setParameter("code", personClassificationCode).getSingleResult();
                 person.setPersonClassificationId(personClassification);
                 if (person.getWebSite() != null) {
                     person.setWebSite(person.getWebSite());
@@ -329,24 +355,8 @@ public class BusinessPortalEJBImp extends AbstractWalletEJB implements BusinessP
                     person.setWebSite(null);
                 }
                 person.setCountryId(person.getCountryId());
-                person = (Person) saveEntity(person);
-                //Guardo Legal Person
-                legalPerson.setCreateDate(new Timestamp(new Date().getTime()));
-                legalPerson.setPersonId(person);
-                legalPerson.setDocumentsPersonTypeId(legalPerson.getDocumentsPersonTypeId());
-                legalPerson.setIdentificationNumber(legalPerson.getIdentificationNumber());
-                if (legalPerson.getTradeName() != null) {
-                    legalPerson.setTradeName(legalPerson.getTradeName());
-                } else {
-                    legalPerson.setTradeName(null);
-                }
-                legalPerson.setBusinessName(legalPerson.getBusinessName());
-                legalPerson.setBusinessCategoryId(legalPerson.getBusinessCategoryId());
-                legalPerson.setRegisterNumber(legalPerson.getRegisterNumber());
-                legalPerson.setDateInscriptionRegister(legalPerson.getDateInscriptionRegister());
-                legalPerson.setPayedCapital(legalPerson.getPayedCapital());
-                saveEntity(legalPerson);
-            }
+                person = (Person) saveEntity(person);               
+            }            
             //Se guarda el objeto PhonePerson en la BD
             phonePerson.setCountryId(phonePerson.getCountryId());
             phonePerson.setCountryCode(phonePerson.getCountryCode());
@@ -422,23 +432,33 @@ public class BusinessPortalEJBImp extends AbstractWalletEJB implements BusinessP
             
             //Guardar la Solicitud de Afiliación
             Map<String, Object> params = new HashMap<String, Object>();
-            params.put(Constants.PARAM_CODE, Constants.ORIGIN_APPLICATION_PORTAL_NEGOCIOS_CODE);
+            if (requestType.getCode().equals(requestTypeBussines)) {
+                params.put(Constants.PARAM_CODE, Constants.ORIGIN_APPLICATION_PORTAL_NEGOCIOS_CODE);
+            }else {
+                params.put(Constants.PARAM_CODE, Constants.ORIGIN_APPLICATION_APP_CODE);
+            }           
             EJBRequest request = new EJBRequest();
             request.setParams(params);
             OriginApplication originApplication = utilsEJB.loadOriginApplicationByCode(request);
+            
             params = new HashMap<String, Object>();
-            if (person.getPersonTypeId().getIndNaturalPerson()) {
-            	params.put(EjbConstants.PARAM_DOCUMENT_TYPE_ID, naturalPerson.getDocumentsPersonTypeId().getId());
+            String acronym = null;
+            if (requestType.getCode().equals(requestTypeBussines)) {
+            	 acronym = DocumentTypeE.BUAFRQ.getDocumentTypeAcronym();
+                affiliatinRequest.setBusinessPersonId(person);
             }else {
-            	params.put(EjbConstants.PARAM_DOCUMENT_TYPE_ID, legalPerson.getDocumentsPersonTypeId().getId());	
+            	 acronym = DocumentTypeE.USREAR.getDocumentTypeAcronym();
+                affiliatinRequest.setUserRegisterUnifiedId(person);
             }
+            
+            Integer documentType = utilsEJB.getDocumentTypeByCode(acronym);
+            params = new HashMap<String, Object>();
+            params.put(EjbConstants.PARAM_DOCUMENT_TYPE_ID, documentType);
             request = new EJBRequest();
             request.setParams(params);
-
             List<Sequences> sequences = getSequencesByDocumentType(request);
-
-            String numberSequence = generateNumberSequence(sequences, originApplication.getId());
-            affiliatinRequest.setBusinessPersonId(person);
+            System.out.println("seque " + sequences);
+            String numberSequence = generateNumberSequence(sequences, originApplication.getId());            
             affiliatinRequest.setCreateDate(new Timestamp(new Date().getTime()));
             affiliatinRequest.setDateRequest(new Date());
             params = new HashMap<String, Object>();
@@ -448,6 +468,7 @@ public class BusinessPortalEJBImp extends AbstractWalletEJB implements BusinessP
             affiliatinRequest.setNumberRequest(numberSequence);
             StatusRequest status = utilsEJB.loadStatusBusinessAffiliationRequestByCode(request);
             affiliatinRequest.setStatusRequestId(status);
+            affiliatinRequest.setRequestTypeId(requestType);
             affiliatinRequest = (AffiliationRequest) saveEntity(affiliatinRequest);
         } catch (Exception e) {
         	e.printStackTrace();
@@ -616,4 +637,62 @@ public class BusinessPortalEJBImp extends AbstractWalletEJB implements BusinessP
     	BusinessCategory category = (BusinessCategory) loadEntity(BusinessCategory.class, request, logger, getMethodName());
     	return category;
     }
+    
+    
+    public List<PreferenceValue> getValueByBusinessId(Long businessId) throws EmptyListException, GeneralException, NullParameterException {
+        List<PreferenceValue> preferenceValue = new ArrayList<PreferenceValue>();
+        
+        if (businessId == null) {
+            throw new NullParameterException("businessId", null);
+        }
+        try{
+            
+            StringBuilder sqlBuilder = new StringBuilder("SELECT * FROM preference_value p ");
+            sqlBuilder.append("WHERE p.bussinessId = ").append(businessId);
+            sqlBuilder.append(" AND p.enabled = 1 AND p.endingDate is null");
+            Query query = entityManager.createNativeQuery(sqlBuilder.toString(), PreferenceValue.class);
+            preferenceValue = query.setHint("toplink.refresh", "true").getResultList();
+        } catch (NoResultException ex) {
+            throw new EmptyListException("No distributions found");
+        } catch (Exception e) {
+            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), e.getMessage()), null);
+        }
+        
+        return preferenceValue;
+    }
+    
+    public List<PreferenceValue> getValueByBusinessIdAndDate(Long businessId, Date discountRateDate) throws EmptyListException, GeneralException, NullParameterException {
+        List<PreferenceValue> preferenceValue = new ArrayList<PreferenceValue>();
+        
+        if (businessId == null) {
+            throw new NullParameterException("businessId", null);
+        }
+        
+        if (discountRateDate == null) {
+            throw new NullParameterException("createDate", null);
+        }
+        
+        String pattern = "yyyy-MM-dd HH:mm:ss";
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
+        String strDate1 = simpleDateFormat.format(discountRateDate);
+        
+        try{
+            
+            StringBuilder sqlBuilder = new StringBuilder("SELECT * FROM preference_value p ");
+            sqlBuilder.append("WHERE  p.beginningDate <= '").append(strDate1).append("'");
+            sqlBuilder.append(" AND p.endingDate >= '").append(strDate1).append("'");
+            sqlBuilder.append(" AND p.bussinessId = ").append(businessId);
+            Query query = entityManager.createNativeQuery(sqlBuilder.toString(), PreferenceValue.class);
+            preferenceValue = query.setHint("toplink.refresh", "true").getResultList();
+            
+        } catch (NoResultException ex) {
+            throw new EmptyListException("No distributions found");
+        } catch (Exception e) {
+            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), e.getMessage()), null);
+        }
+        
+        return preferenceValue;
+    }
+    
+    
 }
