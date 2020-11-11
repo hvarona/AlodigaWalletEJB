@@ -279,7 +279,6 @@ public class BusinessPortalEJBImp extends AbstractWalletEJB implements BusinessP
         return (Sequences) saveEntity(sequence);
     }
     
-    @Override
     public Person createPerson(Person person, PersonClassification personClassification) {
         person.setCreateDate(new Timestamp(new Date().getTime()));
         if (person.getEmail() != null) {
