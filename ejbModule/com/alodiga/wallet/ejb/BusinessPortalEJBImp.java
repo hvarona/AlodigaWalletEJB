@@ -13,7 +13,11 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
 import javax.interceptor.Interceptors;
+import javax.persistence.NoResultException;
 import javax.persistence.Query;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
 
 import org.apache.log4j.Logger;
 
@@ -48,6 +52,7 @@ import com.alodiga.wallet.common.model.DocumentType;
 import com.alodiga.wallet.common.model.DocumentsPersonType;
 import com.alodiga.wallet.common.model.EdificationType;
 import com.alodiga.wallet.common.model.LegalPerson;
+import com.alodiga.wallet.common.model.LegalRepresentative;
 import com.alodiga.wallet.common.model.NaturalPerson;
 import com.alodiga.wallet.common.model.OriginApplication;
 import com.alodiga.wallet.common.model.Person;
@@ -69,555 +74,815 @@ import com.alodiga.wallet.common.utils.Constants;
 import com.alodiga.wallet.common.utils.EjbConstants;
 import com.alodiga.wallet.common.utils.QueryConstants;
 
-@Interceptors({WalletLoggerInterceptor.class, WalletContextInterceptor.class})
+@Interceptors({ WalletLoggerInterceptor.class, WalletContextInterceptor.class })
 @Stateless(name = EjbConstants.BUSINESS_PORTAL_EJB, mappedName = EjbConstants.BUSINESS_PORTAL_EJB)
 @TransactionManagement(TransactionManagementType.BEAN)
 public class BusinessPortalEJBImp extends AbstractWalletEJB implements BusinessPortalEJB {
 
-    private static final Logger logger = Logger.getLogger(BusinessPortalEJBImp.class);
-    @EJB
-    private UtilsEJBLocal utilsEJB;
-    
+	private static final Logger logger = Logger.getLogger(BusinessPortalEJBImp.class);
+	@EJB
+	private UtilsEJBLocal utilsEJB;
 
-    @Override
-    public List<PersonType> getPersonTypesBycountryId(Long countryId) throws EmptyListException, GeneralException, NullParameterException {
-        if (countryId == null) {
-            throw new NullParameterException("countryId", null);
-        }
-        List<PersonType> personTypes = new ArrayList<PersonType>();
-        try {
-            personTypes = (List<PersonType>) entityManager.createNamedQuery("PersonType.findBycountryId", PersonType.class).setParameter("countryId", countryId).getResultList();
-        } catch (Exception e) {
-            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), e.getMessage()), null);
-        }
-        if (personTypes.isEmpty()) {
-            throw new EmptyListException(logger, sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName()), null);
-        }
-        return personTypes;
-    }
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<AccountBank> getAccountBanksByBusiness(Long businessId)
+			throws EmptyListException, GeneralException, NullParameterException {
 
-    @Override
-    public List<DocumentsPersonType> getDocumentPersonTypesBypersonTypeId(Long personTypeId) throws EmptyListException, GeneralException, NullParameterException {
-        if (personTypeId == null) {
-            throw new NullParameterException("personTypeId", null);
-        }
-        List<DocumentsPersonType> documentsPersonTypes = new ArrayList<DocumentsPersonType>();
-        try {
-            documentsPersonTypes = (List<DocumentsPersonType>) entityManager.createNamedQuery("DocumentsPersonType.findBypersonTypeId", DocumentsPersonType.class).setParameter("personTypeId", personTypeId).getResultList();
-        } catch (Exception e) {
-            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), e.getMessage()), null);
-        }
-        if (documentsPersonTypes.isEmpty()) {
-            throw new EmptyListException(logger, sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName()), null);
-        }
-        return documentsPersonTypes;
-    }
+		if (businessId == null) {
+			throw new NullParameterException("businessId", null);
+		}
+		List<AccountBank> accountBanks = null;
+		try {
+			CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+			CriteriaQuery<AccountBank> cq = cb.createQuery(AccountBank.class);
+			Root<AccountBank> from = cq.from(AccountBank.class);
+			cq.select(from);
+			cq.where(cb.equal(from.get("businessId"), businessId));
+			accountBanks = entityManager.createQuery(cq).getResultList();
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(),
+					getMethodName(), e.getMessage()), null);
+		}
+		if (accountBanks == null || accountBanks.isEmpty()) {
+			throw new EmptyListException(logger,
+					sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName()), null);
+		}
+		return accountBanks;
+	}
 
-    @Override
-    public List<CollectionType> getCollectionTypesBycountryId(Long countryId) throws EmptyListException, GeneralException, NullParameterException {
-        if (countryId == null) {
-            throw new NullParameterException("countryId", null);
-        }
-        List<CollectionType> collectionTypes = new ArrayList<CollectionType>();
-        try {
-            collectionTypes = (List<CollectionType>) entityManager.createNamedQuery("CollectionType.findBycountryId", CollectionType.class).setParameter("countryId", countryId).getResultList();
-        } catch (Exception e) {
-            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), e.getMessage()), null);
-        }
-        if (collectionTypes.isEmpty()) {
-            throw new EmptyListException(logger, sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName()), null);
-        }
-        return collectionTypes;
-    }
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<AccountTypeBank> getAccountTypeBanks(EJBRequest request)
+			throws EmptyListException, GeneralException, NullParameterException {
+		return (List<AccountTypeBank>) listEntities(AccountTypeBank.class, request, logger, getMethodName());
+	}
 
-    @Override
-    public List<CollectionsRequest> getCollectionRequestsBycollectionTypeId(Long collectionTypeId) throws EmptyListException, GeneralException, NullParameterException {
-        if (collectionTypeId == null) {
-            throw new NullParameterException("collectionTypeId", null);
-        }
-        List<CollectionsRequest> collectionsRequests = new ArrayList<CollectionsRequest>();
-        try {
-            collectionsRequests = (List<CollectionsRequest>) entityManager.createNamedQuery("CollectionsRequest.findBycollectionTypeId", CollectionsRequest.class).setParameter("collectionTypeId", collectionTypeId).getResultList();
-        } catch (Exception e) {
-            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), e.getMessage()), null);
-        }
-        if (collectionsRequests.isEmpty()) {
-            throw new EmptyListException(logger, sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName()), null);
-        }
-        return collectionsRequests;
-    }
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<AddressType> getAddressType(EJBRequest request)
+			throws EmptyListException, GeneralException, NullParameterException {
+		return (List<AddressType>) listEntities(AddressType.class, request, logger, getMethodName());
+	}
 
-    @SuppressWarnings("unchecked")
-    @Override
-    public List<Country> getCountries() throws EmptyListException, GeneralException, NullParameterException {
-        List<Country> countries = null;
-        Query query = null;
-        try {
-            query = createQuery("SELECT c FROM Country c ORDER BY c.name");
-            countries = query.setHint("toplink.refresh", "true").getResultList();
-        } catch (Exception e) {
-            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), e.getMessage()), null);
-        }
-        if (countries.isEmpty()) {
-            throw new EmptyListException(logger, sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName()), null);
-        }
-        return countries;
-    }
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<Bank> getBanks(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+		return (List<Bank>) listEntities(Bank.class, request, logger, getMethodName());
+	}
 
-    @Override
-    public List<State> getStatesByCountryId(Long countryId) throws EmptyListException, GeneralException, NullParameterException {
-        if (countryId == null) {
-            throw new NullParameterException("countryId", null);
-        }
-        List<State> states = new ArrayList<State>();
-        try {
-            states = (List<State>) entityManager.createNamedQuery("State.findBycountryId", State.class).setParameter("countryId", countryId).getResultList();
-        } catch (Exception e) {
-            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), e.getMessage()), null);
-        }
-        if (states.isEmpty()) {
-            throw new EmptyListException(logger, sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName()), null);
-        }
-        return states;
-    }
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<BusinessCategory> getBusinessCategories(EJBRequest request)
+			throws EmptyListException, GeneralException, NullParameterException {
+		return (List<BusinessCategory>) listEntities(BusinessCategory.class, request, logger, getMethodName());
+	}
 
-    @Override
-    public List<City> getCitiesByStateId(Long stateId) throws EmptyListException, GeneralException, NullParameterException {
-        if (stateId == null) {
-            throw new NullParameterException("stateId", null);
-        }
-        List<City> citys = new ArrayList<City>();
-        try {
-            citys = (List<City>) entityManager.createNamedQuery("City.findBystateId", City.class).setParameter("stateId", stateId).getResultList();
-        } catch (Exception e) {
-            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), e.getMessage()), null);
-        }
-        if (citys.isEmpty()) {
-            throw new EmptyListException(logger, sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName()), null);
-        }
-        return citys;
-    }
+	@Override
+	public List<City> getCitiesByStateId(Long stateId)
+			throws EmptyListException, GeneralException, NullParameterException {
+		if (stateId == null) {
+			throw new NullParameterException("stateId", null);
+		}
+		List<City> citys = new ArrayList<City>();
+		try {
+			citys = (List<City>) entityManager.createNamedQuery("City.findBystateId", City.class)
+					.setParameter("stateId", stateId).getResultList();
+		} catch (Exception e) {
+			throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(),
+					getMethodName(), e.getMessage()), null);
+		}
+		if (citys.isEmpty()) {
+			throw new EmptyListException(logger,
+					sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName()), null);
+		}
+		return citys;
+	}
 
-    @SuppressWarnings("unchecked")
-    @Override
-    public List<Sequences> getSequencesByDocumentType(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
-        List<Sequences> sequence = null;
-        Map<String, Object> params = request.getParams();
-        if (!params.containsKey(EjbConstants.PARAM_DOCUMENT_TYPE_ID)) {
-            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_DOCUMENT_TYPE_ID), null);
-        }
-        sequence = (List<Sequences>) getNamedQueryResult(UtilsEJB.class, QueryConstants.SEQUENCES_BY_DOCUMENT_TYPE, request, getMethodName(), logger, "sequence");
-        return sequence;
-    }
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<CivilStatus> getCivilStatus(EJBRequest request)
+			throws EmptyListException, GeneralException, NullParameterException {
+		return (List<CivilStatus>) listEntities(CivilStatus.class, request, logger, getMethodName());
+	}
 
-    @Override
-    public String generateNumberSequence(List<Sequences> sequence, int originApplication) throws GeneralException, RegisterNotFoundException, NullParameterException {
-        int numberSequence = 0;
-        String prefixNumberSequence = "";
-        String acronym = "";
-        for (Sequences s : sequence) {
-            if (s.getOriginApplicationId().getId() == originApplication) {
-                if (s.getCurrentValue() > 1) {
-                    numberSequence = s.getCurrentValue();
-                } else {
-                    numberSequence = s.getInitialValue();
-                }
-                acronym = s.getDocumentTypeId().getAcronym();
-                s.setCurrentValue(s.getCurrentValue() + 1);
-                saveSequences(s);
-            }
-        }
-        Calendar cal = Calendar.getInstance();
-        int year = cal.get(Calendar.YEAR);
-        switch (originApplication) {
-            case Constants.ORIGIN_APPLICATION_APP_ALODIGA_WALLET_ID:
-                prefixNumberSequence = "APP-";
-                break;
-            case Constants.ORIGIN_APPLICATION_ADMIN_WALLET_ID:
-                prefixNumberSequence = "ADM-";
-                break;
-            case Constants.ORIGIN_APPLICATION_PORTAL_WEB_ID:
-                prefixNumberSequence = "PBW";
-                break;
-            default:
-                break;
-        }
-        prefixNumberSequence = prefixNumberSequence.concat(acronym);
-        String suffixNumberSequence = "-";
-        suffixNumberSequence = suffixNumberSequence.concat(String.valueOf(year));
-        String numberSequenceDoc = prefixNumberSequence;
-        numberSequenceDoc = numberSequenceDoc.concat("-");
-        numberSequenceDoc = numberSequenceDoc.concat(String.valueOf(numberSequence));
-        numberSequenceDoc = numberSequenceDoc.concat(suffixNumberSequence);
-        return numberSequenceDoc;
-    }
+	@Override
+	public List<CollectionType> getCollectionTypesBycountryId(Long countryId)
+			throws EmptyListException, GeneralException, NullParameterException {
+		if (countryId == null) {
+			throw new NullParameterException("countryId", null);
+		}
+		List<CollectionType> collectionTypes = new ArrayList<CollectionType>();
+		try {
+			collectionTypes = (List<CollectionType>) entityManager
+					.createNamedQuery("CollectionType.findBycountryId", CollectionType.class)
+					.setParameter("countryId", countryId).getResultList();
+		} catch (Exception e) {
+			throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(),
+					getMethodName(), e.getMessage()), null);
+		}
+		if (collectionTypes.isEmpty()) {
+			throw new EmptyListException(logger,
+					sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName()), null);
+		}
+		return collectionTypes;
+	}
 
-    @Override
-    public Sequences saveSequences(Sequences sequence) throws RegisterNotFoundException, NullParameterException, GeneralException {
-        if (sequence == null) {
-            throw new NullParameterException("sequence", null);
-        }
-        return (Sequences) saveEntity(sequence);
-    }
+	@Override
+	public List<CollectionsRequest> getCollectionRequestsBycollectionTypeId(Long collectionTypeId)
+			throws EmptyListException, GeneralException, NullParameterException {
+		if (collectionTypeId == null) {
+			throw new NullParameterException("collectionTypeId", null);
+		}
+		List<CollectionsRequest> collectionsRequests = new ArrayList<CollectionsRequest>();
+		try {
+			collectionsRequests = (List<CollectionsRequest>) entityManager
+					.createNamedQuery("CollectionsRequest.findBycollectionTypeId", CollectionsRequest.class)
+					.setParameter("collectionTypeId", collectionTypeId).getResultList();
+		} catch (Exception e) {
+			throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(),
+					getMethodName(), e.getMessage()), null);
+		}
+		if (collectionsRequests.isEmpty()) {
+			throw new EmptyListException(logger,
+					sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName()), null);
+		}
+		return collectionsRequests;
+	}
+	
+	@Override
+	public List<CollectionsRequest> getCollectionRequestsByPersonTypeId(Long personTypeId)
+			throws EmptyListException, GeneralException, NullParameterException {
+		if (personTypeId == null) {
+			throw new NullParameterException("personTypeId", null);
+		}
+		List<CollectionsRequest> collectionsRequests = new ArrayList<CollectionsRequest>();
+		try {
+			collectionsRequests = (List<CollectionsRequest>) entityManager
+					.createNamedQuery(QueryConstants.COLLECTIONS_BY_PERSON_TYPE, CollectionsRequest.class)
+					.setParameter("personTypeId", personTypeId).getResultList();
+		} catch (Exception e) {
+			throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(),
+					getMethodName(), e.getMessage()), null);
+		}
+		if (collectionsRequests.isEmpty()) {
+			throw new EmptyListException(logger,
+					sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName()), null);
+		}
+		return collectionsRequests;
+	}
 
-    @Override
-    public AffiliationRequest saveNaturalPersonAffiliationRequest(Person person, NaturalPerson naturalPerson, RequestType requestType, PhonePerson phonePerson, Address address) throws NullParameterException, GeneralException {
-        AffiliationRequest affiliatinRequest = new AffiliationRequest();
-        try {
-            String requestTypeBussines = RequestTypeE.SOAFNE.getRequestTypeCode();
-            System.out.println("REQUEST TYPE " + requestTypeBussines);
-            if (requestType.getCode().equals(requestTypeBussines)) {
-                //Se obtiene la Clasificacion del Solicitante Natural
-                String personClassificationCode = PersonClassificationE.NABUAP.getPersonClassificationCode();
-                PersonClassification personClassification = (PersonClassification) entityManager.createNamedQuery(QueryConstants.PERSON_CLASSIFICATION_BY_CODE, PersonClassification.class).setParameter(Constants.PARAM_CODE, personClassificationCode).getSingleResult();
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<Country> getCountries() throws EmptyListException, GeneralException, NullParameterException {
+		List<Country> countries = null;
+		Query query = null;
+		try {
+			query = createQuery("SELECT c FROM Country c ORDER BY c.name");
+			countries = query.setHint("toplink.refresh", "true").getResultList();
+		} catch (Exception e) {
+			throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(),
+					getMethodName(), e.getMessage()), null);
+		}
+		if (countries.isEmpty()) {
+			throw new EmptyListException(logger,
+					sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName()), null);
+		}
+		return countries;
+	}
 
-                //Se guarda el objeto person en la BD
-                person.setCreateDate(new Timestamp(new Date().getTime()));
-                if (person.getEmail() != null) {
-                    person.setEmail(person.getEmail());
-                } else {
-                    person.setEmail(null);
-                }
-                person.setPersonTypeId(person.getPersonTypeId());
-                person.setPersonClassificationId(personClassification);
-                if (person.getWebSite() != null) {
-                    person.setWebSite(person.getWebSite());
-                } else {
-                    person.setWebSite(null);
-                }
-                person.setCountryId(person.getCountryId());
-                person = (Person) saveEntity(person);
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<Currency> getCurrencies(EJBRequest request)
+			throws EmptyListException, GeneralException, NullParameterException {
+		return (List<Currency>) listEntities(Currency.class, request, logger, getMethodName());
+	}
 
-                //Se guarda el objeto NaturalPerson en la BD
-                naturalPerson.setPersonId(person);
-                naturalPerson.setDocumentsPersonTypeId(naturalPerson.getDocumentsPersonTypeId());
-                naturalPerson.setIdentificationNumber(naturalPerson.getIdentificationNumber());
-                if (naturalPerson.getIdentificactionNumberOld() != null) {
-                    naturalPerson.setIdentificactionNumberOld(naturalPerson.getIdentificactionNumberOld());
-                } else {
-                    naturalPerson.setIdentificactionNumberOld(null);
-                }
-                naturalPerson.setDueDateDocumentIdentification(naturalPerson.getDueDateDocumentIdentification());
-                naturalPerson.setFirstName(naturalPerson.getFirstName());
-                naturalPerson.setLastName(naturalPerson.getLastName());
-                if (naturalPerson.getMarriedLastName() != null) {
-                    naturalPerson.setMarriedLastName(naturalPerson.getMarriedLastName());
-                } else {
-                    naturalPerson.setMarriedLastName(null);
-                }
-                naturalPerson.setGender(naturalPerson.getGender());
-                naturalPerson.setPlaceBirth(naturalPerson.getPlaceBirth());
-                naturalPerson.setDateBirth(naturalPerson.getDateBirth());
-                naturalPerson.setCivilStatusId(naturalPerson.getCivilStatusId());
-                if (naturalPerson.getProfessionId() != null) {
-                    naturalPerson.setProfessionId(naturalPerson.getProfessionId());
-                } else {
-                    naturalPerson.setProfessionId(null);
-                }
-                naturalPerson.setCreateDate(new Timestamp(new Date().getTime()));
-                saveEntity(naturalPerson);
-            }else {
-                //Se obtiene la Clasificacion de la persona 
-                String personClassificationCode = PersonClassificationE.REUNUS.getPersonClassificationCode();
-                PersonClassification personClassification = (PersonClassification) entityManager.createNamedQuery(QueryConstants.PERSON_CLASSIFICATION_BY_CODE, PersonClassification.class).setParameter(Constants.PARAM_CODE, personClassificationCode).getSingleResult();
+	@Override
+	public List<DocumentsPersonType> getDocumentPersonTypesBypersonTypeId(Long personTypeId)
+			throws EmptyListException, GeneralException, NullParameterException {
+		if (personTypeId == null) {
+			throw new NullParameterException("personTypeId", null);
+		}
+		List<DocumentsPersonType> documentsPersonTypes = new ArrayList<DocumentsPersonType>();
+		try {
+			documentsPersonTypes = (List<DocumentsPersonType>) entityManager
+					.createNamedQuery("DocumentsPersonType.findBypersonTypeId", DocumentsPersonType.class)
+					.setParameter("personTypeId", personTypeId).getResultList();
+		} catch (Exception e) {
+			throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(),
+					getMethodName(), e.getMessage()), null);
+		}
+		if (documentsPersonTypes.isEmpty()) {
+			throw new EmptyListException(logger,
+					sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName()), null);
+		}
+		return documentsPersonTypes;
+	}
 
-                //Se guarda el objeto person en la BD
-                person.setCreateDate(new Timestamp(new Date().getTime()));
-                if (person.getEmail() != null) {
-                    person.setEmail(person.getEmail());
-                } else {
-                    person.setEmail(null);
-                }
-                person.setPersonTypeId(person.getPersonTypeId());
-                person.setPersonClassificationId(personClassification);
-                if (person.getWebSite() != null) {
-                    person.setWebSite(person.getWebSite());
-                } else {
-                    person.setWebSite(null);
-                }
-                person.setCountryId(person.getCountryId());
-                person = (Person) saveEntity(person);               
-            }            
-            //Se guarda el objeto PhonePerson en la BD
-            phonePerson.setCountryId(phonePerson.getCountryId());
-            phonePerson.setCountryCode(phonePerson.getCountryCode());
-            phonePerson.setAreaCode(phonePerson.getAreaCode());
-            phonePerson.setNumberPhone(phonePerson.getNumberPhone());
-            phonePerson.setPersonId(person);
-            phonePerson.setPhoneTypeId(phonePerson.getPhoneTypeId());
-            if (phonePerson.getExtensionPhoneNumber() != null) {
-                phonePerson.setExtensionPhoneNumber(phonePerson.getExtensionPhoneNumber());
-            } else {
-                phonePerson.setExtensionPhoneNumber(null);
-            }
-            phonePerson.setIndMainPhone(phonePerson.getIndMainPhone());
-            phonePerson.setCreateDate(new Timestamp(new Date().getTime()));
-            saveEntity(phonePerson);
-            
-            //Guardo Address
-            address.setCountryId(address.getCountryId());
-            address.setCityId(address.getCityId());
-            if (address.getCountyId() != null) {
-                address.setCountyId(address.getCountyId());
-            } else {
-                address.setCountyId(null);
-            }
-            if (address.getZipCode() != null) {
-                address.setZipCode(address.getZipCode());
-            } else {
-                address.setZipCode(null);
-            }
-            if (address.getStreetTypeId() != null) {
-                address.setStreetTypeId(address.getStreetTypeId());
-            } else {
-                address.setStreetTypeId(null);
-            }
-            if (address.getNameStreet() != null) {
-                address.setNameStreet(address.getNameStreet());
-            } else {
-                address.setNameStreet(null);
-            }
-            address.setEdificationTypeId(address.getEdificationTypeId());
-            if (address.getNameEdification() != null) {
-                address.setNameEdification(address.getNameEdification());
-            } else {
-                address.setNameEdification(null);
-            }
-            if (address.getTower() != null) {
-                address.setTower(address.getTower());
-            } else {
-                address.setTower(null);
-            }
-            if (address.getFloor() != null) {
-                address.setFloor(address.getFloor());
-            } else {
-                address.setFloor(null);
-            }
-            if (address.getUrbanization() != null) {
-                address.setUrbanization(address.getUrbanization());
-            } else {
-                address.setUrbanization(null);
-            }
-            address.setAddressLine1("calle:" + address.getNameStreet() + "," + "Urbanizacion: " + address.getUrbanization() + "," + "Edificio:" + address.getNameEdification() + "," + "Piso:" + address.getFloor() + "");
-            address.setAddressLine2("Pais:" + address.getCountryId().getName() + "," + "Ciudad:" + address.getCityId().getName() + "," + "Codigo Postal:" + address.getZipCode() + "");
-            address.setAddressTypeId(address.getAddressTypeId());
-            address.setIndMainAddress(address.getIndMainAddress());
-            address = (Address) saveEntity(address);
-            
-            //Guardo Person_has_addres
-            PersonHasAddress personHasAddress = new PersonHasAddress();
-            personHasAddress.setAddressId(address);
-            personHasAddress.setPersonId(person);
-            personHasAddress.setCreateDate(new Timestamp(new Date().getTime()));
-            saveEntity(personHasAddress);
-            
-            //Guardar la Solicitud de Afiliación
-            Map<String, Object> params = new HashMap<String, Object>();
-            if (requestType.getCode().equals(requestTypeBussines)) {
-                params.put(Constants.PARAM_CODE, Constants.ORIGIN_APPLICATION_PORTAL_NEGOCIOS_CODE);
-            }else {
-                params.put(Constants.PARAM_CODE, Constants.ORIGIN_APPLICATION_APP_CODE);
-            }           
-            EJBRequest request = new EJBRequest();
-            request.setParams(params);
-            OriginApplication originApplication = utilsEJB.loadOriginApplicationByCode(request);
-            
-            params = new HashMap<String, Object>();
-            String acronym = null;
-            if (requestType.getCode().equals(requestTypeBussines)) {
-            	 acronym = DocumentTypeE.BUAFRQ.getDocumentTypeAcronym();
-                affiliatinRequest.setBusinessPersonId(person);
-            }else {
-            	 acronym = DocumentTypeE.USREAR.getDocumentTypeAcronym();
-                affiliatinRequest.setUserRegisterUnifiedId(person);
-            }
-            
-            Integer documentType = utilsEJB.getDocumentTypeByCode(acronym);
-            params = new HashMap<String, Object>();
-            params.put(EjbConstants.PARAM_DOCUMENT_TYPE_ID, documentType);
-            request = new EJBRequest();
-            request.setParams(params);
-            List<Sequences> sequences = getSequencesByDocumentType(request);
-            System.out.println("seque " + sequences);
-            String numberSequence = generateNumberSequence(sequences, originApplication.getId());            
-            affiliatinRequest.setCreateDate(new Timestamp(new Date().getTime()));
-            affiliatinRequest.setDateRequest(new Date());
-            params = new HashMap<String, Object>();
-            params.put(Constants.PARAM_CODE, Constants.STATUS_BUSINESS_AFFILIATION_REQUEST_PENDING);
-            request = new EJBRequest();
-            request.setParams(params);
-            affiliatinRequest.setNumberRequest(numberSequence);
-            StatusRequest status = utilsEJB.loadStatusBusinessAffiliationRequestByCode(request);
-            affiliatinRequest.setStatusRequestId(status);
-            affiliatinRequest.setRequestTypeId(requestType);
-            affiliatinRequest = (AffiliationRequest) saveEntity(affiliatinRequest);
-        } catch (Exception e) {
-        	e.printStackTrace();
-            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), e.getMessage()), null);
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<EdificationType> getEdificationType(EJBRequest request)
+			throws EmptyListException, GeneralException, NullParameterException {
+		return (List<EdificationType>) listEntities(EdificationType.class, request, logger, getMethodName());
+	}
 
-        }
-        return affiliatinRequest;
-    }
+	@Override
+	public List<PersonType> getPersonTypesBycountryId(Long countryId)
+			throws EmptyListException, GeneralException, NullParameterException {
+		if (countryId == null) {
+			throw new NullParameterException("countryId", null);
+		}
+		List<PersonType> personTypes = new ArrayList<PersonType>();
+		try {
+			personTypes = (List<PersonType>) entityManager
+					.createNamedQuery("PersonType.findBycountryId", PersonType.class)
+					.setParameter("countryId", countryId).getResultList();
+		} catch (Exception e) {
+			throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(),
+					getMethodName(), e.getMessage()), null);
+		}
+		if (personTypes.isEmpty()) {
+			throw new EmptyListException(logger,
+					sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName()), null);
+		}
+		return personTypes;
+	}
 
-    @Override
-    public RequestHasCollectionRequest saveRequestHasCollectionsRequest(RequestHasCollectionRequest requestHasCollectionsRequest) throws NullParameterException, GeneralException {
-        if (requestHasCollectionsRequest == null) {
-            throw new NullParameterException("requestHasCollectionsRequest", null);
-        }
-        return (RequestHasCollectionRequest) saveEntity(requestHasCollectionsRequest);
-    }
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<PhoneType> getPhoneType(EJBRequest request)
+			throws EmptyListException, GeneralException, NullParameterException {
+		return (List<PhoneType>) listEntities(PhoneType.class, request, logger, getMethodName());
+	}
 
-    @SuppressWarnings("unchecked")
-    @Override
-    public List<CivilStatus> getCivilStatus(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
-        return (List<CivilStatus>) listEntities(CivilStatus.class, request, logger, getMethodName());
-    }
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<Profession> getProfession(EJBRequest request)
+			throws EmptyListException, GeneralException, NullParameterException {
+		return (List<Profession>) listEntities(Profession.class, request, logger, getMethodName());
+	}
 
-    @SuppressWarnings("unchecked")
-    @Override
-    public List<Profession> getProfession(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
-        return (List<Profession>) listEntities(Profession.class, request, logger, getMethodName());
-    }
+	@Override
+	public List<State> getStatesByCountryId(Long countryId)
+			throws EmptyListException, GeneralException, NullParameterException {
+		if (countryId == null) {
+			throw new NullParameterException("countryId", null);
+		}
+		List<State> states = new ArrayList<State>();
+		try {
+			states = (List<State>) entityManager.createNamedQuery("State.findBycountryId", State.class)
+					.setParameter("countryId", countryId).getResultList();
+		} catch (Exception e) {
+			throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(),
+					getMethodName(), e.getMessage()), null);
+		}
+		if (states.isEmpty()) {
+			throw new EmptyListException(logger,
+					sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName()), null);
+		}
+		return states;
+	}
 
-    @SuppressWarnings("unchecked")
-    @Override
-    public List<PhoneType> getPhoneType(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
-        return (List<PhoneType>) listEntities(PhoneType.class, request, logger, getMethodName());
-    }
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<StatusAccountBank> getStatusAccountBanks(EJBRequest request)
+			throws EmptyListException, GeneralException, NullParameterException {
+		return (List<StatusAccountBank>) listEntities(StatusAccountBank.class, request, logger, getMethodName());
+	}
 
-    @SuppressWarnings("unchecked")
-    @Override
-    public List<AddressType> getAddressType(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
-        return (List<AddressType>) listEntities(AddressType.class, request, logger, getMethodName());
-    }
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<StatusApplicant> getStatusApplicant(EJBRequest request)
+			throws EmptyListException, GeneralException, NullParameterException {
+		return (List<StatusApplicant>) listEntities(StatusApplicant.class, request, logger, getMethodName());
+	}
 
-    @SuppressWarnings("unchecked")
-    @Override
-    public List<EdificationType> getEdificationType(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
-        return (List<EdificationType>) listEntities(EdificationType.class, request, logger, getMethodName());
-    }
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<StreetType> getStreetType(EJBRequest request)
+			throws EmptyListException, GeneralException, NullParameterException {
+		return (List<StreetType>) listEntities(StreetType.class, request, logger, getMethodName());
+	}
 
-    @SuppressWarnings("unchecked")
-    @Override
-    public List<StreetType> getStreetType(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
-        return (List<StreetType>) listEntities(StreetType.class, request, logger, getMethodName());
-    }
+	@Override
+	public AccountBank loadAccountBankById(Long id)
+			throws RegisterNotFoundException, NullParameterException, GeneralException {
+		EJBRequest request = new EJBRequest();
+		request.setParam(id);
+		AccountBank accountBank = (AccountBank) loadEntity(AccountBank.class, request, logger, getMethodName());
+		return accountBank;
+	}
 
-    @Override
-    public DocumentType loadDocumentType(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
-        DocumentType documentType = (DocumentType) loadEntity(DocumentType.class, request, logger, getMethodName());
-        return documentType;
-    }
+	@Override
+	public AccountTypeBank loadAccountTypeBankById(Integer id)
+			throws RegisterNotFoundException, NullParameterException, GeneralException {
+		EJBRequest request = new EJBRequest();
+		request.setParam(id);
+		AccountTypeBank accountTypeBank = (AccountTypeBank) loadEntity(AccountTypeBank.class, request, logger,
+				getMethodName());
+		return accountTypeBank;
+	}
 
-    @Override
-    public OriginApplication loadOriginApplication(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
-        OriginApplication originApplication = (OriginApplication) loadEntity(OriginApplication.class, request, logger, getMethodName());
-    return originApplication;
-    }
-    
-    @SuppressWarnings("unchecked")
-    @Override
-    public List<StatusApplicant> getStatusApplicant(EJBRequest request)throws EmptyListException, GeneralException, NullParameterException{
-        return (List<StatusApplicant>) listEntities(StatusApplicant.class, request, logger, getMethodName());
-    }
-    
-    @Override
-    public StatusApplicant loadStatusApplicant(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
-    	StatusApplicant statusApplicant = (StatusApplicant) loadEntity(StatusApplicant.class, request, logger, getMethodName());
-    	return statusApplicant;
-    }
-    
-    @Override
-    public PhoneType loadPhoneType(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
-    	PhoneType phoneType = (PhoneType) loadEntity(PhoneType.class, request, logger, getMethodName());
-    	return phoneType;
-    }
-    
-    @Override
-    public AffiliationRequest loadAffiliationRequest(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
-    	AffiliationRequest affiliationRequest = (AffiliationRequest) loadEntity(AffiliationRequest.class, request, logger, getMethodName());
-    	return affiliationRequest;
-    }
-    
-    @Override
-    public Bank loadBank(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
-    	Bank bank = (Bank) loadEntity(Bank.class, request, logger, getMethodName());
-    	return bank;
-    }
-    
-    @Override
-    public AccountTypeBank loadAccountTypeBank(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException {
-    	AccountTypeBank accountTypeBank = (AccountTypeBank) loadEntity(AccountTypeBank.class, request, logger, getMethodName());
-    	return accountTypeBank;
-    }
-    
-    @SuppressWarnings("unchecked")
-    @Override
-    public List<Bank> getBanks(EJBRequest request)throws EmptyListException, GeneralException, NullParameterException{
-        return (List<Bank>) listEntities(Bank.class, request, logger, getMethodName());
-    }
-    
-    @SuppressWarnings("unchecked")
-    @Override
-    public List<AccountTypeBank> getAccountTypeBanks(EJBRequest request)throws EmptyListException, GeneralException, NullParameterException{
-        return (List<AccountTypeBank>) listEntities(AccountTypeBank.class, request, logger, getMethodName());
-    }
-    
-    @SuppressWarnings("unchecked")
-    @Override
-    public List<AccountBank> getAccountBanks(EJBRequest request)throws EmptyListException, GeneralException, NullParameterException{
-        return (List<AccountBank>) listEntities(AccountBank.class, request, logger, getMethodName());
-    }
-    
-    @Override
-    public AccountBank loadAccountBank(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException{
-    	AccountBank accountBank = (AccountBank) loadEntity(AccountBank.class, request, logger, getMethodName());
-    	return accountBank;
-    }
-    
-    @Override
-    public AccountBank saveAccountBank(AccountBank accountBank) throws RegisterNotFoundException, NullParameterException, GeneralException {
-        if (accountBank == null) {
-            throw new NullParameterException("accountBank", null);
-        }
-        return (AccountBank) saveEntity(accountBank);
-    }
+	@Override
+	public AffiliationRequest loadAffiliationRequestById(Long id)
+			throws RegisterNotFoundException, NullParameterException, GeneralException {
+		EJBRequest request = new EJBRequest();
+		request.setParam(id);
+		AffiliationRequest affiliationRequest = (AffiliationRequest) loadEntity(AffiliationRequest.class, request,
+				logger, getMethodName());
+		return affiliationRequest;
+	}
 
-    @SuppressWarnings("unchecked")
-    @Override
-    public List<Currency> getCurrencies(EJBRequest request)throws EmptyListException, GeneralException, NullParameterException{
-        return (List<Currency>) listEntities(Currency.class, request, logger, getMethodName());
-    }
-    
-    @Override
-    public Currency loadCurrency(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException{
-    	Currency currency = (Currency) loadEntity(Currency.class, request, logger, getMethodName());
-    	return currency;
-    }
-    
-    @SuppressWarnings("unchecked")
-    @Override
-    public List<StatusAccountBank> getStatusAccountBanks(EJBRequest request)throws EmptyListException, GeneralException, NullParameterException{
-        return (List<StatusAccountBank>) listEntities(StatusAccountBank.class, request, logger, getMethodName());
-    }
-    
-    @Override
-    public StatusAccountBank loadStatusAccountBank(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException{
-    	StatusAccountBank currency = (StatusAccountBank) loadEntity(StatusAccountBank.class, request, logger, getMethodName());
-    	return currency;
-    }
-    
-    @SuppressWarnings("unchecked")
-    @Override
-    public List<BusinessCategory> getBusinessCategories(EJBRequest request)throws EmptyListException, GeneralException, NullParameterException{
-        return (List<BusinessCategory>) listEntities(BusinessCategory.class, request, logger, getMethodName());
-    }
-    
-    @Override
-    public BusinessCategory loadBusinessCategory(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException{
-    	BusinessCategory category = (BusinessCategory) loadEntity(BusinessCategory.class, request, logger, getMethodName());
-    	return category;
-    }
+	@Override
+	public Bank loadBankById(Long id) throws RegisterNotFoundException, NullParameterException, GeneralException {
+		EJBRequest request = new EJBRequest();
+		request.setParam(id);
+		Bank bank = (Bank) loadEntity(Bank.class, request, logger, getMethodName());
+		return bank;
+	}
 
-   
+	@Override
+	public BusinessCategory loadBusinessCategoryById(Integer id)
+			throws RegisterNotFoundException, NullParameterException, GeneralException {
+		EJBRequest request = new EJBRequest();
+		request.setParam(id);
+		BusinessCategory category = (BusinessCategory) loadEntity(BusinessCategory.class, request, logger,
+				getMethodName());
+		return category;
+	}
+
+	@Override
+	public Currency loadCurrencyById(Long id)
+			throws RegisterNotFoundException, NullParameterException, GeneralException {
+		EJBRequest request = new EJBRequest();
+		request.setParam(id);
+		Currency currency = (Currency) loadEntity(Currency.class, request, logger, getMethodName());
+		return currency;
+	}
+
+	@Override
+	public DocumentType loadDocumentTypeById(Integer id)
+			throws RegisterNotFoundException, NullParameterException, GeneralException {
+		EJBRequest request = new EJBRequest();
+		request.setParam(id);
+		DocumentType documentType = (DocumentType) loadEntity(DocumentType.class, request, logger, getMethodName());
+		return documentType;
+	}
+
+	@Override
+	public OriginApplication loadOriginApplicationById(Integer id)
+			throws RegisterNotFoundException, NullParameterException, GeneralException {
+		EJBRequest request = new EJBRequest();
+		request.setParam(id);
+		OriginApplication originApplication = (OriginApplication) loadEntity(OriginApplication.class, request, logger,
+				getMethodName());
+		return originApplication;
+	}
+
+	@Override
+	public PhoneType loadPhoneTypeById(Integer id)
+			throws RegisterNotFoundException, NullParameterException, GeneralException {
+		EJBRequest request = new EJBRequest();
+		request.setParam(id);
+		PhoneType phoneType = (PhoneType) loadEntity(PhoneType.class, request, logger, getMethodName());
+		return phoneType;
+	}
+
+	@Override
+	public RequestType loadRequestTypeByCode(String code)
+			throws RegisterNotFoundException, NullParameterException, GeneralException {
+		if (code == null) {
+			throw new NullParameterException("code", null);
+		}
+		try {
+			CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+			CriteriaQuery<RequestType> cq = cb.createQuery(RequestType.class);
+			Root<RequestType> from = cq.from(RequestType.class);
+			cq.select(from);
+			cq.where(cb.equal(from.get("code"), code));
+			return entityManager.createQuery(cq).setMaxResults(1).getSingleResult();
+		} catch (NoResultException e) {
+			throw new RegisterNotFoundException(logger, sysError.format(EjbConstants.ERR_NORESULTEXCEPTION,
+					this.getClass(), getMethodName(), e.getMessage()), null);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(),
+					getMethodName(), e.getMessage()), null);
+		}
+	}
+
+	@Override
+	public StatusAccountBank loadStatusAccountBankById(Integer id)
+			throws RegisterNotFoundException, NullParameterException, GeneralException {
+		EJBRequest request = new EJBRequest();
+		request.setParam(id);
+		StatusAccountBank currency = (StatusAccountBank) loadEntity(StatusAccountBank.class, request, logger,
+				getMethodName());
+		return currency;
+	}
+
+	@Override
+	public StatusApplicant loadStatusApplicantById(Integer id)
+			throws RegisterNotFoundException, NullParameterException, GeneralException {
+		EJBRequest request = new EJBRequest();
+		request.setParam(id);
+		StatusApplicant statusApplicant = (StatusApplicant) loadEntity(StatusApplicant.class, request, logger,
+				getMethodName());
+		return statusApplicant;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<Sequences> getSequencesByDocumentType(Integer documentTypeId)
+			throws EmptyListException, GeneralException, NullParameterException {
+		if (documentTypeId == null) {
+			throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(),
+					getMethodName(), EjbConstants.PARAM_DOCUMENT_TYPE_ID), null);
+		}
+		List<Sequences> sequence = null;
+		EJBRequest request = new EJBRequest();
+		Map<String, Object> params = new HashMap();
+		params.put(EjbConstants.PARAM_DOCUMENT_TYPE_ID, documentTypeId);
+		request.setParams(params);
+
+		sequence = (List<Sequences>) getNamedQueryResult(UtilsEJB.class, QueryConstants.SEQUENCES_BY_DOCUMENT_TYPE,
+				request, getMethodName(), logger, "sequence");
+		return sequence;
+	}
+
+	@Override
+	public String generateNumberSequence(List<Sequences> sequence, int originApplication)
+			throws GeneralException, RegisterNotFoundException, NullParameterException {
+		int numberSequence = 0;
+		String prefixNumberSequence = "";
+		String acronym = "";
+		for (Sequences s : sequence) {
+			if (s.getOriginApplicationId().getId() == originApplication) {
+				if (s.getCurrentValue() > 1) {
+					numberSequence = s.getCurrentValue();
+				} else {
+					numberSequence = s.getInitialValue();
+				}
+				acronym = s.getDocumentTypeId().getAcronym();
+				s.setCurrentValue(s.getCurrentValue() + 1);
+				saveSequences(s);
+			}
+		}
+		Calendar cal = Calendar.getInstance();
+		int year = cal.get(Calendar.YEAR);
+		switch (originApplication) {
+		case Constants.ORIGIN_APPLICATION_APP_ALODIGA_WALLET_ID:
+			prefixNumberSequence = "APP-";
+			break;
+		case Constants.ORIGIN_APPLICATION_ADMIN_WALLET_ID:
+			prefixNumberSequence = "ADM-";
+			break;
+		case Constants.ORIGIN_APPLICATION_PORTAL_WEB_ID:
+			prefixNumberSequence = "PBW";
+			break;
+		default:
+			break;
+		}
+		prefixNumberSequence = prefixNumberSequence.concat(acronym);
+		String suffixNumberSequence = "-";
+		suffixNumberSequence = suffixNumberSequence.concat(String.valueOf(year));
+		String numberSequenceDoc = prefixNumberSequence;
+		numberSequenceDoc = numberSequenceDoc.concat("-");
+		numberSequenceDoc = numberSequenceDoc.concat(String.valueOf(numberSequence));
+		numberSequenceDoc = numberSequenceDoc.concat(suffixNumberSequence);
+		return numberSequenceDoc;
+	}
+
+	@Override
+	public Sequences saveSequences(Sequences sequence)
+			throws RegisterNotFoundException, NullParameterException, GeneralException {
+		if (sequence == null) {
+			throw new NullParameterException("sequence", null);
+		}
+		return (Sequences) saveEntity(sequence);
+	}
+
+	@Override
+	public AffiliationRequest saveNaturalPersonAffiliationRequest(Person person, NaturalPerson naturalPerson,
+			RequestType requestType, PhonePerson phonePerson, Address address)
+			throws NullParameterException, GeneralException {
+		AffiliationRequest affiliatinRequest = new AffiliationRequest();
+		try {
+			String requestTypeBussines = RequestTypeE.SOAFNE.getRequestTypeCode();
+			System.out.println("REQUEST TYPE " + requestTypeBussines);
+			if (requestType.getCode().equals(requestTypeBussines)) {
+				// Se obtiene la Clasificacion del Solicitante Natural
+				String personClassificationCode = PersonClassificationE.NABUAP.getPersonClassificationCode();
+				PersonClassification personClassification = (PersonClassification) entityManager
+						.createNamedQuery(QueryConstants.PERSON_CLASSIFICATION_BY_CODE, PersonClassification.class)
+						.setParameter(Constants.PARAM_CODE, personClassificationCode).getSingleResult();
+
+				// Se guarda el objeto person en la BD
+				person.setCreateDate(new Timestamp(new Date().getTime()));
+				if (person.getEmail() != null) {
+					person.setEmail(person.getEmail());
+				} else {
+					person.setEmail(null);
+				}
+				person.setPersonTypeId(person.getPersonTypeId());
+				person.setPersonClassificationId(personClassification);
+				if (person.getWebSite() != null) {
+					person.setWebSite(person.getWebSite());
+				} else {
+					person.setWebSite(null);
+				}
+				person.setCountryId(person.getCountryId());
+				person = (Person) saveEntity(person);
+
+				// Se guarda el objeto NaturalPerson en la BD
+				naturalPerson.setPersonId(person);
+				naturalPerson.setDocumentsPersonTypeId(naturalPerson.getDocumentsPersonTypeId());
+				naturalPerson.setIdentificationNumber(naturalPerson.getIdentificationNumber());
+				if (naturalPerson.getIdentificactionNumberOld() != null) {
+					naturalPerson.setIdentificactionNumberOld(naturalPerson.getIdentificactionNumberOld());
+				} else {
+					naturalPerson.setIdentificactionNumberOld(null);
+				}
+				naturalPerson.setDueDateDocumentIdentification(naturalPerson.getDueDateDocumentIdentification());
+				naturalPerson.setFirstName(naturalPerson.getFirstName());
+				naturalPerson.setLastName(naturalPerson.getLastName());
+				if (naturalPerson.getMarriedLastName() != null) {
+					naturalPerson.setMarriedLastName(naturalPerson.getMarriedLastName());
+				} else {
+					naturalPerson.setMarriedLastName(null);
+				}
+				naturalPerson.setGender(naturalPerson.getGender());
+				naturalPerson.setPlaceBirth(naturalPerson.getPlaceBirth());
+				naturalPerson.setDateBirth(naturalPerson.getDateBirth());
+				naturalPerson.setCivilStatusId(naturalPerson.getCivilStatusId());
+				if (naturalPerson.getProfessionId() != null) {
+					naturalPerson.setProfessionId(naturalPerson.getProfessionId());
+				} else {
+					naturalPerson.setProfessionId(null);
+				}
+				naturalPerson.setCreateDate(new Timestamp(new Date().getTime()));
+				saveEntity(naturalPerson);
+			} else {
+				// Se obtiene la Clasificacion de la persona
+				String personClassificationCode = PersonClassificationE.REUNUS.getPersonClassificationCode();
+				PersonClassification personClassification = (PersonClassification) entityManager
+						.createNamedQuery(QueryConstants.PERSON_CLASSIFICATION_BY_CODE, PersonClassification.class)
+						.setParameter(Constants.PARAM_CODE, personClassificationCode).getSingleResult();
+
+				// Se guarda el objeto person en la BD
+				person.setCreateDate(new Timestamp(new Date().getTime()));
+				if (person.getEmail() != null) {
+					person.setEmail(person.getEmail());
+				} else {
+					person.setEmail(null);
+				}
+				person.setPersonTypeId(person.getPersonTypeId());
+				person.setPersonClassificationId(personClassification);
+				if (person.getWebSite() != null) {
+					person.setWebSite(person.getWebSite());
+				} else {
+					person.setWebSite(null);
+				}
+				person.setCountryId(person.getCountryId());
+				person = (Person) saveEntity(person);
+			}
+			// Se guarda el objeto PhonePerson en la BD
+			phonePerson.setCountryId(phonePerson.getCountryId());
+			phonePerson.setCountryCode(phonePerson.getCountryCode());
+			phonePerson.setAreaCode(phonePerson.getAreaCode());
+			phonePerson.setNumberPhone(phonePerson.getNumberPhone());
+			phonePerson.setPersonId(person);
+			phonePerson.setPhoneTypeId(phonePerson.getPhoneTypeId());
+			if (phonePerson.getExtensionPhoneNumber() != null) {
+				phonePerson.setExtensionPhoneNumber(phonePerson.getExtensionPhoneNumber());
+			} else {
+				phonePerson.setExtensionPhoneNumber(null);
+			}
+			phonePerson.setIndMainPhone(phonePerson.getIndMainPhone());
+			phonePerson.setCreateDate(new Timestamp(new Date().getTime()));
+			saveEntity(phonePerson);
+
+			// Guardo Address
+			address.setCountryId(address.getCountryId());
+			address.setCityId(address.getCityId());
+			if (address.getCountyId() != null) {
+				address.setCountyId(address.getCountyId());
+			} else {
+				address.setCountyId(null);
+			}
+			if (address.getZipCode() != null) {
+				address.setZipCode(address.getZipCode());
+			} else {
+				address.setZipCode(null);
+			}
+			if (address.getStreetTypeId() != null) {
+				address.setStreetTypeId(address.getStreetTypeId());
+			} else {
+				address.setStreetTypeId(null);
+			}
+			if (address.getNameStreet() != null) {
+				address.setNameStreet(address.getNameStreet());
+			} else {
+				address.setNameStreet(null);
+			}
+			address.setEdificationTypeId(address.getEdificationTypeId());
+			if (address.getNameEdification() != null) {
+				address.setNameEdification(address.getNameEdification());
+			} else {
+				address.setNameEdification(null);
+			}
+			if (address.getTower() != null) {
+				address.setTower(address.getTower());
+			} else {
+				address.setTower(null);
+			}
+			if (address.getFloor() != null) {
+				address.setFloor(address.getFloor());
+			} else {
+				address.setFloor(null);
+			}
+			if (address.getUrbanization() != null) {
+				address.setUrbanization(address.getUrbanization());
+			} else {
+				address.setUrbanization(null);
+			}
+			address.setAddressLine1(
+					"calle:" + address.getNameStreet() + "," + "Urbanizacion: " + address.getUrbanization() + ","
+							+ "Edificio:" + address.getNameEdification() + "," + "Piso:" + address.getFloor() + "");
+			address.setAddressLine2("Pais:" + address.getCountryId().getName() + "," + "Ciudad:"
+					+ address.getCityId().getName() + "," + "Codigo Postal:" + address.getZipCode() + "");
+			address.setAddressTypeId(address.getAddressTypeId());
+			address.setIndMainAddress(address.getIndMainAddress());
+			address = (Address) saveEntity(address);
+
+			// Guardo Person_has_addres
+			PersonHasAddress personHasAddress = new PersonHasAddress();
+			personHasAddress.setAddressId(address);
+			personHasAddress.setPersonId(person);
+			personHasAddress.setCreateDate(new Timestamp(new Date().getTime()));
+			saveEntity(personHasAddress);
+
+			// Guardar la Solicitud de Afiliación
+			Map<String, Object> params = new HashMap<String, Object>();
+			if (requestType.getCode().equals(requestTypeBussines)) {
+				params.put(Constants.PARAM_CODE, Constants.ORIGIN_APPLICATION_PORTAL_NEGOCIOS_CODE);
+			} else {
+				params.put(Constants.PARAM_CODE, Constants.ORIGIN_APPLICATION_APP_CODE);
+			}
+			EJBRequest request = new EJBRequest();
+			request.setParams(params);
+			OriginApplication originApplication = utilsEJB.loadOriginApplicationByCode(request);
+
+			params = new HashMap<String, Object>();
+			String acronym = null;
+			if (requestType.getCode().equals(requestTypeBussines)) {
+				acronym = DocumentTypeE.BUAFRQ.getDocumentTypeAcronym();
+				affiliatinRequest.setBusinessPersonId(person);
+			} else {
+				acronym = DocumentTypeE.USREAR.getDocumentTypeAcronym();
+				affiliatinRequest.setUserRegisterUnifiedId(person);
+			}
+
+			Integer documentType = utilsEJB.getDocumentTypeByCode(acronym);
+			List<Sequences> sequences = getSequencesByDocumentType(documentType);
+			System.out.println("seque " + sequences);
+			String numberSequence = generateNumberSequence(sequences, originApplication.getId());
+			affiliatinRequest.setCreateDate(new Timestamp(new Date().getTime()));
+			affiliatinRequest.setDateRequest(new Date());
+			params = new HashMap<String, Object>();
+			params.put(Constants.PARAM_CODE, Constants.STATUS_BUSINESS_AFFILIATION_REQUEST_PENDING);
+			request = new EJBRequest();
+			request.setParams(params);
+			affiliatinRequest.setNumberRequest(numberSequence);
+			StatusRequest status = utilsEJB.loadStatusBusinessAffiliationRequestByCode(request);
+			affiliatinRequest.setStatusRequestId(status);
+			affiliatinRequest.setRequestTypeId(requestType);
+			affiliatinRequest = (AffiliationRequest) saveEntity(affiliatinRequest);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(),
+					getMethodName(), e.getMessage()), null);
+
+		}
+		return affiliatinRequest;
+	}
+
+	@Override
+	public AffiliationRequest saveLegalPersonAffiliationRequest(Person person, LegalPerson legalPerson,
+			RequestType requestType, PhonePerson phonePerson, Address address, LegalRepresentative legalRepresentative)
+			throws NullParameterException, GeneralException {
+		if(person == null || legalPerson == null || legalRepresentative == null || 
+				requestType == null || phonePerson == null || address == null) {
+			throw new NullParameterException(EjbConstants.ERR_NULL_PARAMETER);
+		}
+		AffiliationRequest affiliatinRequest = new AffiliationRequest();
+		try {
+			if (requestType.getCode().equals(RequestTypeE.SOAFNE.getRequestTypeCode())) {
+				// Se obtiene la Clasificacion del Solicitante Juridico
+				String personClassificationCode = PersonClassificationE.LEBUAP.getPersonClassificationCode();
+				PersonClassification personClassification = (PersonClassification) entityManager
+						.createNamedQuery(QueryConstants.PERSON_CLASSIFICATION_BY_CODE, PersonClassification.class)
+						.setParameter(Constants.PARAM_CODE, personClassificationCode).getSingleResult();
+
+				// Se guarda el objeto person en la BD
+				person.setCreateDate(new Date());
+				person.setPersonClassificationId(personClassification);
+				person = (Person) saveEntity(person);
+
+				// Se guarda el objeto NaturalPerson en la BD
+				legalPerson.setPersonId(person);
+				legalPerson.setCreateDate(new Date());
+				saveEntity(legalPerson);
+				
+				//TODO buscar el representante legal a ver si ya existe
+				legalRepresentative.setCreateDate(new Date());
+				legalRepresentative.setPersonId(person);
+				saveEntity(legalRepresentative);
+				
+				legalPerson.setLegalRepresentativeId(legalRepresentative);
+				saveEntity(legalPerson);
+				
+			} else {
+				//TODO implementar otro tipo de requestType
+				return null;
+			}
+			// Se guarda el objeto PhonePerson en la BD
+
+			phonePerson.setPersonId(person);
+			phonePerson.setCreateDate(new Date());
+			saveEntity(phonePerson);
+
+			// Guardo Address
+			address.setAddressLine1(
+					"Calle:" + address.getNameStreet() + "," + "Urbanizacion: " + address.getUrbanization() + ","
+							+ "Edificio:" + address.getNameEdification() + "," + "Piso:" + address.getFloor() + "");
+			address.setAddressLine2("Pais:" + address.getCountryId().getName() + "," + "Ciudad:"
+					+ address.getCityId().getName() + "," + "Codigo Postal:" + address.getZipCode() + "");
+			address = (Address) saveEntity(address);
+
+			// Guardo Person_has_addres
+			PersonHasAddress personHasAddress = new PersonHasAddress();
+			personHasAddress.setAddressId(address);
+			personHasAddress.setPersonId(person);
+			personHasAddress.setCreateDate(new Date());
+			saveEntity(personHasAddress);
+
+			// Guardar la Solicitud de Afiliacion
+			Map<String, Object> params = new HashMap<String, Object>();
+			if (requestType.getCode().equals(RequestTypeE.SOAFNE.getRequestTypeCode())) {
+				params.put(Constants.PARAM_CODE, Constants.ORIGIN_APPLICATION_PORTAL_NEGOCIOS_CODE);
+			}
+			EJBRequest request = new EJBRequest();
+			request.setParams(params);
+			OriginApplication originApplication = utilsEJB.loadOriginApplicationByCode(request);
+
+			params = new HashMap<String, Object>();
+			String acronym = null;
+			if (requestType.getCode().equals(RequestTypeE.SOAFNE.getRequestTypeCode())) {
+				acronym = DocumentTypeE.BUAFRQ.getDocumentTypeAcronym();
+				affiliatinRequest.setBusinessPersonId(person);
+			}
+
+			Integer documentType = utilsEJB.getDocumentTypeByCode(acronym);
+			List<Sequences> sequences = getSequencesByDocumentType(documentType);
+			String numberSequence = generateNumberSequence(sequences, originApplication.getId());
+			affiliatinRequest.setCreateDate(new Timestamp(new Date().getTime()));
+			affiliatinRequest.setDateRequest(new Date());
+			params = new HashMap<String, Object>();
+			params.put(Constants.PARAM_CODE, Constants.STATUS_BUSINESS_AFFILIATION_REQUEST_PENDING);
+			request = new EJBRequest();
+			request.setParams(params);
+			affiliatinRequest.setNumberRequest(numberSequence);
+			StatusRequest status = utilsEJB.loadStatusBusinessAffiliationRequestByCode(request);
+			affiliatinRequest.setStatusRequestId(status);
+			affiliatinRequest.setRequestTypeId(requestType);
+			affiliatinRequest = (AffiliationRequest) saveEntity(affiliatinRequest);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(),
+					getMethodName(), e.getMessage()), null);
+
+		}
+		return affiliatinRequest;
+	}
+
+	@Override
+	public RequestHasCollectionRequest saveRequestHasCollectionsRequest(
+			RequestHasCollectionRequest requestHasCollectionsRequest) throws NullParameterException, GeneralException {
+		if (requestHasCollectionsRequest == null) {
+			throw new NullParameterException("requestHasCollectionsRequest", null);
+		}
+		return (RequestHasCollectionRequest) saveEntity(requestHasCollectionsRequest);
+	}
+
+	@Override
+	public AccountBank saveAccountBank(AccountBank accountBank)
+			throws RegisterNotFoundException, NullParameterException, GeneralException {
+		if (accountBank == null) {
+			throw new NullParameterException("accountBank", null);
+		}
+		return (AccountBank) saveEntity(accountBank);
+	}
+
 }
