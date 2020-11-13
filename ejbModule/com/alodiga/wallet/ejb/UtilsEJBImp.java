@@ -1210,10 +1210,11 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         return (AffiliationRequest) saveEntity(affiliationRequest);
     }
     
+    @Override
     public List<AffiliationRequest> searchAffiliationRequestByParams(EJBRequest request) throws GeneralException, NullParameterException, EmptyListException {
         List<AffiliationRequest> operations = new ArrayList<AffiliationRequest>();
 
-             Map<String, Object> params = request.getParams();
+            Map<String, Object> params = request.getParams();
             StringBuilder sqlBuilder = new StringBuilder("SELECT * FROM affiliation_request t WHERE t.requestTypeId=").append(params.get(QueryConstants.PARAM_REQUEST_TYPE));
             
             if (params.containsKey(QueryConstants.PARAM_NUMBER_REQUEST)) {
@@ -1227,10 +1228,10 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
             return operations;
     }
     
-    public List<AffiliationRequest> getTransactionApproveRequestByType(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+    @Override
+    public List<AffiliationRequest> getAffiliationRequestByRequestByType(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
         List<AffiliationRequest> affiliationRequestList = null;
-        Map<String, Object> params = request.getParams();
-        
+        Map<String, Object> params = request.getParams();        
         if (!params.containsKey(EjbConstants.PARAM_REQUEST_TYPE)) {
             throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_REQUEST_TYPE), null);
         }

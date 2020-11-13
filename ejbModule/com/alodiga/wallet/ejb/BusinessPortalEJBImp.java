@@ -61,6 +61,7 @@ import com.alodiga.wallet.common.model.PersonHasAddress;
 import com.alodiga.wallet.common.model.PersonType;
 import com.alodiga.wallet.common.model.PhonePerson;
 import com.alodiga.wallet.common.model.PhoneType;
+import com.alodiga.wallet.common.model.PreferenceValue;
 import com.alodiga.wallet.common.model.Profession;
 import com.alodiga.wallet.common.model.RequestHasCollectionRequest;
 import com.alodiga.wallet.common.model.RequestType;
@@ -73,6 +74,8 @@ import com.alodiga.wallet.common.model.StreetType;
 import com.alodiga.wallet.common.utils.Constants;
 import com.alodiga.wallet.common.utils.EjbConstants;
 import com.alodiga.wallet.common.utils.QueryConstants;
+import java.text.SimpleDateFormat;
+import javax.persistence.NoResultException;
 
 @Interceptors({ WalletLoggerInterceptor.class, WalletContextInterceptor.class })
 @Stateless(name = EjbConstants.BUSINESS_PORTAL_EJB, mappedName = EjbConstants.BUSINESS_PORTAL_EJB)
