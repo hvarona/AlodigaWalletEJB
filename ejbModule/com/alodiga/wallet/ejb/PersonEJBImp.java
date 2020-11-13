@@ -3,6 +3,7 @@ package com.alodiga.wallet.ejb;
 import com.alodiga.wallet.common.ejb.PersonEJB;
 import com.alodiga.wallet.common.ejb.PersonEJBLocal;
 import com.alodiga.wallet.common.ejb.UtilsEJB;
+import com.alodiga.wallet.common.enumeraciones.PersonClassificationE;
 import java.util.List;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionManagement;
@@ -81,6 +82,28 @@ public class PersonEJBImp extends AbstractWalletEJB implements PersonEJB, Person
             throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_ORIGIN_APPLICATION_ID), null);
         }
         documentsPersonType = (List<DocumentsPersonType>) getNamedQueryResult(DocumentsPersonType.class, QueryConstants.DOCUMENTS_BY_COUNTRY, request, getMethodName(), logger, "documentsPersonType");
+        return documentsPersonType;
+    }
+    
+    public List<DocumentsPersonType> searchDocumentsPersonTypeByCountry(String name) throws EmptyListException, GeneralException, NullParameterException {
+        List<DocumentsPersonType> documentsPersonType = null;
+        try {
+            if (name == null) {
+                throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "name"), null);
+            }
+      
+            StringBuilder sqlBuilder = new StringBuilder("SELECT * FROM documents_person_type cp ");
+            sqlBuilder.append("WHERE cp.personTypeId IN (SELECT p.id FROM person_type p WHERE p.countryId ");
+            sqlBuilder.append("IN (SELECT c.id FROM country c WHERE c.name LIKE '").append(name).append("%'))");
+            Query query = entityManager.createNativeQuery(sqlBuilder.toString(), DocumentsPersonType.class);
+            documentsPersonType = query.setHint("toplink.refresh", "true").getResultList();
+            
+        
+        } catch (NoResultException ex) {
+            throw new EmptyListException("No distributions found");
+        } catch (Exception ex) {
+            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), ex.getMessage()), ex);
+        }
         return documentsPersonType;
     }
 
@@ -221,6 +244,26 @@ public class PersonEJBImp extends AbstractWalletEJB implements PersonEJB, Person
             throw new NullParameterException("person", null);
         }
         return (Person) saveEntity(person);
+    }
+    
+    @Override
+    public List<Person> getPersonByPersonClassificationId(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        List<Person> personList = null;
+      
+        Map<String, Object> params = request.getParams();
+        StringBuilder sqlBuilder = new StringBuilder("SELECT * FROM person p WHERE p.id IN ");
+        if (params.containsKey(QueryConstants.PARAM_FIRST_NAME)) {
+            sqlBuilder.append("(SELECT n.personId FROM natural_person n WHERE n.firstName LIKE '").append(params.get(QueryConstants.PARAM_FIRST_NAME)).append("%')");;
+        }
+        sqlBuilder.append(" AND p.personClassificationId = "+PersonClassificationE.REUNUS.getId()+"");
+        
+        Query query = entityManager.createNativeQuery(sqlBuilder.toString(), Person.class);
+        personList = (List<Person>) query.setHint("toplink.refresh", "true").getResultList();
+        if (personList.isEmpty()) {
+            throw new EmptyListException(logger, sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName()), null);
+        }
+        
+        return personList;
     }
 
     //Natural Person
