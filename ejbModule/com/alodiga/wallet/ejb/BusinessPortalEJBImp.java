@@ -1,6 +1,7 @@
 package com.alodiga.wallet.ejb;
 
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -69,8 +70,6 @@ import com.alodiga.wallet.common.model.StreetType;
 import com.alodiga.wallet.common.utils.Constants;
 import com.alodiga.wallet.common.utils.EjbConstants;
 import com.alodiga.wallet.common.utils.QueryConstants;
-import java.text.SimpleDateFormat;
-import javax.persistence.NoResultException;
 
 @Interceptors({WalletLoggerInterceptor.class, WalletContextInterceptor.class})
 @Stateless(name = EjbConstants.BUSINESS_PORTAL_EJB, mappedName = EjbConstants.BUSINESS_PORTAL_EJB)
@@ -271,6 +270,49 @@ public class BusinessPortalEJBImp extends AbstractWalletEJB implements BusinessP
         return numberSequenceDoc;
     }
 
+	@Override
+	public List<CollectionsRequest> getCollectionRequestsBycollectionTypeId(Long collectionTypeId)
+			throws EmptyListException, GeneralException, NullParameterException {
+		if (collectionTypeId == null) {
+			throw new NullParameterException("collectionTypeId", null);
+		}
+		List<CollectionsRequest> collectionsRequests = new ArrayList<CollectionsRequest>();
+		try {
+			collectionsRequests = (List<CollectionsRequest>) entityManager
+					.createNamedQuery("CollectionsRequest.findBycollectionTypeId", CollectionsRequest.class)
+					.setParameter("collectionTypeId", collectionTypeId).getResultList();
+		} catch (Exception e) {
+			throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(),
+					getMethodName(), e.getMessage()), null);
+		}
+		if (collectionsRequests.isEmpty()) {
+			throw new EmptyListException(logger,
+					sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName()), null);
+		}
+		return collectionsRequests;
+	}
+
+	@Override
+	public List<CollectionsRequest> getCollectionRequestsByPersonTypeId(Long personTypeId)
+			throws EmptyListException, GeneralException, NullParameterException {
+		if (personTypeId == null) {
+			throw new NullParameterException("personTypeId", null);
+		}
+		List<CollectionsRequest> collectionsRequests = new ArrayList<CollectionsRequest>();
+		try {
+			collectionsRequests = (List<CollectionsRequest>) entityManager
+					.createNamedQuery(QueryConstants.COLLECTIONS_BY_PERSON_TYPE, CollectionsRequest.class)
+					.setParameter("personTypeId", personTypeId).getResultList();
+		} catch (Exception e) {
+			throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(),
+					getMethodName(), e.getMessage()), null);
+		}
+		if (collectionsRequests.isEmpty()) {
+			throw new EmptyListException(logger,
+					sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName()), null);
+		}
+		return collectionsRequests;
+	}
     @Override
     public Sequences saveSequences(Sequences sequence) throws RegisterNotFoundException, NullParameterException, GeneralException {
         if (sequence == null) {
@@ -602,6 +644,75 @@ public class BusinessPortalEJBImp extends AbstractWalletEJB implements BusinessP
         }
         return (AccountBank) saveEntity(accountBank);
     }
+	@Override
+	public List<PreferenceValue> getValueByBusinessId(Long businessId)
+			throws EmptyListException, GeneralException, NullParameterException {
+		List<PreferenceValue> preferenceValue = new ArrayList<PreferenceValue>();
+
+		if (businessId == null) {
+			throw new NullParameterException("businessId", null);
+		}
+		try {
+
+			StringBuilder sqlBuilder = new StringBuilder("SELECT * FROM preference_value p ");
+			sqlBuilder.append("WHERE p.bussinessId = ").append(businessId);
+			sqlBuilder.append(" AND p.enabled = 1 AND p.endingDate is null");
+			Query query = entityManager.createNativeQuery(sqlBuilder.toString(), PreferenceValue.class);
+			preferenceValue = query.setHint("toplink.refresh", "true").getResultList();
+		} catch (NoResultException ex) {
+			throw new EmptyListException("No distributions found");
+		} catch (Exception e) {
+			throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(),
+					getMethodName(), e.getMessage()), null);
+		}
+
+		return preferenceValue;
+	}
+
+	@Override
+	public List<PreferenceValue> getValueByBusinessIdAndDate(Long businessId, Date discountRateDate)
+			throws EmptyListException, GeneralException, NullParameterException {
+		List<PreferenceValue> preferenceValue = new ArrayList<PreferenceValue>();
+
+		if (businessId == null) {
+			throw new NullParameterException("businessId", null);
+		}
+
+		if (discountRateDate == null) {
+			throw new NullParameterException("createDate", null);
+		}
+
+		String pattern = "yyyy-MM-dd HH:mm:ss";
+		SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
+		String strDate1 = simpleDateFormat.format(discountRateDate);
+
+		try {
+
+			StringBuilder sqlBuilder = new StringBuilder("SELECT * FROM preference_value p ");
+			sqlBuilder.append("WHERE  p.beginningDate <= '").append(strDate1).append("'");
+			sqlBuilder.append(" AND p.endingDate >= '").append(strDate1).append("'");
+			sqlBuilder.append(" AND p.bussinessId = ").append(businessId);
+			Query query = entityManager.createNativeQuery(sqlBuilder.toString(), PreferenceValue.class);
+			preferenceValue = query.setHint("toplink.refresh", "true").getResultList();
+
+		} catch (NoResultException ex) {
+			throw new EmptyListException("No distributions found");
+		} catch (Exception e) {
+			throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(),
+					getMethodName(), e.getMessage()), null);
+		}
+
+		return preferenceValue;
+	}
+
+	@Override
+	public AccountBank loadAccountBankById(Long id)
+			throws RegisterNotFoundException, NullParameterException, GeneralException {
+		EJBRequest request = new EJBRequest();
+		request.setParam(id);
+		AccountBank accountBank = (AccountBank) loadEntity(AccountBank.class, request, logger, getMethodName());
+		return accountBank;
+	}
 
     @SuppressWarnings("unchecked")
     @Override
@@ -696,4 +807,437 @@ public class BusinessPortalEJBImp extends AbstractWalletEJB implements BusinessP
     }
     
     
+	@Override
+	public AccountTypeBank loadAccountTypeBankById(Integer id)
+			throws RegisterNotFoundException, NullParameterException, GeneralException {
+		EJBRequest request = new EJBRequest();
+		request.setParam(id);
+		AccountTypeBank accountTypeBank = (AccountTypeBank) loadEntity(AccountTypeBank.class, request, logger,
+				getMethodName());
+		return accountTypeBank;
+	}
+
+	@Override
+	public AffiliationRequest loadAffiliationRequestById(Long id)
+			throws RegisterNotFoundException, NullParameterException, GeneralException {
+		EJBRequest request = new EJBRequest();
+		request.setParam(id);
+		AffiliationRequest affiliationRequest = (AffiliationRequest) loadEntity(AffiliationRequest.class, request,
+				logger, getMethodName());
+		return affiliationRequest;
+	}
+
+	@Override
+	public Bank loadBankById(Long id) throws RegisterNotFoundException, NullParameterException, GeneralException {
+		EJBRequest request = new EJBRequest();
+		request.setParam(id);
+		Bank bank = (Bank) loadEntity(Bank.class, request, logger, getMethodName());
+		return bank;
+	}
+
+	@Override
+	public BusinessCategory loadBusinessCategoryById(Integer id)
+			throws RegisterNotFoundException, NullParameterException, GeneralException {
+		EJBRequest request = new EJBRequest();
+		request.setParam(id);
+		BusinessCategory category = (BusinessCategory) loadEntity(BusinessCategory.class, request, logger,
+				getMethodName());
+		return category;
+	}
+
+	@Override
+	public Currency loadCurrencyById(Long id)
+			throws RegisterNotFoundException, NullParameterException, GeneralException {
+		EJBRequest request = new EJBRequest();
+		request.setParam(id);
+		Currency currency = (Currency) loadEntity(Currency.class, request, logger, getMethodName());
+		return currency;
+	}
+
+	@Override
+	public DocumentType loadDocumentTypeById(Integer id)
+			throws RegisterNotFoundException, NullParameterException, GeneralException {
+		EJBRequest request = new EJBRequest();
+		request.setParam(id);
+		DocumentType documentType = (DocumentType) loadEntity(DocumentType.class, request, logger, getMethodName());
+		return documentType;
+	}
+
+	@Override
+	public OriginApplication loadOriginApplicationById(Integer id)
+			throws RegisterNotFoundException, NullParameterException, GeneralException {
+		EJBRequest request = new EJBRequest();
+		request.setParam(id);
+		OriginApplication originApplication = (OriginApplication) loadEntity(OriginApplication.class, request, logger,
+				getMethodName());
+		return originApplication;
+	}
+
+	@Override
+	public PhoneType loadPhoneTypeById(Integer id)
+			throws RegisterNotFoundException, NullParameterException, GeneralException {
+		EJBRequest request = new EJBRequest();
+		request.setParam(id);
+		PhoneType phoneType = (PhoneType) loadEntity(PhoneType.class, request, logger, getMethodName());
+		return phoneType;
+	}
+
+	@Override
+	public RequestType loadRequestTypeByCode(String code)
+			throws RegisterNotFoundException, NullParameterException, GeneralException {
+		if (code == null) {
+			throw new NullParameterException("code", null);
+		}
+		try {
+			CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+			CriteriaQuery<RequestType> cq = cb.createQuery(RequestType.class);
+			Root<RequestType> from = cq.from(RequestType.class);
+			cq.select(from);
+			cq.where(cb.equal(from.get("code"), code));
+			return entityManager.createQuery(cq).setMaxResults(1).getSingleResult();
+		} catch (NoResultException e) {
+			throw new RegisterNotFoundException(logger, sysError.format(EjbConstants.ERR_NORESULTEXCEPTION,
+					this.getClass(), getMethodName(), e.getMessage()), null);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(),
+					getMethodName(), e.getMessage()), null);
+		}
+	}
+
+	@Override
+	public StatusAccountBank loadStatusAccountBankById(Integer id)
+			throws RegisterNotFoundException, NullParameterException, GeneralException {
+		EJBRequest request = new EJBRequest();
+		request.setParam(id);
+		StatusAccountBank currency = (StatusAccountBank) loadEntity(StatusAccountBank.class, request, logger,
+				getMethodName());
+		return currency;
+	}
+
+	@Override
+	public StatusApplicant loadStatusApplicantById(Integer id)
+			throws RegisterNotFoundException, NullParameterException, GeneralException {
+		EJBRequest request = new EJBRequest();
+		request.setParam(id);
+		StatusApplicant statusApplicant = (StatusApplicant) loadEntity(StatusApplicant.class, request, logger,
+				getMethodName());
+		return statusApplicant;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<Sequences> getSequencesByDocumentType(Integer documentTypeId)
+			throws EmptyListException, GeneralException, NullParameterException {
+		if (documentTypeId == null) {
+			throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(),
+					getMethodName(), EjbConstants.PARAM_DOCUMENT_TYPE_ID), null);
+		}
+		List<Sequences> sequence = null;
+		EJBRequest request = new EJBRequest();
+		Map<String, Object> params = new HashMap();
+		params.put(EjbConstants.PARAM_DOCUMENT_TYPE_ID, documentTypeId);
+		request.setParams(params);
+
+		sequence = (List<Sequences>) getNamedQueryResult(UtilsEJB.class, QueryConstants.SEQUENCES_BY_DOCUMENT_TYPE,
+				request, getMethodName(), logger, "sequence");
+		return sequence;
+	}
+
+	@Override
+	public String generateNumberSequence(List<Sequences> sequence, int originApplication)
+			throws GeneralException, RegisterNotFoundException, NullParameterException {
+		int numberSequence = 0;
+		String prefixNumberSequence = "";
+		String acronym = "";
+		for (Sequences s : sequence) {
+			if (s.getOriginApplicationId().getId() == originApplication) {
+				if (s.getCurrentValue() > 1) {
+					numberSequence = s.getCurrentValue();
+				} else {
+					numberSequence = s.getInitialValue();
+				}
+				acronym = s.getDocumentTypeId().getAcronym();
+				s.setCurrentValue(s.getCurrentValue() + 1);
+				saveSequences(s);
+			}
+		}
+		Calendar cal = Calendar.getInstance();
+		int year = cal.get(Calendar.YEAR);
+		switch (originApplication) {
+		case Constants.ORIGIN_APPLICATION_APP_ALODIGA_WALLET_ID:
+			prefixNumberSequence = "APP-";
+			break;
+		case Constants.ORIGIN_APPLICATION_ADMIN_WALLET_ID:
+			prefixNumberSequence = "ADM-";
+			break;
+		case Constants.ORIGIN_APPLICATION_PORTAL_WEB_ID:
+			prefixNumberSequence = "PBW";
+			break;
+		default:
+			break;
+		}
+		prefixNumberSequence = prefixNumberSequence.concat(acronym);
+		String suffixNumberSequence = "-";
+		suffixNumberSequence = suffixNumberSequence.concat(String.valueOf(year));
+		String numberSequenceDoc = prefixNumberSequence;
+		numberSequenceDoc = numberSequenceDoc.concat("-");
+		numberSequenceDoc = numberSequenceDoc.concat(String.valueOf(numberSequence));
+		numberSequenceDoc = numberSequenceDoc.concat(suffixNumberSequence);
+		return numberSequenceDoc;
+	}
+
+	@Override
+	public Sequences saveSequences(Sequences sequence)
+			throws RegisterNotFoundException, NullParameterException, GeneralException {
+		if (sequence == null) {
+			throw new NullParameterException("sequence", null);
+		}
+		return (Sequences) saveEntity(sequence);
+	}
+
+	public Person createPerson(Person person, PersonClassification personClassification) {
+		person.setCreateDate(new Timestamp(new Date().getTime()));
+		if (person.getEmail() != null) {
+			person.setEmail(person.getEmail());
+		} else {
+			person.setEmail(null);
+		}
+		person.setPersonTypeId(person.getPersonTypeId());
+		person.setPersonClassificationId(personClassification);
+		if (person.getWebSite() != null) {
+			person.setWebSite(person.getWebSite());
+		} else {
+			person.setWebSite(null);
+		}
+		person.setCountryId(person.getCountryId());
+		return person;
+	}
+
+	@Override
+	public AffiliationRequest saveNaturalPersonAffiliationRequest(Person person, NaturalPerson naturalPerson,
+			RequestType requestType, PhonePerson phonePerson, Address address)
+			throws NullParameterException, GeneralException {
+		AffiliationRequest affiliationRequest = new AffiliationRequest();
+		PersonClassification personClassification = null;
+		OriginApplication originApplication = null;
+		String acronym = null;
+		String numberSequence = "";
+		String requestTypeBusiness = "";
+		EJBRequest request = new EJBRequest();
+		Map<String, Object> params = new HashMap<String, Object>();
+
+		try {
+			requestTypeBusiness = RequestTypeE.SOAFNE.getRequestTypeCode();
+			if (requestType.getCode().equals(requestTypeBusiness)) {
+				// Se obtiene el PersonClassification del Solicitante de Negocio Persona Natural
+				String personClassificationCode = PersonClassificationE.NABUAP.getPersonClassificationCode();
+				personClassification = (PersonClassification) entityManager
+						.createNamedQuery(QueryConstants.PERSON_CLASSIFICATION_BY_CODE, PersonClassification.class)
+						.setParameter(Constants.PARAM_CODE, personClassificationCode).getSingleResult();
+
+				// Se guarda el objeto person asociado al solicitante de negocio
+				person = (Person) saveEntity(createPerson(person, personClassification));
+
+				// Se asocia el negocio a la solicitud de afiliaci�n
+				affiliationRequest.setBusinessPersonId(person);
+			} else {
+				// Se obtiene el PersonClassification del Solicitante Usuario de la Billetera
+				String personClassificationCode = PersonClassificationE.REUNUS.getPersonClassificationCode();
+				personClassification = (PersonClassification) entityManager
+						.createNamedQuery(QueryConstants.PERSON_CLASSIFICATION_BY_CODE, PersonClassification.class)
+						.setParameter(Constants.PARAM_CODE, personClassificationCode).getSingleResult();
+
+				// Se guarda el objeto person asociado al solicitante usuario de la billetera
+				person = (Person) saveEntity(createPerson(person, personClassification));
+
+				// Se asocia el usuario de la billetera a la solicitud de afiliaci�n
+				affiliationRequest.setUserRegisterUnifiedId(person);
+			}
+
+			// Se guarda la informaci�n en BD del solicitante
+			// 1. Datos personales del solicitante
+			naturalPerson.setPersonId(person);
+
+			naturalPerson.setCreateDate(new Timestamp(new Date().getTime()));
+			saveEntity(naturalPerson);
+
+			// 2. Tel�fono M�vil del Solicitante
+			phonePerson.setPersonId(person);
+			phonePerson.setCreateDate(new Timestamp(new Date().getTime()));
+			saveEntity(phonePerson);
+
+			// 3. Direcci�n del solicitante
+			address.setAddressLine1(
+					"calle:" + address.getNameStreet() + "," + "Urbanizacion: " + address.getUrbanization() + ","
+							+ "Edificio:" + address.getNameEdification() + "," + "Piso:" + address.getFloor() + "");
+			address.setAddressLine2("Pais:" + address.getCountryId().getName() + "," + "Ciudad:"
+					+ address.getCityId().getName() + "," + "Codigo Postal:" + address.getZipCode() + "");
+			address = (Address) saveEntity(address);
+
+			// 4. Se asocia la direcci�n al solicitante
+			PersonHasAddress personHasAddress = new PersonHasAddress();
+			personHasAddress.setAddressId(address);
+			personHasAddress.setPersonId(person);
+			personHasAddress.setCreateDate(new Timestamp(new Date().getTime()));
+			saveEntity(personHasAddress);
+
+			// Se obtiene la aplicaci�n seg�n el tipo de solicitud
+			if (requestType.getCode().equals(requestTypeBusiness)) {
+				params.put(Constants.PARAM_CODE, Constants.ORIGIN_APPLICATION_PORTAL_NEGOCIOS_CODE);
+				request.setParams(params);
+				originApplication = utilsEJB.loadOriginApplicationByCode(request);
+				acronym = DocumentTypeE.BUAFRQ.getDocumentTypeAcronym();
+			} else {
+				params.put(Constants.PARAM_CODE, Constants.ORIGIN_APPLICATION_APP_CODE);
+				request.setParams(params);
+				originApplication = utilsEJB.loadOriginApplicationByCode(request);
+				acronym = DocumentTypeE.USREAR.getDocumentTypeAcronym();
+			}
+
+			// Se obtiene el tipo de documento y la secuencia asociada a la solicitud
+			Integer documentType = utilsEJB.getDocumentTypeByCode(acronym);
+			List<Sequences> sequences = getSequencesByDocumentType(documentType);
+			numberSequence = generateNumberSequence(sequences, originApplication.getId());
+
+			// Se obtiene el estatus pendiente de la solicitud de afiliaci�n
+			params = new HashMap<String, Object>();
+			params.put(Constants.PARAM_CODE, Constants.STATUS_BUSINESS_AFFILIATION_REQUEST_PENDING);
+			request = new EJBRequest();
+			request.setParams(params);
+			StatusRequest status = utilsEJB.loadStatusBusinessAffiliationRequestByCode(request);
+
+			// Se guarda la solicitud en la BD
+			affiliationRequest.setNumberRequest(numberSequence);
+			affiliationRequest.setCreateDate(new Timestamp(new Date().getTime()));
+			affiliationRequest.setDateRequest(new Date());
+			affiliationRequest.setStatusRequestId(status);
+			affiliationRequest.setRequestTypeId(requestType);
+			affiliationRequest = (AffiliationRequest) saveEntity(affiliationRequest);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(),
+					getMethodName(), e.getMessage()), null);
+		}
+		return affiliationRequest;
+	}
+
+	@Override
+	public AffiliationRequest saveLegalPersonAffiliationRequest(Person person, LegalPerson legalPerson,
+			RequestType requestType, PhonePerson phonePerson, Address address, LegalRepresentative legalRepresentative)
+			throws NullParameterException, GeneralException {
+		if (person == null || legalPerson == null || legalRepresentative == null || requestType == null
+				|| phonePerson == null || address == null) {
+			throw new NullParameterException(EjbConstants.ERR_NULL_PARAMETER);
+		}
+		AffiliationRequest affiliatinRequest = new AffiliationRequest();
+		try {
+			if (requestType.getCode().equals(RequestTypeE.SOAFNE.getRequestTypeCode())) {
+				// Se obtiene la Clasificacion del Solicitante Juridico
+				String personClassificationCode = PersonClassificationE.LEBUAP.getPersonClassificationCode();
+				PersonClassification personClassification = (PersonClassification) entityManager
+						.createNamedQuery(QueryConstants.PERSON_CLASSIFICATION_BY_CODE, PersonClassification.class)
+						.setParameter(Constants.PARAM_CODE, personClassificationCode).getSingleResult();
+
+				// Se guarda el objeto person en la BD
+				person.setCreateDate(new Date());
+				person.setPersonClassificationId(personClassification);
+				person = (Person) saveEntity(person);
+
+				// Se guarda el objeto NaturalPerson en la BD
+				legalPerson.setPersonId(person);
+				legalPerson.setCreateDate(new Date());
+				saveEntity(legalPerson);
+
+				// TODO buscar el representante legal a ver si ya existe
+				legalRepresentative.setCreateDate(new Date());
+				legalRepresentative.setPersonId(person);
+				saveEntity(legalRepresentative);
+
+				legalPerson.setLegalRepresentativeId(legalRepresentative);
+				saveEntity(legalPerson);
+
+			} else {
+				// TODO implementar otro tipo de requestType
+				return null;
+			}
+			// Se guarda el objeto PhonePerson en la BD
+
+			phonePerson.setPersonId(person);
+			phonePerson.setCreateDate(new Date());
+			saveEntity(phonePerson);
+
+			// Guardo Address
+			address.setAddressLine1(
+					"Calle:" + address.getNameStreet() + "," + "Urbanizacion: " + address.getUrbanization() + ","
+							+ "Edificio:" + address.getNameEdification() + "," + "Piso:" + address.getFloor() + "");
+			address.setAddressLine2("Pais:" + address.getCountryId().getName() + "," + "Ciudad:"
+					+ address.getCityId().getName() + "," + "Codigo Postal:" + address.getZipCode() + "");
+			address = (Address) saveEntity(address);
+
+			// Guardo Person_has_addres
+			PersonHasAddress personHasAddress = new PersonHasAddress();
+			personHasAddress.setAddressId(address);
+			personHasAddress.setPersonId(person);
+			personHasAddress.setCreateDate(new Date());
+			saveEntity(personHasAddress);
+
+			// Guardar la Solicitud de Afiliacion
+			Map<String, Object> params = new HashMap<String, Object>();
+			if (requestType.getCode().equals(RequestTypeE.SOAFNE.getRequestTypeCode())) {
+				params.put(Constants.PARAM_CODE, Constants.ORIGIN_APPLICATION_PORTAL_NEGOCIOS_CODE);
+			}
+			EJBRequest request = new EJBRequest();
+			request.setParams(params);
+			OriginApplication originApplication = utilsEJB.loadOriginApplicationByCode(request);
+
+			params = new HashMap<String, Object>();
+			String acronym = null;
+			if (requestType.getCode().equals(RequestTypeE.SOAFNE.getRequestTypeCode())) {
+				acronym = DocumentTypeE.BUAFRQ.getDocumentTypeAcronym();
+				affiliatinRequest.setBusinessPersonId(person);
+			}
+
+			Integer documentType = utilsEJB.getDocumentTypeByCode(acronym);
+			List<Sequences> sequences = getSequencesByDocumentType(documentType);
+			String numberSequence = generateNumberSequence(sequences, originApplication.getId());
+			affiliatinRequest.setCreateDate(new Timestamp(new Date().getTime()));
+			affiliatinRequest.setDateRequest(new Date());
+			params = new HashMap<String, Object>();
+			params.put(Constants.PARAM_CODE, Constants.STATUS_BUSINESS_AFFILIATION_REQUEST_PENDING);
+			request = new EJBRequest();
+			request.setParams(params);
+			affiliatinRequest.setNumberRequest(numberSequence);
+			StatusRequest status = utilsEJB.loadStatusBusinessAffiliationRequestByCode(request);
+			affiliatinRequest.setStatusRequestId(status);
+			affiliatinRequest.setRequestTypeId(requestType);
+			affiliatinRequest = (AffiliationRequest) saveEntity(affiliatinRequest);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(),
+					getMethodName(), e.getMessage()), null);
+
+		}
+		return affiliatinRequest;
+	}
+
+	@Override
+	public RequestHasCollectionRequest saveRequestHasCollectionsRequest(
+			RequestHasCollectionRequest requestHasCollectionsRequest) throws NullParameterException, GeneralException {
+		if (requestHasCollectionsRequest == null) {
+			throw new NullParameterException("requestHasCollectionsRequest", null);
+		}
+		return (RequestHasCollectionRequest) saveEntity(requestHasCollectionsRequest);
+	}
+
+	@Override
+	public AccountBank saveAccountBank(AccountBank accountBank)
+			throws RegisterNotFoundException, NullParameterException, GeneralException {
+		if (accountBank == null) {
+			throw new NullParameterException("accountBank", null);
+		}
+		return (AccountBank) saveEntity(accountBank);
+	}
+
 }
