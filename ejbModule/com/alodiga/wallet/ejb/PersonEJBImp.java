@@ -247,6 +247,38 @@ public class PersonEJBImp extends AbstractWalletEJB implements PersonEJB, Person
     }
     
     @Override
+    public List<Person> getPersonRegisterUnified(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        List<Person> personList = null;
+      
+        Map<String, Object> params = request.getParams();
+        StringBuilder sqlBuilder = new StringBuilder("SELECT * FROM person p WHERE p.personClassificationId = "+PersonClassificationE.REUNUS.getId()+"");
+        Query query = entityManager.createNativeQuery(sqlBuilder.toString(), Person.class);
+        personList = (List<Person>) query.setHint("toplink.refresh", "true").getResultList();
+        if (personList.isEmpty()) {
+            throw new EmptyListException(logger, sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName()), null);
+        }
+        
+        return personList;
+    }
+    
+    public List<Person> getPersonBusinessApplicant(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        List<Person> personList = null;
+      
+        Map<String, Object> params = request.getParams();
+        StringBuilder sqlBuilder = new StringBuilder("SELECT * FROM person p WHERE p.personClassificationId = "+PersonClassificationE.NABUAP.getId()+"");
+        sqlBuilder.append(" OR p.personClassificationId= "+PersonClassificationE.LEBUAP.getId()+"");
+        sqlBuilder.append(" OR p.personClassificationId= "+PersonClassificationE.LEGREP.getId()+"");
+        Query query = entityManager.createNativeQuery(sqlBuilder.toString(), Person.class);
+        personList = (List<Person>) query.setHint("toplink.refresh", "true").getResultList();
+        if (personList.isEmpty()) {
+            throw new EmptyListException(logger, sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName()), null);
+        }
+        
+        return personList;
+    }
+    
+    
+    @Override
     public List<Person> getPersonByPersonClassificationId(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
         List<Person> personList = null;
       
@@ -257,6 +289,62 @@ public class PersonEJBImp extends AbstractWalletEJB implements PersonEJB, Person
         }
         sqlBuilder.append(" AND p.personClassificationId = "+PersonClassificationE.REUNUS.getId()+"");
         
+        Query query = entityManager.createNativeQuery(sqlBuilder.toString(), Person.class);
+        personList = (List<Person>) query.setHint("toplink.refresh", "true").getResultList();
+        if (personList.isEmpty()) {
+            throw new EmptyListException(logger, sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName()), null);
+        }
+        
+        return personList;
+    }
+    
+    @Override
+    public List<Person> searchBusinessApplicantByStatusApplicantAndNumber(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        List<Person> personList = null;
+        Map<String, Object> params = request.getParams();
+        
+        StringBuilder sqlBuilder = new StringBuilder("SELECT DISTINCT p.* FROM person p ");
+        sqlBuilder.append("join legal_person lp on p.id = lp.personId ");
+        sqlBuilder.append("left join legal_representative lr on p.id = lr.personId ");
+        sqlBuilder.append("left join natural_person np on p.id = np.personId ");
+        sqlBuilder.append("join affiliation_request ar on p.id = ar.businessPersonId WHERE ");
+        sqlBuilder.append("p.personClassificationId = "+PersonClassificationE.LEBUAP.getId()+"");
+        sqlBuilder.append(" OR p.personClassificationId = "+PersonClassificationE.NABUAP.getId()+"");
+        sqlBuilder.append(" OR p.personClassificationId = "+PersonClassificationE.LEGREP.getId()+"");
+        if (params.containsKey(QueryConstants.PARAM_STATUS_APPLICANT_ID)) {
+            sqlBuilder.append(" AND lp.statusApplicantId =").append(params.get(QueryConstants.PARAM_STATUS_APPLICANT_ID));
+            sqlBuilder.append(" OR lr.statusApplicantId =").append(params.get(QueryConstants.PARAM_STATUS_APPLICANT_ID));
+            sqlBuilder.append(" OR np.statusApplicantId =").append(params.get(QueryConstants.PARAM_STATUS_APPLICANT_ID));
+        }
+        if (params.containsKey(QueryConstants.PARAM_NUMBER_REQUEST)) {
+            sqlBuilder.append(" AND ar.numberRequest LIKE '").append(params.get(QueryConstants.PARAM_NUMBER_REQUEST)).append("%'");
+        }
+
+        Query query = entityManager.createNativeQuery(sqlBuilder.toString(), Person.class);
+        personList = (List<Person>) query.setHint("toplink.refresh", "true").getResultList();
+        if (personList.isEmpty()) {
+            throw new EmptyListException(logger, sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName()), null);
+        }
+        
+        return personList;
+    }
+    
+    @Override
+    public List<Person> searchRegisterUnifiedByStatusApplicantAndNumber(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        List<Person> personList = null;
+        Map<String, Object> params = request.getParams();
+        
+        StringBuilder sqlBuilder = new StringBuilder("SELECT DISTINCT p.* FROM person p ");
+        sqlBuilder.append("join natural_person np on p.id = np.personId ");
+        sqlBuilder.append("join affiliation_request ar on p.id = ar.userRegisterUnifiedId WHERE ");
+        sqlBuilder.append("p.personClassificationId = "+PersonClassificationE.REUNUS.getId()+"");
+        if (params.containsKey(QueryConstants.PARAM_STATUS_APPLICANT_ID)) {
+            sqlBuilder.append(" AND np.statusApplicantId =").append(params.get(QueryConstants.PARAM_STATUS_APPLICANT_ID));
+        }
+        if (params.containsKey(QueryConstants.PARAM_NUMBER_REQUEST)) {
+            sqlBuilder.append(" AND ar.numberRequest LIKE '").append(params.get(QueryConstants.PARAM_NUMBER_REQUEST)).append("%'");
+        }
+
         Query query = entityManager.createNativeQuery(sqlBuilder.toString(), Person.class);
         personList = (List<Person>) query.setHint("toplink.refresh", "true").getResultList();
         if (personList.isEmpty()) {
