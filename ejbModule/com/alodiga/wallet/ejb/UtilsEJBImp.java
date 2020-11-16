@@ -1335,6 +1335,22 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         requestHasCollectionsRequestList = (List<RequestHasCollectionRequest>) getNamedQueryResult(RequestHasCollectionRequest.class, QueryConstants.REQUEST_HAS_COLLECTION_REQUEST_BY_AFFILIATON_REQUEST, request, getMethodName(), logger, "requestHasCollectionsRequestList");
         return requestHasCollectionsRequestList;
     }
+    
+    public List<RequestHasCollectionRequest> searchRequestHasCollectionRequest(EJBRequest request) throws GeneralException, NullParameterException, EmptyListException {
+        List<RequestHasCollectionRequest> requestHasCollectionList = new ArrayList<RequestHasCollectionRequest>();
+
+             Map<String, Object> params = request.getParams();
+            StringBuilder sqlBuilder = new StringBuilder("SELECT * FROM request_has_collection_request r WHERE r.affiliationRequestId =").append(params.get(QueryConstants.PARAM_AFFILIATION_REQUEST_ID));
+            sqlBuilder.append(" AND r.collectionsRequestId IN (SELECT c.id FROM collections_request c WHERE");
+            sqlBuilder.append(" c.collectionTypeId IN (SELECT c.id FROM collection_type c WHERE c.description LIKE '").append(params.get(QueryConstants.PARAM_NAME)).append("%'))");
+            
+            Query query = entityManager.createNativeQuery(sqlBuilder.toString(), AffiliationRequest.class);
+            requestHasCollectionList = (List<RequestHasCollectionRequest>) query.setHint("toplink.refresh", "true").getResultList();
+            if (requestHasCollectionList.isEmpty()) {
+                throw new EmptyListException(logger, sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName()), null);
+            }
+            return requestHasCollectionList;
+    }
 
     @Override
     public void updateBusinessAffiliationRequest(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
