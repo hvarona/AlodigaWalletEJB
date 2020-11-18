@@ -355,6 +355,43 @@ public class PersonEJBImp extends AbstractWalletEJB implements PersonEJB, Person
         return personList;
     }
 
+    public List<Person> searchPersonByLegalPersonAndLegalRepresentative(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+         List<Person> personList= null; 
+               
+        Map<String, Object> params = request.getParams();       
+
+        if (!params.containsKey(EjbConstants.PARAM_PERSON_ID)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_PERSON_ID), null);
+        }
+        
+        if (!params.containsKey(EjbConstants.PARAM_AFFILIATION_REQUEST)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_AFFILIATION_REQUEST), null);
+        }
+        
+        if (!params.containsKey(EjbConstants.PARAM_NAME)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_NAME), null);
+        }    
+          try {
+            StringBuilder sqlBuilder = new StringBuilder("SELECT DISTINCT u.* ");
+            sqlBuilder.append("FROM (SELECT p.*, lp.businessName as name ");
+            sqlBuilder.append("FROM person p join legal_person lp on p.id = lp.personId and lp.personId = ");
+            sqlBuilder.append(params.get(EjbConstants.PARAM_PERSON_ID));
+            sqlBuilder.append(" join affiliation_request ar on p.id = ar.businessPersonId and ar.id = ");
+            sqlBuilder.append(params.get(EjbConstants.PARAM_AFFILIATION_REQUEST));
+            sqlBuilder.append(" union SELECT p.*, concat(lr.firstNames, ' ', lr.lastNames) as name "); 
+            sqlBuilder.append("FROM person p join legal_representative lr on p.id = lr.personId join legal_person lp on "); 
+            sqlBuilder.append("lr.id = lp.legalRepresentativeId) u where u.name like '");
+            sqlBuilder.append(params.get(EjbConstants.PARAM_NAME));
+            sqlBuilder.append("%'");
+            Query query = entityManager.createNativeQuery(sqlBuilder.toString(), Person.class);
+            personList = (List<Person>) query.setHint("toplink.refresh", "true").getResultList();
+                          
+        } catch (Exception ex) {
+            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), ex.getMessage()), ex);
+        }
+        return personList;   
+    }
+    
     //Natural Person
     public List<NaturalPerson> getNaturalPerson(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
         return (List<NaturalPerson>) listEntities(NaturalPerson.class, request, logger, getMethodName());
