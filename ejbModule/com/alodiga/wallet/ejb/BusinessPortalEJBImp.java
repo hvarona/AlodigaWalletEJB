@@ -539,60 +539,72 @@ public class BusinessPortalEJBImp extends AbstractWalletEJB implements BusinessP
     }
 	
     @Override
-    public List<PreferenceValue> getValueByBusinessId(Long businessId)
-        throws EmptyListException, GeneralException, NullParameterException {
+    public List<PreferenceValue> getDiscountRateByBusiness(Long businessId, Long productId, Long transactionTypeId) throws EmptyListException, GeneralException, NullParameterException {
         List<PreferenceValue> preferenceValue = new ArrayList<PreferenceValue>();
+        String discountRateCode = Constants.DISCOUNT_RATE_CODE;
 
         if (businessId == null) {
-                throw new NullParameterException("businessId", null);
+            throw new NullParameterException("businessId", null);
+        }
+        if (productId == null) {
+            throw new NullParameterException("productId", null);
+        }
+        if (transactionTypeId == null) {
+            throw new NullParameterException("transactionTypeId", null);
         }
         try {
-            StringBuilder sqlBuilder = new StringBuilder("SELECT * FROM preference_value p ");
-            sqlBuilder.append("WHERE p.bussinessId = ").append(businessId);
-            sqlBuilder.append(" AND p.enabled = 1 AND p.endingDate is null");
+            StringBuilder sqlBuilder = new StringBuilder("SELECT pv.* FROM preference_value pv INNER JOIN preference_field pf ");
+            sqlBuilder.append("on pv.preferenceFieldId = pf.id ");
+            sqlBuilder.append("WHERE pv.bussinessId = ").append(businessId);
+            sqlBuilder.append(" AND pv.productId = ").append(productId);
+            sqlBuilder.append(" AND pv.transactionTypeId = ").append(transactionTypeId);
+            sqlBuilder.append(" AND pf.code = '").append(discountRateCode).append("' AND pv.enabled = true");
             Query query = entityManager.createNativeQuery(sqlBuilder.toString(), PreferenceValue.class);
             preferenceValue = query.setHint("toplink.refresh", "true").getResultList();
         } catch (NoResultException ex) {
                 throw new EmptyListException("No distributions found");
         } catch (Exception e) {
-                throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(),
-                                getMethodName(), e.getMessage()), null);
+                throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(),getMethodName(), e.getMessage()), null);
         }
-
         return preferenceValue;
     }
 
     @Override
-    public List<PreferenceValue> getValueByBusinessIdAndDate(Long businessId, Date discountRateDate)
-        throws EmptyListException, GeneralException, NullParameterException {
+    public List<PreferenceValue> getDiscountRateByBusinessAndValidityDate(Long businessId, Date validityDate, Long productId, Long transactionTypeId) throws EmptyListException, GeneralException, NullParameterException {
         List<PreferenceValue> preferenceValue = new ArrayList<PreferenceValue>();
-
+        String discountRateCode = Constants.DISCOUNT_RATE_CODE;
+        
         if (businessId == null) {
-                throw new NullParameterException("businessId", null);
+            throw new NullParameterException("businessId", null);
         }
-
-        if (discountRateDate == null) {
-                throw new NullParameterException("createDate", null);
+        if (validityDate == null) {
+            throw new NullParameterException("validityDate", null);
+        }
+                if (productId == null) {
+            throw new NullParameterException("productId", null);
+        }
+        if (transactionTypeId == null) {
+            throw new NullParameterException("transactionTypeId", null);
         }
         String pattern = "yyyy-MM-dd HH:mm:ss";
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
-        String strDate1 = simpleDateFormat.format(discountRateDate);
-
+        String preferenceValidityDate = simpleDateFormat.format(validityDate);
         try {
-
-            StringBuilder sqlBuilder = new StringBuilder("SELECT * FROM preference_value p ");
-            sqlBuilder.append("WHERE  p.beginningDate <= '").append(strDate1).append("'");
-            sqlBuilder.append(" AND p.endingDate >= '").append(strDate1).append("'");
-            sqlBuilder.append(" AND p.bussinessId = ").append(businessId);
+            StringBuilder sqlBuilder = new StringBuilder("SELECT pv.* FROM preference_value pv INNER JOIN preference_field pf ");
+            sqlBuilder.append("on pv.preferenceFieldId = pf.id ");
+            sqlBuilder.append("WHERE pv.bussinessId = ").append(businessId);
+            sqlBuilder.append(" AND pv.productId = ").append(productId);
+            sqlBuilder.append(" AND pv.transactionTypeId = ").append(transactionTypeId);
+            sqlBuilder.append(" AND pf.code = '").append(discountRateCode);
+            sqlBuilder.append("' AND pv.beginningDate <= '").append(preferenceValidityDate).append("'");
+            sqlBuilder.append(" AND pv.endingDate >= '").append(preferenceValidityDate).append("'");
             Query query = entityManager.createNativeQuery(sqlBuilder.toString(), PreferenceValue.class);
             preferenceValue = query.setHint("toplink.refresh", "true").getResultList();
-
         } catch (NoResultException ex) {
             throw new EmptyListException("No distributions found");
         } catch (Exception e) {
             throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(),getMethodName(), e.getMessage()), null);
         }
-
         return preferenceValue;
     }
 
