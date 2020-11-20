@@ -771,9 +771,6 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
 
     //CollectionType
     public List<CollectionType> getCollectionType(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
-        //List<CollectionType> collectionType = (List<CollectionType>) listEntities(CollectionType.class, request, logger, getMethodName());
-        //return collectionType;
-
         return (List<CollectionType>) listEntities(CollectionType.class, request, logger, getMethodName());
 
     }
