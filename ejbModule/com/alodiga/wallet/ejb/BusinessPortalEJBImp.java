@@ -795,9 +795,16 @@ public class BusinessPortalEJBImp extends AbstractWalletEJB implements BusinessP
                 legalPerson.setCreateDate(new Date());
                 saveEntity(legalPerson);
 
-                // TODO buscar el representante legal a ver si ya existe
+                // TODO buscar el representante legal a ver si ya existe, cambiar la clasificacion por alguna que exista
+                Person legalRepresentativePerson = new Person();
+                legalRepresentativePerson.setPersonTypeId(legalRepresentative.getDocumentsPersonTypeId().getPersonTypeId());
+                legalRepresentativePerson.setPersonClassificationId(person.getPersonClassificationId());
+                legalRepresentativePerson.setCountryId(person.getCountryId());
+                legalRepresentativePerson.setCreateDate(new Date());
+                saveEntity(legalRepresentativePerson);
+                
                 legalRepresentative.setCreateDate(new Date());
-                legalRepresentative.setPersonId(person);
+                legalRepresentative.setPersonId(legalRepresentativePerson);
                 saveEntity(legalRepresentative);
 
                 legalPerson.setLegalRepresentativeId(legalRepresentative);
