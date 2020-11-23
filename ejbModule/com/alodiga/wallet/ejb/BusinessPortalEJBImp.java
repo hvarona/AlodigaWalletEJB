@@ -798,7 +798,11 @@ public class BusinessPortalEJBImp extends AbstractWalletEJB implements BusinessP
                 // TODO buscar el representante legal a ver si ya existe, cambiar la clasificacion por alguna que exista
                 Person legalRepresentativePerson = new Person();
                 legalRepresentativePerson.setPersonTypeId(legalRepresentative.getDocumentsPersonTypeId().getPersonTypeId());
-                legalRepresentativePerson.setPersonClassificationId(person.getPersonClassificationId());
+                PersonClassification representativePersonClassification = (PersonClassification) entityManager
+                        .createNamedQuery(QueryConstants.PERSON_CLASSIFICATION_BY_CODE, PersonClassification.class)
+                        .setParameter(Constants.PARAM_CODE, PersonClassificationE.LEGREP.getPersonClassificationCode()).getSingleResult();
+                
+                legalRepresentativePerson.setPersonClassificationId(representativePersonClassification);
                 legalRepresentativePerson.setCountryId(person.getCountryId());
                 legalRepresentativePerson.setCreateDate(new Date());
                 saveEntity(legalRepresentativePerson);
