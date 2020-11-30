@@ -771,9 +771,6 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
 
     //CollectionType
     public List<CollectionType> getCollectionType(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
-        //List<CollectionType> collectionType = (List<CollectionType>) listEntities(CollectionType.class, request, logger, getMethodName());
-        //return collectionType;
-
         return (List<CollectionType>) listEntities(CollectionType.class, request, logger, getMethodName());
 
     }
@@ -1210,10 +1207,11 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         return (AffiliationRequest) saveEntity(affiliationRequest);
     }
     
+    @Override
     public List<AffiliationRequest> searchAffiliationRequestByParams(EJBRequest request) throws GeneralException, NullParameterException, EmptyListException {
         List<AffiliationRequest> operations = new ArrayList<AffiliationRequest>();
 
-             Map<String, Object> params = request.getParams();
+            Map<String, Object> params = request.getParams();
             StringBuilder sqlBuilder = new StringBuilder("SELECT * FROM affiliation_request t WHERE t.requestTypeId=").append(params.get(QueryConstants.PARAM_REQUEST_TYPE));
             
             if (params.containsKey(QueryConstants.PARAM_NUMBER_REQUEST)) {
@@ -1227,10 +1225,10 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
             return operations;
     }
     
-    public List<AffiliationRequest> getTransactionApproveRequestByType(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+    @Override
+    public List<AffiliationRequest> getAffiliationRequestByRequestByType(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
         List<AffiliationRequest> affiliationRequestList = null;
-        Map<String, Object> params = request.getParams();
-        
+        Map<String, Object> params = request.getParams();        
         if (!params.containsKey(EjbConstants.PARAM_REQUEST_TYPE)) {
             throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_REQUEST_TYPE), null);
         }
@@ -1334,6 +1332,22 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         }
         requestHasCollectionsRequestList = (List<RequestHasCollectionRequest>) getNamedQueryResult(RequestHasCollectionRequest.class, QueryConstants.REQUEST_HAS_COLLECTION_REQUEST_BY_AFFILIATON_REQUEST, request, getMethodName(), logger, "requestHasCollectionsRequestList");
         return requestHasCollectionsRequestList;
+    }
+    
+    public List<RequestHasCollectionRequest> searchRequestHasCollectionRequest(EJBRequest request) throws GeneralException, NullParameterException, EmptyListException {
+        List<RequestHasCollectionRequest> requestHasCollectionList = new ArrayList<RequestHasCollectionRequest>();
+
+             Map<String, Object> params = request.getParams();
+            StringBuilder sqlBuilder = new StringBuilder("SELECT * FROM request_has_collection_request r WHERE r.affiliationRequestId =").append(params.get(QueryConstants.PARAM_AFFILIATION_REQUEST_ID));
+            sqlBuilder.append(" AND r.collectionsRequestId IN (SELECT c.id FROM collections_request c WHERE");
+            sqlBuilder.append(" c.collectionTypeId IN (SELECT c.id FROM collection_type c WHERE c.description LIKE '").append(params.get(QueryConstants.PARAM_NAME)).append("%'))");
+            
+            Query query = entityManager.createNativeQuery(sqlBuilder.toString(), AffiliationRequest.class);
+            requestHasCollectionList = (List<RequestHasCollectionRequest>) query.setHint("toplink.refresh", "true").getResultList();
+            if (requestHasCollectionList.isEmpty()) {
+                throw new EmptyListException(logger, sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName()), null);
+            }
+            return requestHasCollectionList;
     }
 
     @Override
