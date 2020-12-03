@@ -1836,7 +1836,21 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
     public List<RequestType> getRequestType(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
         List<RequestType> requestType = (List<RequestType>) listEntities(RequestType.class, request, logger, getMethodName());
         return requestType;
+        
+        
     }
 
+    
+    @Override
+    public RequestType loadRequestTypeByCode(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException, EmptyListException {
+        List<RequestType> requestTypes = null;
+        Map<String, Object> params = request.getParams();
+        if (!params.containsKey(EjbConstants.PARAM_CODE)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_CODE), null);
+        }
+        requestTypes = (List<RequestType>) getNamedQueryResult(RequestType.class, "RequestType.findByCode", request, getMethodName(), logger, "code");        
+        return requestTypes.get(0);
+    }
+    
     
 }
