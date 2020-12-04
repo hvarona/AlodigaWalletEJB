@@ -1605,18 +1605,6 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         return status.get(0);
     }
     
-  
-//    @Override
-//    public DocumentType getDocumentTypeByCode(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException, EmptyListException {
-//         List<DocumentType> documentTypes = null;
-//        Map<String, Object> params = request.getParams();
-//        if (!params.containsKey(EjbConstants.PARAM_ACRONYM)) {
-//            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_ACRONYM), null);
-//        }
-//        documentTypes = (List<DocumentType>) getNamedQueryResult(DocumentType.class, "DocumentType.findByAcronym", request, getMethodName(), logger, "acronym");
-//        return documentTypes.get(0);
-//    }
-    
     @Override
     public Integer getDocumentTypeByCode(String code) throws RegisterNotFoundException, NullParameterException, GeneralException, EmptyListException {
         DocumentType documentType = new DocumentType();
