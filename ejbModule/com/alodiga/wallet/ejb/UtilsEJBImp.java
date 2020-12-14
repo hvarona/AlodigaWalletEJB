@@ -1235,6 +1235,29 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         affiliationRequestList = (List<AffiliationRequest>) getNamedQueryResult(AffiliationRequest.class, QueryConstants.AFFILIATION_REQUEST_BY_REQUEST_TYPE_ID, request, getMethodName(), logger, "transactionApproveRequestByStatusList");
         return affiliationRequestList;
     }
+    
+    @Override
+    public List<AffiliationRequest> getAffiliationRequestByUserByType(EJBRequest request) throws GeneralException, NullParameterException, EmptyListException {
+        List<AffiliationRequest> operations = new ArrayList<AffiliationRequest>();
+
+            Map<String, Object> params = request.getParams();
+            StringBuilder sqlBuilder = new StringBuilder("SELECT * FROM affiliation_request t WHERE t.requestTypeId=").append(params.get(QueryConstants.PARAM_REQUEST_TYPE));
+            
+            if (params.containsKey(QueryConstants.PARAM_USER_REGISTER_ID)) {
+                sqlBuilder.append(" AND t.userRegisterUnifiedId=").append(params.get(QueryConstants.PARAM_USER_REGISTER_ID));
+            }
+            
+            if (params.containsKey(QueryConstants.PARAM_BUSINESS_PERSON_ID)) {
+                sqlBuilder.append(" AND t.businessPersonId=").append(params.get(QueryConstants.PARAM_BUSINESS_PERSON_ID));
+            }
+            
+            Query query = entityManager.createNativeQuery(sqlBuilder.toString(), AffiliationRequest.class);
+            operations = (List<AffiliationRequest>) query.setHint("toplink.refresh", "true").getResultList();
+            if (operations.isEmpty()) {
+                throw new EmptyListException(logger, sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName()), null);
+            }
+            return operations;
+    }
 
     @Override
     public boolean validateStatusBusinessAffiliationHasFinalState(Integer statusId, Integer finalId) throws GeneralException, NullParameterException {
@@ -1605,18 +1628,6 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         return status.get(0);
     }
     
-  
-//    @Override
-//    public DocumentType getDocumentTypeByCode(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException, EmptyListException {
-//         List<DocumentType> documentTypes = null;
-//        Map<String, Object> params = request.getParams();
-//        if (!params.containsKey(EjbConstants.PARAM_ACRONYM)) {
-//            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_ACRONYM), null);
-//        }
-//        documentTypes = (List<DocumentType>) getNamedQueryResult(DocumentType.class, "DocumentType.findByAcronym", request, getMethodName(), logger, "acronym");
-//        return documentTypes.get(0);
-//    }
-    
     @Override
     public Integer getDocumentTypeByCode(String code) throws RegisterNotFoundException, NullParameterException, GeneralException, EmptyListException {
         DocumentType documentType = new DocumentType();
@@ -1836,7 +1847,21 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
     public List<RequestType> getRequestType(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
         List<RequestType> requestType = (List<RequestType>) listEntities(RequestType.class, request, logger, getMethodName());
         return requestType;
+        
+        
     }
 
+    
+    @Override
+    public RequestType loadRequestTypeByCode(EJBRequest request) throws RegisterNotFoundException, NullParameterException, GeneralException, EmptyListException {
+        List<RequestType> requestTypes = null;
+        Map<String, Object> params = request.getParams();
+        if (!params.containsKey(EjbConstants.PARAM_CODE)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_CODE), null);
+        }
+        requestTypes = (List<RequestType>) getNamedQueryResult(RequestType.class, "RequestType.findByCode", request, getMethodName(), logger, "code");        
+        return requestTypes.get(0);
+    }
+    
     
 }
