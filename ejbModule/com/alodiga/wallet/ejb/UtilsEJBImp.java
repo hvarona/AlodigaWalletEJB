@@ -1257,6 +1257,25 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         }
         return operations;
     }
+    
+    @Override
+    public List<AffiliationRequest> getAffiliationRequestByUser(EJBRequest request) throws GeneralException, NullParameterException, EmptyListException {
+        List<AffiliationRequest> operations = new ArrayList<AffiliationRequest>();
+
+            Map<String, Object> params = request.getParams();
+            StringBuilder sqlBuilder = new StringBuilder("SELECT * FROM affiliation_request t WHERE ");
+            
+            if (params.containsKey(QueryConstants.PARAM_USER_REGISTER_ID)) {
+                sqlBuilder.append("t.userRegisterUnifiedId=").append(params.get(QueryConstants.PARAM_USER_REGISTER_ID));
+            }
+            
+            Query query = entityManager.createNativeQuery(sqlBuilder.toString(), AffiliationRequest.class);
+            operations = (List<AffiliationRequest>) query.setHint("toplink.refresh", "true").getResultList();
+            if (operations.isEmpty()) {
+                throw new EmptyListException(logger, sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName()), null);
+            }
+            return operations;
+    }
 
     @Override
     public boolean validateStatusBusinessAffiliationHasFinalState(Integer statusId, Integer finalId) throws GeneralException, NullParameterException {
