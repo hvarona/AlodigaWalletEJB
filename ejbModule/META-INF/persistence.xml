@@ -130,6 +130,7 @@
     <class>com.alodiga.wallet.common.model.BusinessHasProduct</class>
     <class>com.alodiga.wallet.common.model.ReportHasProfile</class>
     <class>com.alodiga.wallet.common.model.RequestType</class>
+    <class>com.alodiga.wallet.common.model.StatusBankOperation</class>
     <validation-mode>NONE</validation-mode>
     <properties>
       <property name="eclipselink.logging.timestamp" value="true"/>
