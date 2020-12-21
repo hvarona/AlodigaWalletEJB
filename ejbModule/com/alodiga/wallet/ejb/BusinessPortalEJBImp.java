@@ -751,7 +751,7 @@ public class BusinessPortalEJBImp extends AbstractWalletEJB implements BusinessP
         return statusApplicant;
     }
 
-    @SuppressWarnings("unchecked")
+    
     @Override
     public List<Sequences> getSequencesByDocumentType(Integer documentTypeId)
         throws EmptyListException, GeneralException, NullParameterException {
