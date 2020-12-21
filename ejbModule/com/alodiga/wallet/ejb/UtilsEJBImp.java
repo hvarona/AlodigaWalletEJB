@@ -1259,7 +1259,7 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
     }
     
     @Override
-    public List<AffiliationRequest> getAffiliationRequestByUser(EJBRequest request) throws GeneralException, NullParameterException, EmptyListException {
+    public List<AffiliationRequest> getAffiliationRequestByPerson(EJBRequest request) throws GeneralException, NullParameterException, EmptyListException {
         List<AffiliationRequest> operations = new ArrayList<AffiliationRequest>();
 
             Map<String, Object> params = request.getParams();
@@ -1267,6 +1267,10 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
             
             if (params.containsKey(QueryConstants.PARAM_USER_REGISTER_ID)) {
                 sqlBuilder.append("t.userRegisterUnifiedId=").append(params.get(QueryConstants.PARAM_USER_REGISTER_ID));
+            }
+            
+            if (params.containsKey(QueryConstants.PARAM_BUSINESS_PERSON_ID)) {
+                sqlBuilder.append("t.businessPersonId=").append(params.get(QueryConstants.PARAM_BUSINESS_PERSON_ID));
             }
             
             Query query = entityManager.createNativeQuery(sqlBuilder.toString(), AffiliationRequest.class);
