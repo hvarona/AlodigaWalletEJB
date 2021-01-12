@@ -727,6 +727,25 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         }
         return commission;
     }
+    
+    public List<Commission> searchCommissionByTranssactionType(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        List<Commission> commission = null;
+        Map<String, Object> params = request.getParams();
+        try {
+           
+            StringBuilder sqlBuilder = new StringBuilder("SELECT * FROM commission c ");
+            sqlBuilder.append("WHERE c.productId = ").append(params.get(QueryConstants.PARAM_PRODUCT_ID));
+            sqlBuilder.append(" AND c.transactionTypeId IN (SELECT t.id FROM transaction_type t WHERE t.value LIKE '").append(params.get(QueryConstants.PARAM_VALUE)).append("%')");
+            Query query = entityManager.createNativeQuery(sqlBuilder.toString(), Commission.class);
+            commission = query.setHint("toplink.refresh", "true").getResultList();
+
+        } catch (NoResultException ex) {
+            throw new EmptyListException("No distributions found");
+        } catch (Exception ex) {
+            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), ex.getMessage()), ex);
+        }
+        return commission;
+    }
 
     //TransactionType
     public List<TransactionType> getTransactionType(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
@@ -1256,6 +1275,29 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
             throw new EmptyListException(logger, sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName()), null);
         }
         return operations;
+    }
+    
+    @Override
+    public List<AffiliationRequest> getAffiliationRequestByPerson(EJBRequest request) throws GeneralException, NullParameterException, EmptyListException {
+        List<AffiliationRequest> operations = new ArrayList<AffiliationRequest>();
+
+            Map<String, Object> params = request.getParams();
+            StringBuilder sqlBuilder = new StringBuilder("SELECT * FROM affiliation_request t WHERE ");
+            
+            if (params.containsKey(QueryConstants.PARAM_USER_REGISTER_ID)) {
+                sqlBuilder.append("t.userRegisterUnifiedId=").append(params.get(QueryConstants.PARAM_USER_REGISTER_ID));
+            }
+            
+            if (params.containsKey(QueryConstants.PARAM_BUSINESS_PERSON_ID)) {
+                sqlBuilder.append("t.businessPersonId=").append(params.get(QueryConstants.PARAM_BUSINESS_PERSON_ID));
+            }
+            
+            Query query = entityManager.createNativeQuery(sqlBuilder.toString(), AffiliationRequest.class);
+            operations = (List<AffiliationRequest>) query.setHint("toplink.refresh", "true").getResultList();
+            if (operations.isEmpty()) {
+                throw new EmptyListException(logger, sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName()), null);
+            }
+            return operations;
     }
 
     @Override
