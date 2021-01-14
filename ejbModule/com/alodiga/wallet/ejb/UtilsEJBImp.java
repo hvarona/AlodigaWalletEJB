@@ -727,6 +727,25 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         }
         return commission;
     }
+    
+    public List<Commission> searchCommissionByTranssactionType(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        List<Commission> commission = null;
+        Map<String, Object> params = request.getParams();
+        try {
+           
+            StringBuilder sqlBuilder = new StringBuilder("SELECT * FROM commission c ");
+            sqlBuilder.append("WHERE c.productId = ").append(params.get(QueryConstants.PARAM_PRODUCT_ID));
+            sqlBuilder.append(" AND c.transactionTypeId IN (SELECT t.id FROM transaction_type t WHERE t.value LIKE '").append(params.get(QueryConstants.PARAM_VALUE)).append("%')");
+            Query query = entityManager.createNativeQuery(sqlBuilder.toString(), Commission.class);
+            commission = query.setHint("toplink.refresh", "true").getResultList();
+
+        } catch (NoResultException ex) {
+            throw new EmptyListException("No distributions found");
+        } catch (Exception ex) {
+            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), ex.getMessage()), ex);
+        }
+        return commission;
+    }
 
     //TransactionType
     public List<TransactionType> getTransactionType(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
