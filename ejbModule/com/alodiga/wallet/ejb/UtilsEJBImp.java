@@ -1642,7 +1642,7 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         if (!params.containsKey(EjbConstants.PARAM_CODE)) {
             throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_CODE), null);
         }
-        status = (List<OriginApplication>) getNamedQueryResult(OriginApplication.class, "OriginApplication.findByCode", request, getMethodName(), logger, "code");
+        status = (List<OriginApplication>) getNamedQueryResult(OriginApplication.class, "OriginApplication.findByCode", request, getMethodName(), logger, "status");
         return status.get(0);
     }
 
