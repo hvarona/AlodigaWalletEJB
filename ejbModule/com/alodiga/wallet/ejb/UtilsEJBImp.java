@@ -1324,6 +1324,17 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
             }
             return operations;
     }
+    
+    @Override
+    public List<AffiliationRequest> getAffiliationRequestByLegalPerson(EJBRequest request) throws GeneralException, NullParameterException, EmptyListException {
+        List<AffiliationRequest> affiliationRequestList = null;
+        Map<String, Object> params = request.getParams();
+        if (!params.containsKey(EjbConstants.PARAM_LEGAL_PERSON_ID)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_LEGAL_PERSON_ID), null);
+        }
+        affiliationRequestList = (List<AffiliationRequest>) getNamedQueryResult(AffiliationRequest.class, QueryConstants.AFFILIATION_REQUEST_BY_LEGAL_PERSON, request, getMethodName(), logger, "affiliationRequestList");
+        return affiliationRequestList;
+    }
 
     @Override
     public boolean validateStatusBusinessAffiliationHasFinalState(Integer statusId, Integer finalId) throws GeneralException, NullParameterException {
