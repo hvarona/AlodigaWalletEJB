@@ -851,6 +851,31 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         }
         return collectionTypeList;
     }
+    
+    public List<CollectionType> getSearchCollectionTypeByOriginAplication(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        List<CollectionType> collectionTypeList = null;
+        Map<String, Object> params = request.getParams();
+        try {
+            StringBuilder sqlBuilder = new StringBuilder("SELECT * FROM collection_type ct ");
+            sqlBuilder.append("WHERE ct.countryId IN");
+            if (params.containsKey(QueryConstants.PARAM_COUNTRY_NAME)) {
+                sqlBuilder.append("(SELECT c.id FROM country c WHERE c.name LIKE '").append(params.get(QueryConstants.PARAM_COUNTRY_NAME)).append("%')");
+            }
+            if (params.containsKey(QueryConstants.PARAM_ORIGIN_APPLICATION_ID)) {
+                sqlBuilder.append("AND ct.personTypeId IN");
+                sqlBuilder.append("(SELECT pt.id FROM alodigaWallet.person_type pt Where pt.originApplicationId= ").append(params.get(QueryConstants.PARAM_ORIGIN_APPLICATION_ID)).append(")");
+            }
+            System.out.println("sql " + sqlBuilder.toString());
+            Query query = entityManager.createNativeQuery(sqlBuilder.toString(), CollectionType.class);
+            collectionTypeList = query.setHint("toplink.refresh", "true").getResultList();
+
+        } catch (NoResultException ex) {
+            throw new EmptyListException("No distributions found");
+        } catch (Exception e) {
+            throw new GeneralException(logger, sysError.format(EjbConstants.ERR_GENERAL_EXCEPTION, this.getClass(), getMethodName(), e.getMessage()), null);
+        }
+        return collectionTypeList;
+    }
 
     //BusinessCategory
     public List<BusinessCategory> getBusinessCategory(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
