@@ -39,6 +39,7 @@ import com.alodiga.wallet.common.model.PhoneType;
 import com.alodiga.wallet.common.model.Profession;
 import com.alodiga.wallet.common.model.StatusApplicant;
 import com.alodiga.wallet.common.model.StreetType;
+import com.alodiga.wallet.common.utils.Constants;
 import com.alodiga.wallet.common.utils.EjbConstants;
 import com.alodiga.wallet.common.utils.QueryConstants;
 import java.util.Map;
@@ -344,6 +345,26 @@ public class PersonEJBImp extends AbstractWalletEJB implements PersonEJB, Person
         }
 
         return personList;
+    }
+    
+    @Override
+    public Person searchPersonByLegalPersonId(Long legalPersonId)  throws EmptyListException, GeneralException, NullParameterException {
+        List<Person> personList = null;
+        if (legalPersonId==null) {
+        	 throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), "legalPersonId"), null);
+        }	
+        StringBuilder sqlBuilder = new StringBuilder("SELECT DISTINCT p.* FROM alodigaWallet.person p left join alodigaWallet.legal_representative lr ");
+        sqlBuilder.append("on p.id = lr.personId left join alodigaWallet.legal_person lp on lr.id = lp.legalRepresentativeId ");
+        sqlBuilder.append(" WHERE p.personClassificationId = " + PersonClassificationE.LEGREP.getId() + "");
+        sqlBuilder.append(" AND lp.id = " +legalPersonId + "");
+
+        Query query = entityManager.createNativeQuery(sqlBuilder.toString(), Person.class);
+        personList = (List<Person>) query.setHint("toplink.refresh", "true").getResultList();
+        if (personList.isEmpty()) {
+            throw new EmptyListException(logger, sysError.format(EjbConstants.ERR_EMPTY_LIST_EXCEPTION, this.getClass(), getMethodName()), null);
+        }
+
+        return personList.get(0);
     }
 
     @Override
