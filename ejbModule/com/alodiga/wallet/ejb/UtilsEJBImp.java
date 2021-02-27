@@ -1930,4 +1930,13 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         return requestTypes.get(0);
     }
 
+    @Override
+    public Long haveAffiliationRequestByUser(Long userId) throws GeneralException, NullParameterException {
+        StringBuilder sqlBuilder = new StringBuilder("SELECT COUNT(ar.id) FROM affiliation_request ar WHERE ar.userRegisterUnifiedId = ?1");
+        Query query = entityManager.createNativeQuery(sqlBuilder.toString());
+        query.setParameter("1", userId);
+        List result = (List) query.setHint("toplink.refresh", "true").getResultList();
+        return result.get(0) != null ? (Long) result.get(0) : 0l;
+    }
+
 }
