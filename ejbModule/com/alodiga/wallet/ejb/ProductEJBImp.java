@@ -42,6 +42,7 @@ import com.alodiga.wallet.common.model.Provider;
 import com.alodiga.wallet.common.model.StatusTransactionApproveRequest;
 import com.alodiga.wallet.common.enumeraciones.StatusTransactionApproveRequestE;
 import com.alodiga.wallet.common.enumeraciones.TransactionSourceE;
+import com.alodiga.wallet.common.enumeraciones.TransactionTypeE;
 import com.alodiga.wallet.common.model.TransactionApproveRequest;
 import com.alodiga.wallet.common.utils.Constants;
 import com.alodiga.wallet.common.utils.EJBServiceLocator;
@@ -461,7 +462,7 @@ public class ProductEJBImp extends AbstractWalletEJB implements ProductEJB, Prod
                         balancehistory.setTransactionId(transactionApproveRequest.getTransactionId());
                         saveBalanceHistory(balancehistory);
                         try {
-                            if (transactionApproveRequest.getTransactionId().getTransactionTypeId().getId().longValue() == 1) {
+                            if (transactionApproveRequest.getTransactionId().getTransactionTypeId().getId().longValue() == TransactionTypeE.MANREC.getId()) {
                                 SendSmsThread sendMailTherad = new SendSmsThread("584166229052",totalTransactionAmount,transactionApproveRequest.getRequestNumber(),
                                 Constants.SEND_TYPE_SMS_RECHARGE,transactionApproveRequest.getUnifiedRegistryUserId().longValue(),entityManager);
                                 sendMailTherad.run();
@@ -521,7 +522,7 @@ public class ProductEJBImp extends AbstractWalletEJB implements ProductEJB, Prod
         balanceHistory.setProductId(productId);
         float newCurrentAmount = 0.0f;
         switch (transactionType) {
-            case 1: //incrementar el saldo
+            case 6: //incrementar el saldo
                 newCurrentAmount = currentAmount + totalTransactionAmount;//SUMO AL MONTO ACTUAL (EL DESTINO)
                 break;
             case 5: //descontar el saldo
