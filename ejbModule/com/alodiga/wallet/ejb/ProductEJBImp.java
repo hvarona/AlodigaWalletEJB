@@ -462,7 +462,7 @@ public class ProductEJBImp extends AbstractWalletEJB implements ProductEJB, Prod
                         balancehistory.setTransactionId(transactionApproveRequest.getTransactionId());
                         saveBalanceHistory(balancehistory);
                         try {
-                            if (transactionApproveRequest.getTransactionId().getTransactionTypeId().getId().longValue() == TransactionTypeE.MANREC.getId()) {
+                            if (transactionApproveRequest.getTransactionId().getTransactionTypeId().getId().longValue() == 6) {
                                 SendSmsThread sendMailTherad = new SendSmsThread("584166229052",totalTransactionAmount,transactionApproveRequest.getRequestNumber(),
                                 Constants.SEND_TYPE_SMS_RECHARGE,transactionApproveRequest.getUnifiedRegistryUserId().longValue(),entityManager);
                                 sendMailTherad.run();
