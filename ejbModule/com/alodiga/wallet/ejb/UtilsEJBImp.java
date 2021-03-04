@@ -1939,4 +1939,13 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         return result.get(0) != null ? (Long) result.get(0) : 0l;
     }
 
+    @Override
+    public Long haveReviewOFACByPerson(Long personId) throws GeneralException, NullParameterException {
+        StringBuilder sqlBuilder = new StringBuilder("SELECT COUNT(r.id) FROM review_ofac r WHERE r.personId = ?1");
+        Query query = entityManager.createNativeQuery(sqlBuilder.toString());
+        query.setParameter("1", personId);
+        List result = (List) query.setHint("toplink.refresh", "true").getResultList();
+        return result.get(0) != null ? (Long) result.get(0) : 0l;
+    }
+
 }
