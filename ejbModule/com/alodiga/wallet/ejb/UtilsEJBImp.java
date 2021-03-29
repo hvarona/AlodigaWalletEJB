@@ -1271,7 +1271,7 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         if (!params.containsKey(EjbConstants.PARAM_REQUEST_TYPE)) {
             throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_REQUEST_TYPE), null);
         }
-        affiliationRequestList = (List<AffiliationRequest>) getNamedQueryResult(AffiliationRequest.class, QueryConstants.AFFILIATION_REQUEST_BY_REQUEST_TYPE_ID, request, getMethodName(), logger, "transactionApproveRequestByStatusList");
+        affiliationRequestList = (List<AffiliationRequest>) getNamedQueryResult(AffiliationRequest.class, QueryConstants.AFFILIATION_REQUEST_BY_REQUEST_TYPE_ID, request, getMethodName(), logger, "affiliationRequestList");
         return affiliationRequestList;
     }
 
@@ -1935,6 +1935,26 @@ public class UtilsEJBImp extends AbstractWalletEJB implements UtilsEJB, UtilsEJB
         StringBuilder sqlBuilder = new StringBuilder("SELECT COUNT(ar.id) FROM affiliation_request ar WHERE ar.userRegisterUnifiedId = ?1");
         Query query = entityManager.createNativeQuery(sqlBuilder.toString());
         query.setParameter("1", userId);
+        List result = (List) query.setHint("toplink.refresh", "true").getResultList();
+        return result.get(0) != null ? (Long) result.get(0) : 0l;
+    }
+
+    @Override
+    public Long haveReviewOFACByPerson(Long personId) throws GeneralException, NullParameterException {
+        StringBuilder sqlBuilder = new StringBuilder("SELECT COUNT(r.id) FROM review_ofac r WHERE r.personId = ?1");
+        Query query = entityManager.createNativeQuery(sqlBuilder.toString());
+        query.setParameter("1", personId);
+        List result = (List) query.setHint("toplink.refresh", "true").getResultList();
+        return result.get(0) != null ? (Long) result.get(0) : 0l;
+    }
+
+    @Override
+    public Long validateAccountBankExistsBD(Long userId, Long bankId, String accountNumber) throws GeneralException, NullParameterException {
+        StringBuilder sqlBuilder = new StringBuilder("SELECT COUNT(a.id) FROM account_bank a WHERE a.bankId = ?1 AND a.unifiedRegistryId = ?2 AND a.accountNumber = ?3");
+        Query query = entityManager.createNativeQuery(sqlBuilder.toString());
+        query.setParameter("1", bankId);
+        query.setParameter("2", userId);
+        query.setParameter("3", accountNumber);        
         List result = (List) query.setHint("toplink.refresh", "true").getResultList();
         return result.get(0) != null ? (Long) result.get(0) : 0l;
     }

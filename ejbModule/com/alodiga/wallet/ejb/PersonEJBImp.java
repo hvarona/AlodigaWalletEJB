@@ -445,6 +445,17 @@ public class PersonEJBImp extends AbstractWalletEJB implements PersonEJB, Person
         }
         return (NaturalPerson) saveEntity(naturalPerson);
     }
+    
+    @Override
+    public List<NaturalPerson> getNaturalPersonByPerson(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
+        List<NaturalPerson> naturalPersonList = null;
+        Map<String, Object> params = request.getParams();
+        if (!params.containsKey(EjbConstants.PARAM_PERSON_ID)) {
+            throw new NullParameterException(sysError.format(EjbConstants.ERR_NULL_PARAMETER, this.getClass(), getMethodName(), EjbConstants.PARAM_PERSON_ID), null);
+        }
+        naturalPersonList = (List<NaturalPerson>) getNamedQueryResult(NaturalPerson.class, QueryConstants.NATURAL_PERSON_BY_PERSON, request, getMethodName(), logger, "naturalPersonList");
+        return naturalPersonList;
+    }
 
     //Legal Person
     public List<LegalPerson> getLegalPerson(EJBRequest request) throws EmptyListException, GeneralException, NullParameterException {
